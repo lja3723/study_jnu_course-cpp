@@ -82,9 +82,4 @@ public:
 		int a = CH05_FACT<20>::value;
 		cout << a;
 	}
-
-
-
 };
-
-//int main() { CH05::template_meta(); }
