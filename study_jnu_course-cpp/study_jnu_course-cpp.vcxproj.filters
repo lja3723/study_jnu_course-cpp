@@ -13,10 +13,37 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="과제">
+      <UniqueIdentifier>{1b506cd7-1e8e-48b9-8e63-6034b7f6ec3f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="cpp02_practice.cpp">
+      <Filter>과제</Filter>
+    </ClCompile>
+    <ClCompile Include="cpp03_practice.cpp">
+      <Filter>과제</Filter>
+    </ClCompile>
+    <ClCompile Include="ch03.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="cpp04_practice.cpp">
+      <Filter>과제</Filter>
+    </ClCompile>
+    <ClCompile Include="ch04.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="cpp05_practice_if.cpp">
+      <Filter>과제</Filter>
+    </ClCompile>
+    <ClCompile Include="ch05.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="cpp06_practice_loop.cpp">
+      <Filter>과제</Filter>
+    </ClCompile>
+    <ClCompile Include="cpp07_practice_function.cpp">
+      <Filter>과제</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
