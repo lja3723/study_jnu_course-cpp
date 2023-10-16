@@ -54,5 +54,8 @@
     <ClCompile Include="ch06.cpp">
       <Filter>소스 파일\수업</Filter>
     </ClCompile>
+    <ClCompile Include="cpp09_practice_array.cpp">
+      <Filter>소스 파일\과제</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

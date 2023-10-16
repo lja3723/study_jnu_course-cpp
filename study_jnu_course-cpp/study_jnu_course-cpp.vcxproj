@@ -138,6 +138,7 @@
     <ClCompile Include="cpp06_practice_loop.cpp" />
     <ClCompile Include="cpp07_practice_function.cpp" />
     <ClCompile Include="cpp08_practice_function2.cpp" />
+    <ClCompile Include="cpp09_practice_array.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
