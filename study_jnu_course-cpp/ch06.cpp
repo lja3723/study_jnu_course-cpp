@@ -17,6 +17,7 @@ class CH06 {
 
 		long long l;
 		int i;
+		int* p;
 	};
 	struct mystruct {
 		short x;
@@ -28,6 +29,30 @@ class CH06 {
 		int lo;
 		double dou;
 	};
+	
+	struct address {
+		string city;
+		string country;
+		int zipcode;
+	};
+	struct member {
+		int id;
+		string name;
+		address addr;
+	};
+	struct myarray {
+		int x[7];
+	};
+	static void avoid_array_decay_test(myarray arr) {
+		cout << sizeof(arr) << endl;
+		cout << sizeof(arr.x) << endl;
+		cout << sizeof(arr.x[0]) << endl;
+		cout << sizeof(arr.x) / sizeof(*arr.x) << endl;
+		cout << endl;
+
+		cout << arr.x[0] << "\n" << arr.x[1] << endl;
+		cout << arr.x[2] << "\n" << arr.x[3] << endl;
+	}
 
 public:
 	FN array_intro() {
@@ -89,9 +114,27 @@ public:
 		cout << uni.lo << endl;
 		cout << uni.dou << endl;
 	}
+	FN struct_combined_size() {
+		member m;
+		m.id = 1234;
+		m.name = "LJA";
+		m.addr.city = "GY";
+		m.addr.country = "S.Korea";
+		m.addr.zipcode = 61186;
+		cout << sizeof(string) << endl;
 
+		cout << "sizeof(address): " << sizeof(address) << endl;
+		cout << "sizeof(member): " << sizeof(member) << endl;
+	}
+	FN avoid_array_decay() {
+		myarray brr = { {10, 20, 30, 40 } };
+		avoid_array_decay_test(brr);
+	}
+	FN midterm_test() {
+		unsigned int i;
+		while (i++);
+		cout << i << endl;
+	}
 
 
 };
-
-//int main() { CH06::union_ex(); }
