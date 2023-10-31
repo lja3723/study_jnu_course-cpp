@@ -74,8 +74,11 @@ class CH07 {
 	}
 	static void timefunc1() { for (int i = 0; i < 100; i++); }
 	static void timefunc2() { for (int i = 0; i < 1000; i++); }
-	//함수 포인터를 반환하는 함수??? 나중에 찾아보기
-
+	//함수 포인터를 반환하는 함수
+	static double (*ret_fptr(int k))(int, double) {
+		cout << k * k << endl;
+		return func_for_ptr1;
+	}
 
 
 public:
@@ -182,6 +185,9 @@ public:
 		cout << time_measure(timefunc1) << endl;
 		cout << time_measure(timefunc2) << endl;
 	}
+	FN ret_func_ptr() {
+		cout << ret_fptr(12)(6, 1.4) << endl;
+	}
 	FN ptr_and_const_test() {
 		int a = 100, b = 10;
 		// 1) ptr이 가리키는 그 원소는 const
@@ -203,5 +209,3 @@ public:
 
 
 };
-
-int main() { CH07::func_ptr(); }

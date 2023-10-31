@@ -60,5 +60,8 @@
     <ClCompile Include="ch07.cpp">
       <Filter>소스 파일\수업</Filter>
     </ClCompile>
+    <ClCompile Include="cpp12_practice_dynamicpointer.cpp">
+      <Filter>소스 파일\과제</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
