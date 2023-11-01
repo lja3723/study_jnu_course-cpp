@@ -79,7 +79,10 @@ class CH07 {
 		cout << k * k << endl;
 		return func_for_ptr1;
 	}
-
+	FN no_array_decay_with_ref(int(&ref)[4]) {
+		cout << sizeof(ref) << endl;
+		cout << ref[3] << endl;
+	}
 
 public:
 	FN pointer_intro() {
@@ -206,6 +209,9 @@ public:
 		//ptr3 = &b; ºÒ°¡´É
 		
 	}
-
+	FN avoid_decay_using_ref() {
+		int arr[4] = { 10, 20, 30, 40 };
+		no_array_decay_with_ref(arr);
+	}
 
 };

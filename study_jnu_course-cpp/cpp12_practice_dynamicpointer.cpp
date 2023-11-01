@@ -118,6 +118,7 @@ int cpp12_main2() {
 //3. Heap (data structure)
 #include <random>
 #include <cstring>
+
 template <typename V>
 struct cpp12_MyHeap {
 	//내부 변수
@@ -419,4 +420,182 @@ int cpp12_main3() {
 	MyHeapDestroy(heap_str);
 
 	return 0;
+}
+
+
+
+//3. Heap Implementation with Linked-List
+//특별히 정의된 링크드 리스트로 힙을 구현함
+template <typename E>
+class MyHeapListImpl {
+	struct _Node {
+		E elem;
+		_Node* parent, *left, *right;
+		_Node* prev, *next;
+	};
+
+	int _size;
+	_Node* _head, *_tail;
+	_Node* _leaf_perant; //push되는 그 때 말단 노드의 부모 노드
+	bool _leaf_child; //말단 노드는 그 부모노드 어떤 자식인지 표시
+
+	int (*pred)(const E&, const E&); //힙 정렬 조건
+		//false -> left , true -> right
+
+	void swap(E& a, E& b) {
+		E tmp = a;
+		a = b;
+		b = tmp;
+	}
+
+public:
+	MyHeapListImpl(int (*pred)(const E&, const E&)) {
+		_size = 0;
+		_head = _tail = _leaf_perant = nullptr;
+		_leaf_child = false;
+		this->pred = pred;
+	}
+	void push(E elem) {
+		_Node* node = new _Node;
+		node->elem = elem;
+
+		// 첫 원소 삽입인 경우
+		if (_head == nullptr) {
+			_head = _tail = _leaf_perant = node;
+			_leaf_child = false;
+
+			node->next = node->prev = nullptr;
+			node->parent = node->left = node->right = nullptr;
+			return;
+		}
+
+		// 새 노드를 tail에 삽입
+		node->prev = _tail;
+		node->parent = _leaf_perant;
+		node->next = node->left = node->right = nullptr;
+
+		_tail->next = node;
+		_tail = node;
+
+		if (!_leaf_child) {
+			_leaf_perant->left = node;
+			_leaf_child = true;
+		}
+		else {
+			_leaf_perant->right = node;
+			_leaf_perant = _leaf_perant->next;
+			_leaf_child = false;
+		}
+
+		//새 노드가 제자리를 찾아갈 때까지 교환
+		_Node* p = _tail;
+		while (p->parent != nullptr && pred(p->parent->elem, p->elem) > 0) {
+			swap(p->elem, p->parent->elem);
+		}		
+	}
+	E pop() {
+		if (empty()) {
+			cout << "unable to pop(): empty Heap" << endl;
+			return 0;
+		}
+
+		//말단 노드를 헤드에 올림
+		E ret = _head->elem;
+		_head->elem = _tail->elem;
+		_Node* delNode = _tail;
+		delNode->prev->next = nullptr;
+		_tail = _tail->prev;
+
+		if (!_leaf_child) {
+			_leaf_perant = _leaf_perant->prev;
+			_leaf_child = true;
+			_leaf_perant->right = nullptr;
+		}
+		else {
+			_leaf_child = false;
+			_leaf_perant->left = nullptr;
+		}
+		delete delNode;
+
+		//루트 노드를 제자리에 찾아감
+		_Node* p = _head;
+		while (true) {
+			if (p->left == nullptr && p->right == nullptr) break;
+			if (p->left == nullptr) {
+				if (pred(p->elem, p->right->elem) > 0) {
+					swap(p->elem, p->right->elem);
+					p = p->right;
+				}
+				else break;
+			}
+			else if (p->right == nullptr) {
+				if (pred(p->elem, p->left->elem) > 0) {
+					swap(p->elem, p->left->elem);
+					p = p->left;
+				}
+				else break;
+			}
+			else {
+				int left_cond = pred(p->elem, p->left->elem);
+				int right_cond = pred(p->elem, p->right->elem);
+
+				if (left_cond > 0 && right_cond > 0) {
+					if (pred(p->left->elem, p->right->elem) > 0) {
+						swap(p->elem, p->right->elem);
+						p = p->right;
+					}
+					else {
+						swap(p->elem, p->left->elem);
+						p = p->left;
+					}
+				}
+				else if (left_cond > 0) {
+					swap(p->elem, p->left->elem);
+					p = p->left;
+				}
+				else if (right_cond > 0) {
+					swap(p->elem, p->right->elem);
+					p = p->right;
+				}
+				else break;
+			}
+		}
+
+		return ret;
+	}
+	bool empty() {
+		return _size == 0;
+	}
+	int size() {
+		return _size;
+	}
+	~MyHeapListImpl() {
+		while (_head != nullptr) {
+			_Node* delNode = _head;
+			_head = _head->next;
+			delete _head;
+		}
+	}
+};
+
+int myheaplistimpl_int_cmp(const int& a, const int& b) {
+	return a - b;
+}
+
+void main3_2() {
+	int arr[] = { 4, 10, 15, 34, 3, 53, 21, 39, 40 };
+	int len = sizeof(arr) / sizeof(*arr);
+
+	MyHeapListImpl<int> heap = MyHeapListImpl<int>(myheaplistimpl_int_cmp);
+
+	for (int i = 0; i < len; i++)
+		heap.push(arr[i]);
+
+	while (!heap.empty())
+		cout << heap.pop() << " ";
+
+}
+
+int main() {
+	main3_2();
 }
