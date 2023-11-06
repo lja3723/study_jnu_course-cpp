@@ -55,25 +55,41 @@ list<VALUE>* append(VALUE value) {
 	return append<VALUE>(nullptr, value);
 }
 
+//reverse된 리스트를 원본으로부터 복사하며 생성한다.
+//복사된 리스트가 반환된다.
 template <typename VALUE>
-list<VALUE>* reverse(list<VALUE>* head) {
+list<VALUE>* reverse_copy(list<VALUE>* head) {
 	if (head == nullptr) return head;
 	list<VALUE>* cur = head, * r_head = nullptr;
 
 	while (cur != nullptr) {
 		list<VALUE>* copied = new list<VALUE>;
 		copied->value = cur->value;
-
-		if (r_head == nullptr)
-			copied->next = nullptr;
-		else
-			copied->next = r_head;
+		copied->next = r_head;
 		r_head = copied;
 
 		cur = cur->next;
 	}
 
 	return r_head;
+}
+
+//reverse된 리스트를 원본 자체를 조작하며 생성한다.
+//호출 후 리턴 값을 반드시 자기 자신에게 담아주어야 한다.
+template <typename VALUE>
+list<VALUE>* reverse_self(list<VALUE>* head) {
+	if (head == nullptr) return nullptr;
+
+	list<VALUE>* reversed = nullptr;
+
+	while (head != nullptr) {
+		list<VALUE>* cur = head;
+		head = head->next;
+		cur->next = reversed;
+		reversed = cur;
+	}
+
+	return reversed;
 }
 
 template <typename VALUE>
@@ -95,16 +111,22 @@ int main() {
 
 	tail = head = append(10);
 	tail = append(tail, 20);
-	tail = append(tail, 30);
-	tail = append(tail, 40);
+	tail = append(tail, 35);
+	tail = append(tail, 45);
+	tail = append(tail, 60);
 
 	for (loop = head; loop != nullptr; loop = loop->next) {
 		cout << loop->value << endl;
 	}
 
-	r_head = reverse(head);
+	r_head = reverse_copy(head);
+	cout << "Reversed (copied)" << endl;
+	for (loop = r_head; loop != nullptr; loop = loop->next) {
+		cout << loop->value << endl;
+	}
 
-	cout << "Reversed" << endl;
+	r_head = reverse_self(r_head);
+	cout << "Re-Reversed (self)" << endl;
 	for (loop = r_head; loop != nullptr; loop = loop->next) {
 		cout << loop->value << endl;
 	}
@@ -115,6 +137,8 @@ int main() {
 	return 0;
 }
 /*************end*************/}
+
+int main() { cpp12_2::main(); }
 
 #include <random>
 #include <cstring>
