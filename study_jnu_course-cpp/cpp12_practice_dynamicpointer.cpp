@@ -1,15 +1,16 @@
 #include <iostream>
 using namespace std;
 
+namespace cpp12_1{
 //1. mystrcat
-int cpp12_mystrlen(const char* str) {
+int mystrlen(const char* str) {
 	int ret = -1;
 	while (str[++ret] != '\0');
 	return ret;
 }
 
-char* cpp12_mystrcat(const char* str1, const char* str2) {
-	int len1 = cpp12_mystrlen(str1), len2 = cpp12_mystrlen(str2);
+char* mystrcat(const char* str1, const char* str2) {
+	int len1 = mystrlen(str1), len2 = mystrlen(str2);
 	int len = len1 + len2 + 1;
 	char* ret = new char[len];
 
@@ -22,27 +23,26 @@ char* cpp12_mystrcat(const char* str1, const char* str2) {
 	return ret;
 }
 
-int cpp12_main1() {
-	char* str = cpp12_mystrcat("Hello!", "World!");
+int main() {
+	char* str = mystrcat("Hello!", "World!");
 	cout << str << endl;
-	delete[cpp12_mystrlen(str) + 1] str;
+	delete[] str;
 	str = nullptr;
 
 	return 0;
 }
-
-
-
+/*************end*************/}
+namespace cpp12_2{
 //2. Reverse linked list
 template <typename VALUE>
-struct cpp12_list {
+struct list {
 	VALUE value;
-	cpp12_list* next;
+	list* next;
 };
 
 template <typename VALUE>
-cpp12_list<VALUE>* append(cpp12_list<VALUE>* tail, VALUE value) {
-	cpp12_list<VALUE>* node = new cpp12_list<VALUE>;
+list<VALUE>* append(list<VALUE>* tail, VALUE value) {
+	list<VALUE>* node = new list<VALUE>;
 	node->value = value;
 	node->next = nullptr;
 	if (tail != nullptr)
@@ -51,22 +51,22 @@ cpp12_list<VALUE>* append(cpp12_list<VALUE>* tail, VALUE value) {
 }
 
 template <typename VALUE>
-cpp12_list<VALUE>* append(VALUE value) {
+list<VALUE>* append(VALUE value) {
 	return append<VALUE>(nullptr, value);
 }
 
 template <typename VALUE>
-cpp12_list<VALUE>* reverse(cpp12_list<VALUE>* head) {
+list<VALUE>* reverse(list<VALUE>* head) {
 	if (head == nullptr) return head;
-	cpp12_list<VALUE>* cur = head, *r_head = nullptr;
+	list<VALUE>* cur = head, * r_head = nullptr;
 
 	while (cur != nullptr) {
-		cpp12_list<VALUE>* copied = new cpp12_list<VALUE>;
+		list<VALUE>* copied = new list<VALUE>;
 		copied->value = cur->value;
 
-		if (r_head == nullptr) 
+		if (r_head == nullptr)
 			copied->next = nullptr;
-		else 
+		else
 			copied->next = r_head;
 		r_head = copied;
 
@@ -77,21 +77,21 @@ cpp12_list<VALUE>* reverse(cpp12_list<VALUE>* head) {
 }
 
 template <typename VALUE>
-void cpp12_delete_list(cpp12_list<VALUE>* head) {
+void delete_list(list<VALUE>* head) {
 	if (head == nullptr) return;
 	while (head != nullptr) {
-		cpp12_list<VALUE>* next = head->next;
+		list<VALUE>* next = head->next;
 		delete head;
 		head = next;
 	}
 }
 
-int cpp12_main2() {
-	cpp12_list<int>* head;
-	cpp12_list<int>* loop;
-	cpp12_list<int>* tail;
+int main() {
+	list<int>* head;
+	list<int>* loop;
+	list<int>* tail;
 
-	cpp12_list<int>* r_head;
+	list<int>* r_head;
 
 	tail = head = append(10);
 	tail = append(tail, 20);
@@ -109,22 +109,24 @@ int cpp12_main2() {
 		cout << loop->value << endl;
 	}
 
-	cpp12_delete_list(head);
-	cpp12_delete_list(r_head);
+	delete_list(head);
+	delete_list(r_head);
 
 	return 0;
 }
+/*************end*************/}
 
-//3. Heap (data structure)
 #include <random>
 #include <cstring>
-
+namespace cpp12_3_1{
+//3. Heap (data structure)
+//included headers
 template <typename V>
-struct cpp12_MyHeap {
+struct MyHeap {
 	//내부 변수
 	int _capacity;	//힙의 메모리 차지 용량
 	int _size;		//힙의 원소 개수
-	V* _data;		//힙 동적할당 배열
+	V** _data;		//힙 동적할당 배열
 	int (*_pred_cmp)(V* a, V* b);	//힙 정렬 함수포인터
 
 	//힙 인터페이스(함수 포인터)
@@ -136,16 +138,16 @@ struct cpp12_MyHeap {
 
 //현재 생성된 힙 객체 참조값 저장
 template <typename V>
-cpp12_MyHeap<V>* _heap_this(cpp12_MyHeap<V>* _this = nullptr, bool clear = false) {
-	static cpp12_MyHeap<V>* _this_hold = nullptr;
+MyHeap<V>* _heap_this(MyHeap<V>* _this = nullptr, bool clear = false) {
+	static MyHeap<V>* _this_hold = nullptr;
 	if (clear) return _this_hold = nullptr;
 	return (_this_hold = (_this == nullptr ? _this_hold : _this));
 }
 
 //원소를 스왑함
 template <typename V>
-void _myheap_swap(V* a, V* b) {
-	V tmp = *a;
+void _myheap_swap(V** a, V** b) {
+	V* tmp = *a;
 	*a = *b;
 	*b = tmp;
 }
@@ -162,16 +164,16 @@ V _myheap_invalid_value() {
 //힙 push 구현체
 template <typename V>
 void _myheap_push(V value) {
-	cpp12_MyHeap<V>* _this = _heap_this<V>(); //현재 객체 참조 얻기
-	
+	MyHeap<V>* _this = _heap_this<V>(); //현재 객체 참조 얻기
+
 	//복잡도 감소목적 참조변수
 	int& cap = _this->_capacity;
 	int& size = _this->_size;
-	V*& data = _this->_data;
+	V**& data = _this->_data;
 
 	//힙 배열이 가득 차면 두 배 큰 공간 할당
 	if (cap - 1 <= size) {
-		V* new_data = new V[2 * cap];
+		V** new_data = new V*[2 * cap];
 		for (int i = 0; i < cap; i++) {
 			new_data[i] = data[i];
 		}
@@ -182,11 +184,12 @@ void _myheap_push(V value) {
 
 	//힙 배열 끝에 원소 삽입
 	int idx = ++size;
-	data[idx] = value;
+	data[idx] = new V;
+	*data[idx] = value;
 
 	//삽입된 원소를 제자리에 위치
-	while (idx != 1) {		
-		if (_this->_pred_cmp(&data[idx / 2], &data[idx]) > 0) {
+	while (idx != 1) {
+		if (_this->_pred_cmp(data[idx / 2], data[idx]) > 0) {
 			_myheap_swap(&data[idx / 2], &data[idx]);
 		}
 		else break;
@@ -197,15 +200,17 @@ void _myheap_push(V value) {
 //힙 pop 구현체
 template <typename V>
 V _myheap_pop() {
-	cpp12_MyHeap<V>* _this = _heap_this<V>(); //현재 겍체 참조 얻기
+	MyHeap<V>* _this = _heap_this<V>(); //현재 겍체 참조 얻기
 
 	//힙이 비어있을 경우 처리
 	if (_this->empty()) return _myheap_invalid_value<V>();
-	
+
 	//힙 트리 최상위 노드가 반환되고, 말단 노드가 최상위 노드로 올라옴
-	V ret = _this->_data[1];
-	_this->_data[1] = _this->_data[_this->_size--];
-	int size = _this->_size;
+	V ret = *(_this->_data[1]);
+	delete _this->_data[1];
+	_this->_data[1] = _this->_data[_this->_size];
+	_this->_data[_this->_size] = nullptr;
+	int size = --(_this->_size);
 	int idx = 1;
 
 	//최상위 노드가 제자리를 찾아감
@@ -214,17 +219,17 @@ V _myheap_pop() {
 		int l_idx = 2 * idx;
 		int r_idx = l_idx + 1;
 		int (*pred)(V*, V*) = _this->_pred_cmp;
-		V* i_data = &_this->_data[idx];
+		V** i_data = &_this->_data[idx];
 
 		//왼쪽, 오른쪽 자식 모두 접근 가능한 경우
 		if (l_idx <= size && r_idx <= size) {
-			V* l_data = &_this->_data[l_idx]; //복잡도 감소용 별명
-			V* r_data = &_this->_data[r_idx]; //복잡도 감소용 별명
+			V** l_data = &_this->_data[l_idx]; //복잡도 감소용 별명
+			V** r_data = &_this->_data[r_idx]; //복잡도 감소용 별명
 
 			//왼쪽, 오른쪽 자식 모두 교환 가능한 경우
-			if (pred(i_data, r_data) > 0 && pred(i_data, l_data) > 0)
+			if (pred(*i_data, *r_data) > 0 && pred(*i_data, *l_data) > 0)
 				//두 자식 중 더 작은 자식과 교환하기
-				if (pred(l_data, r_data) > 0) {
+				if (pred(*l_data, *r_data) > 0) {
 					_myheap_swap(i_data, r_data);
 					idx = r_idx;
 				}
@@ -233,12 +238,12 @@ V _myheap_pop() {
 					idx = l_idx;
 				}
 			//왼쪽 자식만 교환 가능한 경우 무조건 교환
-			else if (pred(i_data, l_data) > 0) {
+			else if (pred(*i_data, *l_data) > 0) {
 				_myheap_swap(i_data, l_data);
 				idx = l_idx;
 			}
 			//오른쪽 자식만 교환 가능하면 무조건 교환			
-			else if (pred(i_data, r_data) > 0) {
+			else if (pred(*i_data, *r_data) > 0) {
 				_myheap_swap(i_data, r_data);
 				idx = r_idx;
 			}
@@ -247,8 +252,8 @@ V _myheap_pop() {
 		}
 		//왼쪽 자식만 접근 가능한 경우
 		else if (l_idx <= size) {
-			V* l_data = &_this->_data[l_idx];
-			if (pred(i_data, l_data) > 0) {
+			V** l_data = &_this->_data[l_idx];
+			if (pred(*i_data, *l_data) > 0) {
 				_myheap_swap(i_data, l_data);
 				idx = l_idx;
 			}
@@ -256,8 +261,8 @@ V _myheap_pop() {
 		}
 		//오른쪽 자식만 접근 가능한 경우
 		else if (r_idx <= size) {
-			V* r_data = &_this->_data[r_idx];
-			if (pred(i_data, r_data) > 0) {
+			V** r_data = &_this->_data[r_idx];
+			if (pred(*i_data, *r_data) > 0) {
 				_myheap_swap(i_data, r_data);
 				idx = r_idx;
 			}
@@ -272,31 +277,31 @@ V _myheap_pop() {
 //힙 top 구현체
 template <typename V>
 V _myheap_top() {
-	cpp12_MyHeap<V>* _this = _heap_this<V>();
-	
+	MyHeap<V>* _this = _heap_this<V>();
+
 	//힙이 비어있을 경우 처리
 	if (_this->empty()) return _myheap_invalid_value<V>();
 
-	return _this->_data[1];
+	return *(_this->_data[1]);
 }
 
 //힙 empty 구현체
 template <typename V>
 bool _myheap_empty() {
-	cpp12_MyHeap<V>* _this = _heap_this<V>();
+	MyHeap<V>* _this = _heap_this<V>();
 	return _this->_size == 0;
 }
 
 //힙 사용 전 호출해야하는 함수
 //pred_cmp: 힙 정렬에 사용되는 정렬 조건함수
 template <typename V>
-cpp12_MyHeap<V>* MyHeapInit(int (*pred_cmp)(V* a, V* b)) {
-	cpp12_MyHeap<V>* ret = new cpp12_MyHeap<V>;
+MyHeap<V>* MyHeapInit(int (*pred_cmp)(V* a, V* b)) {
+	MyHeap<V>* ret = new MyHeap<V>;
 
 	//내부 변수 초기화
 	ret->_capacity = 16;
 	ret->_size = 0;
-	ret->_data = new V[ret->_capacity];
+	ret->_data = new V*[ret->_capacity];
 	ret->_pred_cmp = pred_cmp;
 
 	//현재 생성된 힙 참조 연결
@@ -313,11 +318,17 @@ cpp12_MyHeap<V>* MyHeapInit(int (*pred_cmp)(V* a, V* b)) {
 
 //힙 사용 후 메모리 반환
 template <typename V>
-void MyHeapDestroy(cpp12_MyHeap<V>* heap) {
+void MyHeapDestroy(MyHeap<V>* heap) {
 	if (heap == nullptr) return;
-	
-	if (heap->_data != nullptr)
+
+	if (heap->_data != nullptr) {
+		for (int i = 0; i < heap->_size; i++) {
+			if (heap->_data[i + 1] != nullptr)
+				delete heap->_data[i + 1];
+		}
+
 		delete[] heap->_data;
+	}
 
 	delete heap;
 	heap = nullptr;
@@ -335,7 +346,7 @@ int myheap_string_cmp(string* a, string* b) {
 	return strcmp(a->c_str(), b->c_str());
 }
 
-int cpp12_main3() {
+int main() {
 	/*******************************************/
 	/*   CASE 1 : int에 대한 MyHeap 사용 예시   */
 	/*******************************************/
@@ -363,7 +374,7 @@ int cpp12_main3() {
 	}
 	cout << "\n\n";
 
-	cpp12_MyHeap<int>* heap = MyHeapInit<int>(myheap_int_cmp); //힙 초기화
+	MyHeap<int>* heap = MyHeapInit<int>(myheap_int_cmp); //힙 초기화
 	//힙에 데이터 순서대로 원소 삽입
 	for (int i = 0; i < data_len; i++) {
 		heap->push(data_list[i]);
@@ -402,12 +413,12 @@ int cpp12_main3() {
 	}
 	cout << "\n\n";
 
-	cpp12_MyHeap<string>* heap_str = MyHeapInit<string>(myheap_string_cmp); //힙 초기화
+	MyHeap<string>* heap_str = MyHeapInit<string>(myheap_string_cmp); //힙 초기화
 	//힙에 데이터 순서대로 원소 삽입
 	for (int i = 0; i < 24; i++) {
 		heap_str->push(str_data[i]);
 	}
-	
+
 	newline = 0;
 	cout << "정렬 후 원소: " << endl;
 	while (!heap_str->empty()) {
@@ -421,29 +432,29 @@ int cpp12_main3() {
 
 	return 0;
 }
-
-
-
+/*************end*************/}
+namespace cpp12_3_2{
 //3. Heap Implementation with Linked-List
 //특별히 정의된 링크드 리스트로 힙을 구현함
 template <typename E>
 class MyHeapListImpl {
+private:
 	struct _Node {
-		E elem;
-		_Node* parent, *left, *right;
-		_Node* prev, *next;
+		E* elem;
+		_Node* parent, * left, * right;
+		_Node* prev, * next;
 	};
 
 	int _size;
-	_Node* _head, *_tail;
+	_Node* _head, * _tail;
 	_Node* _leaf_perant; //push되는 그 때 말단 노드의 부모 노드
 	bool _leaf_child; //말단 노드는 그 부모노드 어떤 자식인지 표시
+	//_leaf_child가 false -> left, true -> right 노드에 삽입될 예정이라는 의미
 
-	int (*pred)(const E&, const E&); //힙 정렬 조건
-		//false -> left , true -> right
+	int (*pred)(const E&, const E&); //힙 정렬 조건	
 
-	void swap(E& a, E& b) {
-		E tmp = a;
+	void swap(E*& a, E*& b) {
+		E* tmp = a;
 		a = b;
 		b = tmp;
 	}
@@ -457,7 +468,9 @@ public:
 	}
 	void push(E elem) {
 		_Node* node = new _Node;
-		node->elem = elem;
+		node->elem = new E;
+		*(node->elem) = elem;
+		_size++;
 
 		// 첫 원소 삽입인 경우
 		if (_head == nullptr) {
@@ -489,9 +502,10 @@ public:
 
 		//새 노드가 제자리를 찾아갈 때까지 교환
 		_Node* p = _tail;
-		while (p->parent != nullptr && pred(p->parent->elem, p->elem) > 0) {
+		while (p->parent != nullptr && pred(*p->parent->elem, *p->elem) > 0) {
 			swap(p->elem, p->parent->elem);
-		}		
+			p = p->parent;
+		}
 	}
 	E pop() {
 		if (empty()) {
@@ -500,47 +514,58 @@ public:
 		}
 
 		//말단 노드를 헤드에 올림
-		E ret = _head->elem;
+		E ret = *(_head->elem);
+		delete _head->elem;
 		_head->elem = _tail->elem;
 		_Node* delNode = _tail;
-		delNode->prev->next = nullptr;
+		if (_tail->prev != nullptr) {
+			_tail->prev->next = nullptr;
+		}
 		_tail = _tail->prev;
 
-		if (!_leaf_child) {
-			_leaf_perant = _leaf_perant->prev;
-			_leaf_child = true;
-			_leaf_perant->right = nullptr;
+		if (delNode->parent != nullptr) {
+			if (!_leaf_child) {
+				_leaf_perant = _leaf_perant->prev;
+				_leaf_child = true;
+				_leaf_perant->right = nullptr;
+			}
+			else {
+				_leaf_child = false;
+				_leaf_perant->left = nullptr;
+			}
 		}
 		else {
+			_leaf_perant = nullptr;
 			_leaf_child = false;
-			_leaf_perant->left = nullptr;
+			_head = nullptr;
 		}
 		delete delNode;
+		_size--;
 
 		//루트 노드를 제자리에 찾아감
 		_Node* p = _head;
-		while (true) {
+		while (p != nullptr) {
 			if (p->left == nullptr && p->right == nullptr) break;
 			if (p->left == nullptr) {
-				if (pred(p->elem, p->right->elem) > 0) {
+				if (pred(*p->elem, *p->right->elem) > 0) {
 					swap(p->elem, p->right->elem);
 					p = p->right;
 				}
 				else break;
 			}
 			else if (p->right == nullptr) {
-				if (pred(p->elem, p->left->elem) > 0) {
+				if (pred(*p->elem, *p->left->elem) > 0) {
 					swap(p->elem, p->left->elem);
 					p = p->left;
 				}
 				else break;
 			}
 			else {
-				int left_cond = pred(p->elem, p->left->elem);
-				int right_cond = pred(p->elem, p->right->elem);
+				int left_cond = pred(*p->elem, *p->left->elem);
+				int right_cond = pred(*p->elem, *p->right->elem);
 
 				if (left_cond > 0 && right_cond > 0) {
-					if (pred(p->left->elem, p->right->elem) > 0) {
+					if (pred(*p->left->elem, *p->right->elem) > 0) {
 						swap(p->elem, p->right->elem);
 						p = p->right;
 					}
@@ -572,8 +597,9 @@ public:
 	~MyHeapListImpl() {
 		while (_head != nullptr) {
 			_Node* delNode = _head;
+			delete _head->next;
 			_head = _head->next;
-			delete _head;
+			delete delNode;
 		}
 	}
 };
@@ -582,7 +608,7 @@ int myheaplistimpl_int_cmp(const int& a, const int& b) {
 	return a - b;
 }
 
-void main3_2() {
+int main() {
 	int arr[] = { 4, 10, 15, 34, 3, 53, 21, 39, 40 };
 	int len = sizeof(arr) / sizeof(*arr);
 
@@ -594,8 +620,7 @@ void main3_2() {
 	while (!heap.empty())
 		cout << heap.pop() << " ";
 
-}
 
-int main() {
-	main3_2();
+	return 0;
 }
+/*************end*************/}

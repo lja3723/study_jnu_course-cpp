@@ -132,6 +132,7 @@
     <ClCompile Include="ch06.cpp" />
     <ClCompile Include="ch07.cpp" />
     <ClCompile Include="ch08.cpp" />
+    <ClCompile Include="ch09.cpp" />
     <ClCompile Include="cpp02_practice.cpp" />
     <ClCompile Include="cpp03_practice.cpp" />
     <ClCompile Include="cpp04_practice.cpp" />
@@ -142,6 +143,7 @@
     <ClCompile Include="cpp08_practice_function2.cpp" />
     <ClCompile Include="cpp09_practice_array.cpp" />
     <ClCompile Include="cpp12_practice_dynamicpointer.cpp" />
+    <ClCompile Include="cpp14_practice_class.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
