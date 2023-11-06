@@ -137,9 +137,6 @@ int main() {
 	return 0;
 }
 /*************end*************/}
-
-int main() { cpp12_2::main(); }
-
 #include <random>
 #include <cstring>
 namespace cpp12_3_1{
