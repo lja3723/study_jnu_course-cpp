@@ -72,5 +72,8 @@
     <ClCompile Include="cpp14_practice_class.cpp">
       <Filter>소스 파일\과제</Filter>
     </ClCompile>
+    <ClCompile Include="assignment1.cpp">
+      <Filter>소스 파일\과제</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
