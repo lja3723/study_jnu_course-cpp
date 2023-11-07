@@ -1,3 +1,5 @@
+//깃 컨벤션 참고 https://github.com/JNU-econovation/Let-s-git-it-started/blob/main/Glossary_of_Terms/Commit%20Convention.md
+
 #include <iostream>
 #include <vector>
 using namespace std;
