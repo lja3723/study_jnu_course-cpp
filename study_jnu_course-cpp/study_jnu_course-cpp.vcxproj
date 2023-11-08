@@ -145,6 +145,7 @@
     <ClCompile Include="cpp09_practice_array.cpp" />
     <ClCompile Include="cpp12_practice_dynamicpointer.cpp" />
     <ClCompile Include="cpp14_practice_class.cpp" />
+    <ClCompile Include="cpp15_practice_class2.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

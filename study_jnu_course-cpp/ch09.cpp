@@ -289,4 +289,4 @@ namespace CH09 {
 
 //main 함수는 네임스페이스로 감싸면 X
 //운영체제는 항상 //::main()을 호출
-int main() { CH09::RunExample::myprint_test(); }
+//int main() { CH09::RunExample::myprint_test(); }
