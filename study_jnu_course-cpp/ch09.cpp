@@ -103,12 +103,87 @@ namespace CH09 {
 		NumPair operator+(int i) {
 			return NumPair(x + i, y + i);
 		}
+		//후위++ (Obj++) 는 operator++(int)
+		NumPair operator++(int) {
+			NumPair ret = *this;
+			x++, y++;
+			return ret;
+		}
+		//++전위 (++Obj) 는 operator++()
+		NumPair& operator++() {
+			x++, y++;
+			return *this;
+		}
 	};
 	//operator+ 오버로딩 (덧셈 교환법칙 위해 필요)
 	NumPair operator+(int i, NumPair& n) {
 		return n + i;
 	}
 
+	//int를 완전 새롭게 만들어보자
+	class INTEGER {
+	private:
+		int m_number;
+	public:
+		INTEGER(int n) : m_number(n) {}
+		INTEGER() : INTEGER(0) {}
+		friend ostream& operator<<(ostream& os, const INTEGER& n);
+		//convention operator
+		//INTEGER 클래스 객체를 int로 변환한다
+		operator int() { 
+			return m_number;
+		}
+		INTEGER& operator=(int n) {
+			m_number = n;
+			return *this;
+		}
+		INTEGER operator+(const INTEGER& n) {
+			return INTEGER(m_number + n.m_number);
+		}
+		INTEGER operator-(const INTEGER& n) {
+			return INTEGER(m_number - n.m_number);
+		}
+		INTEGER operator*(const INTEGER& n) {
+			return INTEGER(m_number * n.m_number);
+		}
+		INTEGER operator/(const INTEGER& n) {
+			return INTEGER(m_number / n.m_number);
+		}
+
+		int* operator&() {
+			return &m_number; //좀 비직관적인듯 ㅋ
+		}
+		//INTEGER& operator&() { return this; } //오버로딩 불가능..?
+	};
+	//INTEGER을 cout으로 출력
+	ostream& operator<<(ostream& os, const INTEGER& n) {
+		os << n.m_number;
+		return os;
+	}
+
+	//cout, endl의 구현
+	//endl은 함수로 구현된 것이다 ㅋㅋ
+	class myPrint {
+	private:
+		int len;
+
+	public:
+		void print(const char* str)	{ len += printf("%s ", str); }
+		void print(int i)		{ len += printf("%d ", i); }
+		void print(double d)	{ len += printf("%lf ", d); }
+
+		myPrint& operator<<(const char* str) { print(str); return *this; }
+		myPrint& operator<<(int i) { print(i); return *this; }
+		myPrint& operator<<(double d) { print(d); return *this; }
+		myPrint& operator<<(myPrint& (*f)(myPrint&)) {
+			return f(*this);
+		}
+	};
+	myPrint& endl(myPrint& p) { 
+		printf("\n"); 
+		return p;
+	}
+	myPrint p; // 이것이 바로 cout
 
 	class RunExample {
 	public:
@@ -175,8 +250,38 @@ namespace CH09 {
 			//아래처럼 호출하려면 전역함수로 operator+ 오버로딩 필요
 			num2 = 10 + num2; 
 			cout << "num2 : "; num2.print();
-		}
 
+			NumPair num3(5, 8);
+			cout << "num3 : "; (num3++).print();
+			cout << "num3 : "; (++num3).print();
+		}
+		FN myinteger_test() {
+			INTEGER num;
+			num = 10;
+			cout << num << endl;
+
+			int* pnum = &num; //직관적이지 않은 듯 ㅋ
+
+			cout << *pnum << endl;
+		}
+		FN printf_test() {
+			int ret;
+			ret = printf("ABCDEF"); //출력한 문자 길이 리턴함
+			printf(" %d \n", ret);
+		}
+		FN myprint_test() {
+			myPrint p;
+			char str[15] = "world!";
+			
+			p.print("hello");
+			p.print(str);
+			p.print(-123);
+			p.print(-3.14);
+			cout << std::endl;
+			//cout << endl; 이렇게 하면 std::endl과 CH09::endl이 중복되서 이상한게 출력됨
+
+			p << "hello" << str << 1234 << 3.14 << endl << 5678;
+		}
 
 
 	};
@@ -184,4 +289,4 @@ namespace CH09 {
 
 //main 함수는 네임스페이스로 감싸면 X
 //운영체제는 항상 //::main()을 호출
-//int main() { CH09::RunExample::oper_overloading(); }
+int main() { CH09::RunExample::myprint_test(); }
