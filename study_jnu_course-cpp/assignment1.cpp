@@ -6,31 +6,41 @@ using namespace std;
 
 namespace assignment1 {
 
-class regex {
+class MySimpleRegex {
 //이 클래스는 static 메서드만 있으므로 생성자를 private로 둔다.
-private: regex(); 
+private: MySimpleRegex(); 
 public:
-    //description: 문자열에서 패턴과 일치된 범위 반환
+    // 문자열에서 패턴과 일치된 범위를 표현한다.
     class matched {
     private:
-        const int m_start, m_end;
-        const string& m_ref;
-        const bool m_valid;
+        const int m_start, m_end;   //참조 문자열에서의 범위값
+        const string& m_ref;        //참조 문자열
+        const bool m_valid;         //객체가 유효한 지 여부
 
     public:
         matched(const string& ref, int start, int end, bool valid) : 
             m_ref(ref), m_start(start), m_end(end), m_valid(valid) {}
 
+        //해당 객체가 유효한 지 여부 확인 (false는 유효하지 않음)
         bool valid() const { return m_valid; }
+
+        //범위에 속하는 문자열 반환
         string group() const { return m_ref.substr(m_start, m_end - m_start); }
+
+        //범위의 시작값
         int start() const { return m_start; }
+
+        //범위의 끝값
         int end() const { return m_end; }
+
+        //범위
         pair<int, int> span() const { return pair<int, int>(m_start, m_end); }
     };
     
-    //TODO: 파싱 후 상태 기계 생성하는 알고리즘 구현해야 됨 / description: 
+    //TODO: 파싱 후 상태 기계 생성하는 알고리즘 구현해야 됨
+    //정규표현식을 컴파일한 객체로, 확인할 문자열을 입력하면 일치 정보를 반환한다.
     class compiled {
-        friend class regex;
+        friend class MySimpleRegex;
     private:
         //매치 객체 인터페이스
         class Imatchable { public: virtual bool test(char ch) = 0; };
@@ -47,30 +57,50 @@ public:
             }
         };
 
+        //노드를 카리키는 포인터 클래스(시그니처)
         class node_ptr;
-        //TODO: 길이 구하기 위해 적절한 멤버 변수 추가해야 됨
+
+        //유한 오토마타를 구성하는 노드
         class node {
         private:
             string m_name; // state node name
-            int m_suspended_active_count;
-            bool m_suspended_state; // for syncronization
-            int m_active_count; // 해당 노드의 활성화 카운터: next node들에게 +1된 상태로 전이됨
-            bool m_state;
-            bool m_isTerminal; // 0: terminal, 1: non-terminal
-            bool m_isAccepted;
+            int m_suspended_active_count; // 계류된 active_count
+            bool m_suspended_state; // for syncronization: 계류된 state
+            int m_active_count; // accept된 터미널 노드에서 인식된 문자열 길이를 의미한다.
+            bool m_state;       // 0: deactive, 1: active
+            bool m_isTerminal;  // 0: terminal, 1: non-terminal
+            bool m_isAccepted;  // 0: non-accept,   1: accept
 
             Imatchable* matcher; // target character for matching
             vector<node_ptr*> next; // next link 
 
         public:
-            static const unsigned INF = -(1U); //2^31 - 1
+            //반복 범위값에 사용 가능하다. 무한대를 의미한다.
+            static const unsigned INF = unsigned(-1); //2^31 - 1
+
+            //생성자
             node(string name = "", bool isTerminal = false, Imatchable* match = nullptr) :
                 m_name(name), m_isTerminal(isTerminal), matcher(match), next(0) {
                 m_suspended_active_count = m_active_count = 0;
                 m_suspended_state = m_state = false;
                 m_isAccepted = false;
             }
+            
+            //이동 생성자: 우측값으로 node를 생성할 때 new로 할당 받은 메모리를 잃어버리지 않기 위해 필요하다.
             node(node&& n) noexcept { *this = std::move(n); }
+
+            //소멸자: new로 할당받은 메모리를 반환한다.
+            ~node() { 
+                if (matcher != nullptr) 
+                    delete matcher; 
+                
+                for (int i = 0; i < next.size(); i++) {
+                    if (next[i] != nullptr)
+                        delete next[i];
+                }
+            }
+
+            //이동 대입 연산자: 이동 생성자를 정의하기 위해 필요하다.
             node& operator=(node&& n) noexcept {
                 ///*debug*/cout << "이동 대입 연산자 호출" << endl;
                 m_name = n.m_name;
@@ -86,33 +116,35 @@ public:
 
                 return *this;
             }
-            ~node() { 
-                if (matcher != nullptr) 
-                    delete matcher; 
-                
-                for (int i = 0; i < next.size(); i++) {
-                    if (next[i] != nullptr)
-                        delete next[i];
-                }
-            }
 
+            //본 노드의 활성화 카운터 값을 반환한다.
+            //accepted가 true일 때 이 값은 인식된 문자열의 길이를 의미한다.
             int active_count() { return m_active_count; }
+            
+            //본 노드가 가리키는 노드를 추가한다.
             void addNode(node_ptr* _next) { next.push_back(_next); }
-            // for syncronization
+            
+            //for syncronization: 본 노드를 활성화하도록 요쳥한다. 상태값이 계류된다.
+            //이후 transfer_state를 호출해 계류된 상태를 노드에 진짜 반영한다.
             void request_active(int next_active_count) {
                 m_suspended_active_count = next_active_count;
                 m_suspended_state = true; 
             }
+            
+            //노드 상태와 관련된 값과 플래그들을 모두 클리어한다.
             void clear_flags() {
                 m_suspended_active_count = m_active_count = 0;
                 m_suspended_state = m_state = false;
                 m_isAccepted = false;
             }
+           
+            //본 노드에서 accept 되었는지 확인한다.
             bool is_accepted() {
                 ///*debug*/ if (m_isAccepted) cout << "  >>>> accepted by " << m_name << endl;
                 return m_isAccepted; //active 상태가 됐는데 터미널이면 accepted가 되었음(true 반환)
             }
-            //TODO: 다시 봐야할 수도 있음
+            
+            //계류된 상태들을 본 상태로 전송시킨다.
             void transfer_state() { //상태를 전이함
                 m_active_count = m_suspended_active_count; //계류된 활성 카운터 전달
                 m_state = m_suspended_state; //계류된 상태 전달
@@ -120,7 +152,9 @@ public:
                 m_suspended_active_count = 0;
                 m_suspended_state = false;
             }
-            //TODO:
+
+            //노드에 한 문자를 입력함: 노드가 활성화됐을 때 문자가 매칭되면 다음 노드들에게 활성화를 요청함
+            //노드 활성화 & 문자 매칭일 때 터미널 노드인 경우 is_accepted가 true가 됨
             void input(const char& ch) {
                 bool match = matcher->test(ch);
 
@@ -136,6 +170,8 @@ public:
                 m_state = false; // deactivate this node after matching
             }
         };    
+        
+        //노드를 가리키는 포인터(가상 클래스)
         class node_ptr { //노드 가리키는 포인터
         protected: node* m_pNode;
         public:
@@ -170,18 +206,15 @@ public:
                 counter = 0;
             }
         };
-
-        vector<node> nv;
-
-    public:
+       
         //TODO: 주어진 정규표현식으로 상태머신 생성
         compiled(const string& regex = "", int test_case = 0) {
 
             //mock implementation
             //문법을 해석해 아래 작업이 알아서 되어야함
             switch (test_case) {
-            // abc|ade
-            case 0: 
+                // abc|ade
+            case 0:
                 nv.resize(5/*정규표현식 해석 후 노드 개수가 되어야 함*/);
 
                 nv[0] = node("s0", 0, new match_single('a'));
@@ -197,7 +230,7 @@ public:
                 nv[3].addNode(new node_ptr_direct(&nv[4]));
                 break;
 
-            // aba
+                // aba
             case 1:
                 nv.resize(3);
 
@@ -209,7 +242,7 @@ public:
                 nv[1].addNode(new node_ptr_direct(&nv[2]));
                 break;
 
-            // NK((abc|ABC)*N|(OP)+)Q
+                // NK((abc|ABC)*N|(OP)+)Q
             case 2:
                 nv.resize(12);
 
@@ -256,8 +289,12 @@ public:
                 break;
             }
         }
+        
+        //nodes
+        vector<node> nv;        
+    public:
 
-        //가장 처음으로 발견된 매치 정보를 반환한다.
+        //source에서 가장 처음으로 발견된 일치 정보를 반환한다.
         matched match(const string& source, int start_idx = 0) {
             int start = 0, end = 0;
             bool valid = false;
@@ -294,7 +331,7 @@ public:
             return matched(source, start, end, valid);
         }
 
-        //주어진 문자열에서 매치되는 모든 매치 정보를 반환한다.
+        //source에서 발견되는 모든 일치 정보를 반환한다.
         vector<matched> match_all(const string& source) {
             vector<matched> ret;
             int found_idx = 0;
@@ -308,25 +345,29 @@ public:
         }
     };   
 
-public:
+    //정규표현식을 컴파일한 객체를 반환한다.
     static compiled compile(const string& regex, int test_case = 0) {
         return compiled(regex, test_case);
     }
+    
+    //source에서 정규표현식과 가장 먼저 일치하는 범위(유효하지 않을 수도 있음)를 구한다.
     static matched match(const string& regex, const string& source) {
         return compiled(regex).match(source);
     }
+    
+    //source에서 정규표현식과 일치하는 모든 범위를 구한다. 일치정보가 없을 경우 빈 vector가 반환된다.
     static vector<matched> match_all(const string regex, const string& source) {
         return compiled(regex).match_all(source);
     }
 };
 
 
-void print_result(const vector<regex::matched>& result, string& test, string& regex) {
+void print_result(const vector<MySimpleRegex::matched>& result, string& test, string& regex) {
     cout << "\n문자열 \"" << test << "\"에는 \"" << regex << "\"패턴과 일치하는 부분이 ";
     cout << (!result.empty() ? "있습니다." : "없습니다.") << endl;
     if (result.empty()) return;
 
-    for (const regex::matched& mt : result) {
+    for (const MySimpleRegex::matched& mt : result) {
         cout << "패턴과 일치하는 문자열은 \"" << mt.group() << "\"이고, "
             << "[" << mt.start() << "," << mt.end() << ") 구간에 속합니다.\n";
     }
@@ -371,15 +412,13 @@ int main() {
 
     for (int test = 0; test < test_size; test++) {
         cout << "\n\n\n<<< 테스트 #" << test << " >>>" << endl;
-        regex::compiled cp = regex::compile(mock_regex[test], test);
+        MySimpleRegex::compiled cp = MySimpleRegex::compile(mock_regex[test], test);
         for (int i = 0; i < tests[test].size(); i++)
             print_result(cp.match_all(tests[test][i]), tests[test][i], mock_regex[test]);
     }
 
     return 0;
 }
-
-
 
 }
 
