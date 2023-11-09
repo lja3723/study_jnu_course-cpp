@@ -361,60 +361,53 @@ public:
     }
 };
 
-
-void print_result(const vector<MySimpleRegex::matched>& result, string& test, string& regex) {
-    cout << "\n문자열 \"" << test << "\"에는 \"" << regex << "\"패턴과 일치하는 부분이 ";
-    cout << (!result.empty() ? "있습니다." : "없습니다.") << endl;
-    if (result.empty()) return;
-
-    for (const MySimpleRegex::matched& mt : result) {
-        cout << "패턴과 일치하는 문자열은 \"" << mt.group() << "\"이고, "
-            << "[" << mt.start() << "," << mt.end() << ") 구간에 속합니다.\n";
-    }
-}
-
 int main() {
     string mock_regex[] = {
         "abc|ade",
         "aba",
-        "NK((abc|ABC)*N|(OP)+)Q"
-    };
-    vector<string> tests[] = {
-        {
-            "abc",
-            "ade",
-            "aaaaabbbbabcaaaaaadeaaaaabc",
-            "abbbbbbbbdddddddfdfdfdfdf",
-            "zzosiduabcfdsfdafdadere",
-            "aosisudababaifudiaddadeidufodi"
-        },
-        {
-            "aba",
-            "bab",
-            "baba",
-            "ababababababababababab"
-        },
-        {
-            "NKNQ",
-            "NKOPQ",
-            "NK",
-            "OPQ",
+        "NK((abc|ABC)*N|(OP)+)Q"};
+    vector<string> tests[] = { {
+        "abc",
+        "ade",
+        "aaaaabbbbabcaaaaaadeaaaaabc",
+        "abbbbbbbbdddddddfdfdfdfdf",
+        "zzosiduabcfdsfdafdadere",
+        "aosisudababaifudiaddadeidufodi" },
+    {
+        "aba",
+        "bab",
+        "baba",
+        "ababababababababababab" },
+    {
+        "NKNQ",
+        "NKOPQ",
+        "NK",
+        "OPQ",
+        "NKabcabcabcNQ",
+        "oosoiduuufufffii",
+        "NKABCABCNQ",
+        "NKOPOPOPOPQ",
+        "sofieNKNQofisNOPQkfuNKOPOPQlzNKABCNQksofuNKabcNQtttat" }};
+    int test_count = sizeof(tests) / sizeof(*tests);
 
-            "NKabcabcabcNQ",
-            "oosoiduuufufffii",
-            "NKABCABCNQ",
-            "NKOPOPOPOPQ",
+    for (int t = 0; t < test_count; t++) {
+        cout << "****************************************************************\n";
+        cout << "<테스트 #" << (t + 1) << " / 정규표현식: " << mock_regex[t] << ">" << endl;
 
-            "sofieNKNQofisNOPQkfuNKOPOPQlzNKABCNQksofuNKabcNQtttat"
+        MySimpleRegex::compiled cp = MySimpleRegex::compile(mock_regex[t], t);
+        for (int i = 0; i < tests[t].size(); i++) {
+            vector<MySimpleRegex::matched> result = cp.match_all(tests[t][i]);
+            cout << "\"" << tests[t][i] << "\"";
+            if (result.empty()) {
+                cout << " -> 일치구간 없음" << endl;
+                continue;
+            }
+            cout << endl;
+
+            for (const MySimpleRegex::matched& mt : result)
+                cout << "    <구간 [" << mt.start() << "," << mt.end() << ")> : " << "\"" << mt.group() << "\"\n";
         }
-    };
-    int test_size = sizeof(tests) / sizeof(*tests);
-
-    for (int test = 0; test < test_size; test++) {
-        cout << "\n\n\n<<< 테스트 #" << test << " >>>" << endl;
-        MySimpleRegex::compiled cp = MySimpleRegex::compile(mock_regex[test], test);
-        for (int i = 0; i < tests[test].size(); i++)
-            print_result(cp.match_all(tests[test][i]), tests[test][i], mock_regex[test]);
+        cout << "\n\n";
     }
 
     return 0;
