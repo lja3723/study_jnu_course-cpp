@@ -361,18 +361,20 @@ public:
     }
 };
 
-int main() {
+void run_test() {
     string mock_regex[] = {
         "abc|ade",
         "aba",
         "NK((abc|ABC)*N|(OP)+)Q"};
-    vector<string> tests[] = { {
+    vector<string> tests[] = {
+    {
         "abc",
         "ade",
         "aaaaabbbbabcaaaaaadeaaaaabc",
         "abbbbbbbbdddddddfdfdfdfdf",
         "zzosiduabcfdsfdafdadere",
-        "aosisudababaifudiaddadeidufodi" },
+        "aosisudababaifudiaddadeidufodi",
+        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij" },
     {
         "aba",
         "bab",
@@ -386,6 +388,7 @@ int main() {
         "NKabcabcabcNQ",
         "oosoiduuufufffii",
         "NKABCABCNQ",
+        "NKabcABCabcABCABCabcABCNQ",
         "NKOPOPOPOPQ",
         "sofieNKNQofisNOPQkfuNKOPOPQlzNKABCNQksofuNKabcNQtttat" }};
     int test_count = sizeof(tests) / sizeof(*tests);
@@ -404,14 +407,27 @@ int main() {
             }
             cout << endl;
 
+            //매치된 영역에 밑줄 표시
+            cout << " ";
+            int last_print = 0;
+            for (const MySimpleRegex::matched& mt : result) {
+                int len = mt.start() - last_print;
+                for (int i = 0; i < len; i++) cout << " ";
+                len = mt.end() - mt.start();
+                for (int i = 0; i < len; i++) cout << "^";
+                last_print = mt.end();
+            }
+            cout << endl;
+            
+
             for (const MySimpleRegex::matched& mt : result)
                 cout << "    <구간 [" << mt.start() << "," << mt.end() << ")> : " << "\"" << mt.group() << "\"\n";
         }
         cout << "\n\n";
     }
-
-    return 0;
 }
+
+int main() { run_test(); return 0; }
 
 }
 
