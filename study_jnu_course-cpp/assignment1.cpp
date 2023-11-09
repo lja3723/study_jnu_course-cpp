@@ -85,36 +85,15 @@ public:
                 m_suspended_state = m_state = false;
                 m_isAccepted = false;
             }
-            
-            //이동 생성자: 우측값으로 node를 생성할 때 new로 할당 받은 메모리를 잃어버리지 않기 위해 필요하다.
-            node(node&& n) noexcept { *this = std::move(n); }
-
+          
             //소멸자: new로 할당받은 메모리를 반환한다.
             ~node() { 
                 if (matcher != nullptr) 
                     delete matcher; 
                 
-                for (int i = 0; i < next.size(); i++) {
+                for (int i = 0; i < next.size(); i++)
                     if (next[i] != nullptr)
-                        delete next[i];
-                }
-            }
-
-            //이동 대입 연산자: 이동 생성자를 정의하기 위해 필요하다.
-            node& operator=(node&& n) noexcept {
-                ///*debug*/cout << "이동 대입 연산자 호출" << endl;
-                m_name = n.m_name;
-                m_suspended_active_count = n.m_suspended_active_count;
-                m_suspended_state = n.m_suspended_state;
-                m_active_count = n.m_active_count;
-                m_state = n.m_state;
-                m_isTerminal = n.m_isTerminal;
-                m_isAccepted = n.m_isAccepted;
-                matcher = n.matcher;
-                next = n.next;
-                n.matcher = nullptr;
-
-                return *this;
+                        delete next[i]; 
             }
 
             //본 노드의 활성화 카운터 값을 반환한다.
@@ -153,6 +132,7 @@ public:
                 m_suspended_state = false;
             }
 
+            //TODO: 정규식 맨 끝에 A*가 올 경우 생각해보기
             //노드에 한 문자를 입력함: 노드가 활성화됐을 때 문자가 매칭되면 다음 노드들에게 활성화를 요청함
             //노드 활성화 & 문자 매칭일 때 터미널 노드인 경우 is_accepted가 true가 됨
             void input(const char& ch) {
@@ -207,7 +187,7 @@ public:
             }
         };
        
-        //TODO: 주어진 정규표현식으로 상태머신 생성
+        //TODO: 주어진 정규표현식으로 상태머신 생성하기 필요
         compiled(const string& regex = "", int test_case = 0) {
 
             //mock implementation
@@ -215,83 +195,90 @@ public:
             switch (test_case) {
                 // abc|ade
             case 0:
-                nv.resize(5/*정규표현식 해석 후 노드 개수가 되어야 함*/);
+                n_vec.resize(5/*정규표현식 해석 후 노드 개수가 되어야 함*/);
 
-                nv[0] = node("s0", 0, new match_single('a'));
-                nv[1] = node("s1", 0, new match_single('b'));
-                nv[2] = node("s2", 1, new match_single('c'));
-                nv[3] = node("s3", 0, new match_single('d'));
-                nv[4] = node("s4", 1, new match_single('e'));
+                n_vec[0] = new node("s0", 0, new match_single('a'));
+                n_vec[1] = new node("s1", 0, new match_single('b'));
+                n_vec[2] = new node("s2", 1, new match_single('c'));
+                n_vec[3] = new node("s3", 0, new match_single('d'));
+                n_vec[4] = new node("s4", 1, new match_single('e'));
 
                 // set links
-                nv[0].addNode(new node_ptr_direct(&nv[1]));
-                nv[0].addNode(new node_ptr_direct(&nv[3]));
-                nv[1].addNode(new node_ptr_direct(&nv[2]));
-                nv[3].addNode(new node_ptr_direct(&nv[4]));
+                n_vec[0]->addNode(new node_ptr_direct(n_vec[1]));
+                n_vec[0]->addNode(new node_ptr_direct(n_vec[3]));
+                n_vec[1]->addNode(new node_ptr_direct(n_vec[2]));
+                n_vec[3]->addNode(new node_ptr_direct(n_vec[4]));
                 break;
 
                 // aba
             case 1:
-                nv.resize(3);
+                n_vec.resize(3);
 
-                nv[0] = node("s0", 0, new match_single('a'));
-                nv[1] = node("s1", 0, new match_single('b'));
-                nv[2] = node("s2", 1, new match_single('a'));
+                n_vec[0] = new node("s0", 0, new match_single('a'));
+                n_vec[1] = new node("s1", 0, new match_single('b'));
+                n_vec[2] = new node("s2", 1, new match_single('a'));
 
-                nv[0].addNode(new node_ptr_direct(&nv[1]));
-                nv[1].addNode(new node_ptr_direct(&nv[2]));
+                n_vec[0]->addNode(new node_ptr_direct(n_vec[1]));
+                n_vec[1]->addNode(new node_ptr_direct(n_vec[2]));
                 break;
 
                 // NK((abc|ABC)*N|(OP)+)Q
             case 2:
-                nv.resize(12);
+                n_vec.resize(12);
 
-                nv[0] = node("s0", 0, new match_single('N'));
-                nv[1] = node("s1", 0, new match_single('K'));
-                nv[2] = node("s2", 0, new match_single('O'));
-                nv[3] = node("s3", 0, new match_single('P'));
-                nv[4] = node("s4", 0, new match_single('a'));
-                nv[5] = node("s5", 0, new match_single('b'));
-                nv[6] = node("s6", 0, new match_single('c'));
-                nv[7] = node("s7", 0, new match_single('A'));
-                nv[8] = node("s8", 0, new match_single('B'));
-                nv[9] = node("s9", 0, new match_single('C'));
-                nv[10] = node("s10", 0, new match_single('N'));
-                nv[11] = node("s11", 1, new match_single('Q'));
+                n_vec[0] = new node("s0", 0, new match_single('N'));
+                n_vec[1] = new node("s1", 0, new match_single('K'));
+                n_vec[2] = new node("s2", 0, new match_single('O'));
+                n_vec[3] = new node("s3", 0, new match_single('P'));
+                n_vec[4] = new node("s4", 0, new match_single('a'));
+                n_vec[5] = new node("s5", 0, new match_single('b'));
+                n_vec[6] = new node("s6", 0, new match_single('c'));
+                n_vec[7] = new node("s7", 0, new match_single('A'));
+                n_vec[8] = new node("s8", 0, new match_single('B'));
+                n_vec[9] = new node("s9", 0, new match_single('C'));
+                n_vec[10] = new node("s10", 0, new match_single('N'));
+                n_vec[11] = new node("s11", 1, new match_single('Q'));
 
-                nv[0].addNode(new node_ptr_direct(&nv[1]));
+                n_vec[0]->addNode(new node_ptr_direct(n_vec[1]));
 
-                nv[1].addNode(new node_ptr_direct(&nv[2]));
-                nv[1].addNode(new node_ptr_direct(&nv[4]));
-                nv[1].addNode(new node_ptr_direct(&nv[7]));
-                nv[1].addNode(new node_ptr_direct(&nv[10]));
+                n_vec[1]->addNode(new node_ptr_direct(n_vec[2]));
+                n_vec[1]->addNode(new node_ptr_direct(n_vec[4]));
+                n_vec[1]->addNode(new node_ptr_direct(n_vec[7]));
+                n_vec[1]->addNode(new node_ptr_direct(n_vec[10]));
 
-                nv[2].addNode(new node_ptr_direct(&nv[3]));
+                n_vec[2]->addNode(new node_ptr_direct(n_vec[3]));
 
-                nv[3].addNode(new node_ptr_direct(&nv[2]));
-                nv[3].addNode(new node_ptr_direct(&nv[11]));
+                n_vec[3]->addNode(new node_ptr_direct(n_vec[2]));
+                n_vec[3]->addNode(new node_ptr_direct(n_vec[11]));
 
-                nv[4].addNode(new node_ptr_direct(&nv[5]));
+                n_vec[4]->addNode(new node_ptr_direct(n_vec[5]));
 
-                nv[5].addNode(new node_ptr_direct(&nv[6]));
+                n_vec[5]->addNode(new node_ptr_direct(n_vec[6]));
 
-                nv[6].addNode(new node_ptr_direct(&nv[4]));
-                nv[6].addNode(new node_ptr_direct(&nv[10]));
+                n_vec[6]->addNode(new node_ptr_direct(n_vec[4]));
+                n_vec[6]->addNode(new node_ptr_direct(n_vec[10]));
 
-                nv[7].addNode(new node_ptr_direct(&nv[8]));
+                n_vec[7]->addNode(new node_ptr_direct(n_vec[8]));
 
-                nv[8].addNode(new node_ptr_direct(&nv[9]));
+                n_vec[8]->addNode(new node_ptr_direct(n_vec[9]));
 
-                nv[9].addNode(new node_ptr_direct(&nv[7]));
-                nv[9].addNode(new node_ptr_direct(&nv[10]));
+                n_vec[9]->addNode(new node_ptr_direct(n_vec[7]));
+                n_vec[9]->addNode(new node_ptr_direct(n_vec[10]));
 
-                nv[10].addNode(new node_ptr_direct(&nv[11]));
+                n_vec[10]->addNode(new node_ptr_direct(n_vec[11]));
                 break;
             }
         }
         
+        //소멸자 (메모리 반환 필요)
+        ~compiled() {
+            for (int i = 0; i < node_ptr_vector.size(); i++)
+                if (node_ptr_vector[i] != nullptr)
+                    delete node_ptr_vector[i];
+        }
+
         //nodes
-        vector<node> nv;        
+        vector<node *> n_vec;        
     public:
 
         //source에서 가장 처음으로 발견된 일치 정보를 반환한다.
@@ -304,30 +291,30 @@ public:
                 ///*debug*/cout << "  >> input " << source[i] << endl;
 
                 // epsilon activation for s0
-                nv[0].request_active(1);
-                nv[0].transfer_state();
+                n_vec[0]->request_active(1);
+                n_vec[0]->transfer_state();
 
                 // give ch all nodes
                 // nv[j]가 active 상태였다면 이 연산 후 nv[j]에서 나오는 화살표는
                 // 조건을 만족할 시 가리키는 노드의 transited를 활성화한다.
-                for (int j = 0; j < nv.size(); j++) {
-                    nv[j].input(source[i]);
-                    if (nv[j].is_accepted()) {
+                for (int j = 0; j < n_vec.size(); j++) {
+                    n_vec[j]->input(source[i]);
+                    if (n_vec[j]->is_accepted()) {
                         ///*debug*/cout << "       active_count: " << nv[j].active_count() << endl;
                         valid = true;
                         end = i + 1;
-                        start = end - nv[j].active_count();
+                        start = end - n_vec[j]->active_count();
                         break;
                     }
                 }
 
                 // determine transited state
                 // transited가 활성화 된 모든 노드를 active로 변경한다.
-                for (int j = 0; j < nv.size(); j++)
-                    nv[j].transfer_state();
+                for (int j = 0; j < n_vec.size(); j++)
+                    n_vec[j]->transfer_state();
             }
             ///*debug*/cout << endl;
-            for (int i = 0; i < nv.size(); i++) nv[i].clear_flags(); //찾고 난 뒤 노드 플래그 초기화
+            for (int i = 0; i < n_vec.size(); i++) n_vec[i]->clear_flags(); //찾고 난 뒤 노드 플래그 초기화
             return matched(source, start, end, valid);
         }
 
