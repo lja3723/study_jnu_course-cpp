@@ -7,18 +7,21 @@ using namespace std;
 namespace assignment1 {
 
 class MySimpleRegex {
-//이 클래스는 static 메서드만 있으므로 생성자를 private로 둔다.
-private: MySimpleRegex(); 
+private: MySimpleRegex(); //이 클래스는 static 메서드만 있으므로 생성자를 private로 둔다.
 public:
+    /****************************/
+    /*       Inner Classes      */
+    /****************************/
+
     // 문자열에서 패턴과 일치된 범위를 표현한다.
     class matched {
     private:
-        const int m_start, m_end;   //참조 문자열에서의 범위값
+        const unsigned m_start, m_end;   //참조 문자열에서의 범위값
         const string& m_ref;        //참조 문자열
         const bool m_valid;         //객체가 유효한 지 여부
 
     public:
-        matched(const string& ref, int start, int end, bool valid) : 
+        matched(const string& ref, unsigned start, unsigned end, bool valid) : 
             m_ref(ref), m_start(start), m_end(end), m_valid(valid) {}
 
         //해당 객체가 유효한 지 여부 확인 (false는 유효하지 않음)
@@ -34,31 +37,44 @@ public:
         int end() const { return m_end; }
 
         //범위
-        pair<int, int> span() const { return pair<int, int>(m_start, m_end); }
+        pair<unsigned, unsigned> span() const { return pair<unsigned, unsigned>(m_start, m_end); }
     };
-    
+    /***************    class matched end    *****************/
+
     //TODO: 파싱 후 상태 기계 생성하는 알고리즘 구현해야 됨
     //정규표현식을 컴파일한 객체로, 확인할 문자열을 입력하면 일치 정보를 반환한다.
     class compiled {
         friend class MySimpleRegex;
     private:
+        /****************************/
+        /*       Inner Classes      */
+        /****************************/
+         
         //매치 객체 인터페이스
-        class Imatchable { public: virtual bool test(char ch) = 0; };
-        class match_single : public Imatchable { //단일 문자 매치
+        class Imatchable { 
+        public: 
+            virtual bool test(char ch) = 0; 
+        };
+
+        //implement Imatchable: 단일 문자 매치
+        class match_single : public Imatchable { 
         private: char ch;
         public: 
             match_single(char ch) : ch(ch) {}
             virtual bool test(char _ch) override { return ch == _ch; }
         };
-        class match_dot : public Imatchable { //모든 문자 매치
+
+        //implement Imatchable: 모든 문자 매치
+        class match_dot : public Imatchable { 
         public:
             virtual bool test(char _ch) override {
                 return ('A' <= _ch && _ch <= 'Z') || ('a' <= _ch && _ch <= 'z');
             }
         };
 
-        //노드를 카리키는 포인터 클래스(시그니처)
-        class node_ptr;
+        /****************************/
+        
+        class node_ptr; //pre-defined class
 
         //유한 오토마타를 구성하는 노드
         class node {
@@ -151,8 +167,10 @@ public:
             }
         };    
         
+        /****************************/
+
         //노드를 가리키는 포인터(가상 클래스)
-        class node_ptr { //노드 가리키는 포인터
+        class node_ptr { 
         protected: node* m_pNode;
         public:
             static const unsigned INF = ~0U; //2^32 - 1
@@ -161,6 +179,9 @@ public:
             virtual void transition_request(int next_active_count) = 0;       
             virtual void transition_cancel() {} //선택적 구현
         };
+        
+        //노드를 직접 연결하는 포인터
+        //전이 요청을 받으면 무조건 전이 신호 보내줌
         class node_ptr_direct : public node_ptr {
         public:
             node_ptr_direct(node* pNode) : node_ptr(pNode) {}
@@ -168,6 +189,9 @@ public:
                 m_pNode->request_active(next_active_count);
             }
         };
+
+        //노드를 조건부로 연결하는 포인터
+        //전이 요청을 일정 횟수 받은 경우에만 전이 신호 보내줌
         class node_ptr_countable : public node_ptr {
         private: 
             unsigned counter;
@@ -186,136 +210,171 @@ public:
                 counter = 0;
             }
         };
-       
+        
+
+        /****************************/
+        /*    Private functions     */
+        /****************************/
+
         //TODO: 주어진 정규표현식으로 상태머신 생성하기 필요
-        compiled(const string& regex = "", int test_case = 0) {
+        //상태기계 노드 컨테이너에 상태기계를 생성한다.
+        void create_state_machine(int test_case) {
 
             //mock implementation
             //문법을 해석해 아래 작업이 알아서 되어야함
             switch (test_case) {
                 // abc|ade
             case 0:
-                n_vec.resize(5/*정규표현식 해석 후 노드 개수가 되어야 함*/);
+                m_nodes.resize(5/*정규표현식 해석 후 노드 개수가 되어야 함*/);
 
-                n_vec[0] = new node("s0", 0, new match_single('a'));
-                n_vec[1] = new node("s1", 0, new match_single('b'));
-                n_vec[2] = new node("s2", 1, new match_single('c'));
-                n_vec[3] = new node("s3", 0, new match_single('d'));
-                n_vec[4] = new node("s4", 1, new match_single('e'));
+                m_nodes[0] = new node("s0", 0, new match_single('a'));
+                m_nodes[1] = new node("s1", 0, new match_single('b'));
+                m_nodes[2] = new node("s2", 1, new match_single('c'));
+                m_nodes[3] = new node("s3", 0, new match_single('d'));
+                m_nodes[4] = new node("s4", 1, new match_single('e'));
 
                 // set links
-                n_vec[0]->addNode(new node_ptr_direct(n_vec[1]));
-                n_vec[0]->addNode(new node_ptr_direct(n_vec[3]));
-                n_vec[1]->addNode(new node_ptr_direct(n_vec[2]));
-                n_vec[3]->addNode(new node_ptr_direct(n_vec[4]));
+                m_nodes[0]->addNode(new node_ptr_direct(m_nodes[1]));
+                m_nodes[0]->addNode(new node_ptr_direct(m_nodes[3]));
+                m_nodes[1]->addNode(new node_ptr_direct(m_nodes[2]));
+                m_nodes[3]->addNode(new node_ptr_direct(m_nodes[4]));
+
+                // 엡실론 신호 받는 노드 설정
+                m_epsilon_get_list.push_back(m_nodes[0]);
                 break;
 
                 // aba
             case 1:
-                n_vec.resize(3);
+                m_nodes.resize(3);
 
-                n_vec[0] = new node("s0", 0, new match_single('a'));
-                n_vec[1] = new node("s1", 0, new match_single('b'));
-                n_vec[2] = new node("s2", 1, new match_single('a'));
+                m_nodes[0] = new node("s0", 0, new match_single('a'));
+                m_nodes[1] = new node("s1", 0, new match_single('b'));
+                m_nodes[2] = new node("s2", 1, new match_single('a'));
 
-                n_vec[0]->addNode(new node_ptr_direct(n_vec[1]));
-                n_vec[1]->addNode(new node_ptr_direct(n_vec[2]));
+                m_nodes[0]->addNode(new node_ptr_direct(m_nodes[1]));
+                m_nodes[1]->addNode(new node_ptr_direct(m_nodes[2]));
+
+                m_epsilon_get_list.push_back(m_nodes[0]);
                 break;
 
                 // NK((abc|ABC)*N|(OP)+)Q
             case 2:
-                n_vec.resize(12);
+                m_nodes.resize(12);
 
-                n_vec[0] = new node("s0", 0, new match_single('N'));
-                n_vec[1] = new node("s1", 0, new match_single('K'));
-                n_vec[2] = new node("s2", 0, new match_single('O'));
-                n_vec[3] = new node("s3", 0, new match_single('P'));
-                n_vec[4] = new node("s4", 0, new match_single('a'));
-                n_vec[5] = new node("s5", 0, new match_single('b'));
-                n_vec[6] = new node("s6", 0, new match_single('c'));
-                n_vec[7] = new node("s7", 0, new match_single('A'));
-                n_vec[8] = new node("s8", 0, new match_single('B'));
-                n_vec[9] = new node("s9", 0, new match_single('C'));
-                n_vec[10] = new node("s10", 0, new match_single('N'));
-                n_vec[11] = new node("s11", 1, new match_single('Q'));
+                m_nodes[0] = new node("s0", 0, new match_single('N'));
+                m_nodes[1] = new node("s1", 0, new match_single('K'));
+                m_nodes[2] = new node("s2", 0, new match_single('O'));
+                m_nodes[3] = new node("s3", 0, new match_single('P'));
+                m_nodes[4] = new node("s4", 0, new match_single('a'));
+                m_nodes[5] = new node("s5", 0, new match_single('b'));
+                m_nodes[6] = new node("s6", 0, new match_single('c'));
+                m_nodes[7] = new node("s7", 0, new match_single('A'));
+                m_nodes[8] = new node("s8", 0, new match_single('B'));
+                m_nodes[9] = new node("s9", 0, new match_single('C'));
+                m_nodes[10] = new node("s10", 0, new match_single('N'));
+                m_nodes[11] = new node("s11", 1, new match_single('Q'));
 
-                n_vec[0]->addNode(new node_ptr_direct(n_vec[1]));
+                m_nodes[0]->addNode(new node_ptr_direct(m_nodes[1]));
 
-                n_vec[1]->addNode(new node_ptr_direct(n_vec[2]));
-                n_vec[1]->addNode(new node_ptr_direct(n_vec[4]));
-                n_vec[1]->addNode(new node_ptr_direct(n_vec[7]));
-                n_vec[1]->addNode(new node_ptr_direct(n_vec[10]));
+                m_nodes[1]->addNode(new node_ptr_direct(m_nodes[2]));
+                m_nodes[1]->addNode(new node_ptr_direct(m_nodes[4]));
+                m_nodes[1]->addNode(new node_ptr_direct(m_nodes[7]));
+                m_nodes[1]->addNode(new node_ptr_direct(m_nodes[10]));
 
-                n_vec[2]->addNode(new node_ptr_direct(n_vec[3]));
+                m_nodes[2]->addNode(new node_ptr_direct(m_nodes[3]));
 
-                n_vec[3]->addNode(new node_ptr_direct(n_vec[2]));
-                n_vec[3]->addNode(new node_ptr_direct(n_vec[11]));
+                m_nodes[3]->addNode(new node_ptr_direct(m_nodes[2]));
+                m_nodes[3]->addNode(new node_ptr_direct(m_nodes[11]));
 
-                n_vec[4]->addNode(new node_ptr_direct(n_vec[5]));
+                m_nodes[4]->addNode(new node_ptr_direct(m_nodes[5]));
 
-                n_vec[5]->addNode(new node_ptr_direct(n_vec[6]));
+                m_nodes[5]->addNode(new node_ptr_direct(m_nodes[6]));
 
-                n_vec[6]->addNode(new node_ptr_direct(n_vec[4]));
-                n_vec[6]->addNode(new node_ptr_direct(n_vec[10]));
+                m_nodes[6]->addNode(new node_ptr_direct(m_nodes[4]));
+                m_nodes[6]->addNode(new node_ptr_direct(m_nodes[10]));
 
-                n_vec[7]->addNode(new node_ptr_direct(n_vec[8]));
+                m_nodes[7]->addNode(new node_ptr_direct(m_nodes[8]));
 
-                n_vec[8]->addNode(new node_ptr_direct(n_vec[9]));
+                m_nodes[8]->addNode(new node_ptr_direct(m_nodes[9]));
 
-                n_vec[9]->addNode(new node_ptr_direct(n_vec[7]));
-                n_vec[9]->addNode(new node_ptr_direct(n_vec[10]));
+                m_nodes[9]->addNode(new node_ptr_direct(m_nodes[7]));
+                m_nodes[9]->addNode(new node_ptr_direct(m_nodes[10]));
 
-                n_vec[10]->addNode(new node_ptr_direct(n_vec[11]));
+                m_nodes[10]->addNode(new node_ptr_direct(m_nodes[11]));
+
+                m_epsilon_get_list.push_back(m_nodes[0]);
                 break;
             }
         }
-        
-        //소멸자 (메모리 반환 필요)
-        ~compiled() {
-            for (int i = 0; i < node_ptr_vector.size(); i++)
-                if (node_ptr_vector[i] != nullptr)
-                    delete node_ptr_vector[i];
+
+        //생성된 상태기계를 삭제한다.
+        void delete_state_machine() {
+            for (int i = 0; i < m_nodes.size(); i++)
+                if (m_nodes[i] != nullptr)
+                    delete m_nodes[i];
         }
 
-        //nodes
-        vector<node *> n_vec;        
-    public:
-
-        //source에서 가장 처음으로 발견된 일치 정보를 반환한다.
-        matched match(const string& source, int start_idx = 0) {
+        //상태기계에 문자열을 입력으로 받고, 가장 처음으로 accept된 일치 정보를 출력한다.
+        matched state_machine_input(const string& src, int start_idx = 0) {
             int start = 0, end = 0;
             bool valid = false;
 
             ///*debug*/cout << "test for \"" << source << "\"" << endl;
-            for (int i = start_idx; !valid && i < source.length(); i++) {
-                ///*debug*/cout << "  >> input " << source[i] << endl;
-
+            for (int i = start_idx; !valid && i < src.length(); i++) {
+                ///*debug*/cout << "  >> input " << src[i] << endl;
                 // epsilon activation for s0
-                n_vec[0]->request_active(1);
-                n_vec[0]->transfer_state();
+                for (node* target : m_epsilon_get_list) {
+                    target->request_active(1);
+                    target->transfer_state();
+                }
 
                 // give ch all nodes
                 // nv[j]가 active 상태였다면 이 연산 후 nv[j]에서 나오는 화살표는
                 // 조건을 만족할 시 가리키는 노드의 transited를 활성화한다.
-                for (int j = 0; j < n_vec.size(); j++) {
-                    n_vec[j]->input(source[i]);
-                    if (n_vec[j]->is_accepted()) {
+                for (node* target : m_nodes) {
+                    target->input(src[i]);
+                    if (target->is_accepted()) {
                         ///*debug*/cout << "       active_count: " << nv[j].active_count() << endl;
                         valid = true;
                         end = i + 1;
-                        start = end - n_vec[j]->active_count();
+                        start = end - target->active_count();
                         break;
                     }
                 }
 
                 // determine transited state
                 // transited가 활성화 된 모든 노드를 active로 변경한다.
-                for (int j = 0; j < n_vec.size(); j++)
-                    n_vec[j]->transfer_state();
+                for (node* target: m_nodes)
+                    target->transfer_state();
             }
             ///*debug*/cout << endl;
-            for (int i = 0; i < n_vec.size(); i++) n_vec[i]->clear_flags(); //찾고 난 뒤 노드 플래그 초기화
-            return matched(source, start, end, valid);
+            //src를 모두 input한 뒤 모든 노드의 플래그 초기화
+            for (node* target : m_nodes) target->clear_flags(); 
+            return matched(src, start, end, valid);
+        }
+        
+
+        /****************************/
+        /*      Private fields      */
+        /****************************/
+        vector<node*> m_nodes; //상태기계 노드 컨테이너
+        vector<node*> m_epsilon_get_list; //엡실론 신호를 받는 노드리스트
+        const string& m_regex; //저장된 정규표현식
+
+    public:
+        //주어진 정규표현식으로 내부적으로 상태기계를 생성한다.
+        compiled(const string& m_regex = "", int test_case = 0) : m_regex(m_regex) {
+            create_state_machine(test_case);
+        }
+
+        //소멸자 (메모리 반환 필요)
+        ~compiled() {
+            delete_state_machine();
+        }
+
+        //source에서 start_idx부터 탐색을 시작해 가장 처음으로 발견된 일치 정보를 반환한다.
+        matched match(const string& source, int start_idx = 0) {
+            return state_machine_input(source, start_idx);
         }
 
         //source에서 발견되는 모든 일치 정보를 반환한다.
@@ -331,20 +390,26 @@ public:
             return ret;
         }
     };   
+    /***************    class compiled end    *****************/
+    
+
+    /****************************/
+    /*     static functions     */
+    /****************************/
 
     //정규표현식을 컴파일한 객체를 반환한다.
-    static compiled compile(const string& regex, int test_case = 0) {
-        return compiled(regex, test_case);
+    static compiled compile(const string& m_regex, int test_case = 0) {
+        return compiled(m_regex, test_case);
     }
     
     //source에서 정규표현식과 가장 먼저 일치하는 범위(유효하지 않을 수도 있음)를 구한다.
-    static matched match(const string& regex, const string& source) {
-        return compiled(regex).match(source);
+    static matched match(const string& m_regex, const string& source) {
+        return compiled(m_regex).match(source);
     }
     
     //source에서 정규표현식과 일치하는 모든 범위를 구한다. 일치정보가 없을 경우 빈 vector가 반환된다.
-    static vector<matched> match_all(const string regex, const string& source) {
-        return compiled(regex).match_all(source);
+    static vector<matched> match_all(const string m_regex, const string& source) {
+        return compiled(m_regex).match_all(source);
     }
 };
 
