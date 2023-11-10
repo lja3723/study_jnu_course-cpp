@@ -38,6 +38,11 @@ public:
 
         //범위
         pair<unsigned, unsigned> span() const { return pair<unsigned, unsigned>(m_start, m_end); }
+
+        //유효하지 않은 matched 객체를 반환한다.
+        static const matched invalid() {
+            return matched("", 0, 0, false);
+        }
     };
     /***************    class matched end    *****************/
 
@@ -222,9 +227,8 @@ public:
 
             //mock implementation
             //문법을 해석해 아래 작업이 알아서 되어야함
-            switch (test_case) {
+            if (test_case == 0) {
                 // abc|ade
-            case 0:
                 m_nodes.resize(5/*정규표현식 해석 후 노드 개수가 되어야 함*/);
 
                 m_nodes[0] = new node("s0", 0, new match_single('a'));
@@ -241,10 +245,9 @@ public:
 
                 // 엡실론 신호 받는 노드 설정
                 m_epsilon_get_list.push_back(m_nodes[0]);
-                break;
-
+            }
+            else if (test_case == 1) {
                 // aba
-            case 1:
                 m_nodes.resize(3);
 
                 m_nodes[0] = new node("s0", 0, new match_single('a'));
@@ -255,10 +258,9 @@ public:
                 m_nodes[1]->addNode(new node_ptr_direct(m_nodes[2]));
 
                 m_epsilon_get_list.push_back(m_nodes[0]);
-                break;
-
+            }
+            else if (test_case == 2) {
                 // NK((abc|ABC)*N|(OP)+)Q
-            case 2:
                 m_nodes.resize(12);
 
                 m_nodes[0] = new node("s0", 0, new match_single('N'));
@@ -303,7 +305,34 @@ public:
                 m_nodes[10]->addNode(new node_ptr_direct(m_nodes[11]));
 
                 m_epsilon_get_list.push_back(m_nodes[0]);
-                break;
+            }
+            else if (test_case == 3) {
+                // ab+c
+                m_nodes.resize(3);
+
+                m_nodes[0] = new node("s0", 0, new match_single('a'));
+                m_nodes[1] = new node("s1", 0, new match_single('b'));
+                m_nodes[2] = new node("s2", 1, new match_single('c'));
+
+                m_nodes[0]->addNode(new node_ptr_direct(m_nodes[1]));
+                m_nodes[1]->addNode(new node_ptr_direct(m_nodes[1]));
+                m_nodes[1]->addNode(new node_ptr_direct(m_nodes[2]));
+
+                m_epsilon_get_list.push_back(m_nodes[0]);
+            }
+            else if (test_case == 4) {
+                // abc+
+                m_nodes.resize(3);
+
+                m_nodes[0] = new node("s0", 0, new match_single('a'));
+                m_nodes[1] = new node("s1", 0, new match_single('b'));
+                m_nodes[2] = new node("s2", 1, new match_single('c'));
+
+                m_nodes[0]->addNode(new node_ptr_direct(m_nodes[1]));
+                m_nodes[1]->addNode(new node_ptr_direct(m_nodes[2]));
+                m_nodes[2]->addNode(new node_ptr_direct(m_nodes[2]));
+
+                m_epsilon_get_list.push_back(m_nodes[0]);
             }
         }
 
@@ -415,34 +444,56 @@ public:
 
 void run_test() {
     string mock_regex[] = {
-        "abc|ade",
-        "aba",
-        "NK((abc|ABC)*N|(OP)+)Q"};
+    "abc|ade",
+    "aba",
+    "NK((abc|ABC)*N|(OP)+)Q",
+    "ab+c",
+    "abc+" };
     vector<string> tests[] = {
     {
-        "abc",
-        "ade",
-        "aaaaabbbbabcaaaaaadeaaaaabc",
-        "abbbbbbbbdddddddfdfdfdfdf",
-        "zzosiduabcfdsfdafdadere",
-        "aosisudababaifudiaddadeidufodi",
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij" },
-    {
-        "aba",
-        "bab",
-        "baba",
-        "ababababababababababab" },
-    {
-        "NKNQ",
-        "NKOPQ",
-        "NK",
-        "OPQ",
-        "NKabcabcabcNQ",
-        "oosoiduuufufffii",
-        "NKABCABCNQ",
-        "NKabcABCabcABCABCabcABCNQ",
-        "NKOPOPOPOPQ",
-        "sofieNKNQofisNOPQkfuNKOPOPQlzNKABCNQksofuNKabcNQtttat" }};
+            "abc",
+            "ade",
+            "aaaaabbbbabcaaaaaadeaaaaabc",
+            "abbbbbbbbdddddddfdfdfdfdf",
+            "zzosiduabcfdsfdafdadere",
+            "aosisudababaifudiaddadeidufodi",
+            "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij" 
+            },
+        {
+            "aba",
+            "bab",
+            "baba",
+            "ababababababababababab" },
+        {
+            "NKNQ",
+            "NKOPQ",
+            "NK",
+            "OPQ",
+            "NKabcabcabcNQ",
+            "oosoiduuufufffii",
+            "NKABCABCNQ",
+            "NKabcABCabcABCABCabcABCNQ",
+            "NKOPOPOPOPQ",
+            "sofieNKNQofisNOPQkfuNKOPOPQlzNKABCNQksofuNKabcNQtttat" },
+        {
+            "a",
+            "ac",
+            "abc",
+            "abbc",
+            "abbbbbb",
+            "abbbc",
+            "abbbbbc",
+            "abbbbababcccccabbbbcabbbbabacacabccccab"},
+        {
+            "a",
+            "aaa",
+            "aaaabb",
+            "aabbcc",
+            "ab",
+            "abc",
+            "abcc",
+            "abccc",
+            "abcccccc" } };
     int test_count = sizeof(tests) / sizeof(*tests);
 
     for (int t = 0; t < test_count; t++) {
