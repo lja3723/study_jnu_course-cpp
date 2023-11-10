@@ -93,7 +93,6 @@ private:
         node_ptr(node* pNode) : m_pNode(pNode) {}
         //연결된 노드에 active를 요청한다. 한번에 될 수도 있고, 그렇지 않을 수도 있음
         virtual void transition_request(unsigned state_istart) = 0;
-        virtual void transition_cancel() {} //선택적 구현
     };
 
     //노드를 직접 연결하는 포인터
@@ -110,20 +109,27 @@ private:
     //전이 요청을 일정 횟수 받은 경우에만 전이 신호 보내줌
     class node_ptr_countable : public node_ptr {
     private:
-        unsigned counter;
         unsigned lower_bound;
         unsigned upper_bound;
+
+        unsigned counter;
+        unsigned prev_istart;
     public:
-        node_ptr_countable(node* pNode, unsigned low_bound = 0, unsigned up_bound = node_ptr::INF)
-            : node_ptr(pNode), counter(0), lower_bound(low_bound), upper_bound(up_bound) {}
+        node_ptr_countable(node* pNode, unsigned low_bound = 0, unsigned up_bound = node_ptr::INF) :
+            node_ptr(pNode), lower_bound(low_bound), upper_bound(up_bound) {
+            counter = 0;
+            prev_istart = node_ptr::INF;
+        }
         virtual void transition_request(unsigned state_istart) override {
+            if (prev_istart != state_istart) {
+                prev_istart = state_istart;
+                counter = 0;
+            }                
             counter++;
+
             //범위에 들었을 경우만 transition을 전달한다
             if (lower_bound <= counter && counter <= upper_bound)
                 m_pNode->request_active(state_istart);
-        }
-        virtual void transition_cancel() override {
-            counter = 0;
         }
     };
 
@@ -210,8 +216,6 @@ private:
             for (int i = 0; i < next.size(); i++) {
                 if (m_state_active && match)
                     next[i]->transition_request(m_state_istart);
-                else
-                    next[i]->transition_cancel();
             }
 
             //인식되었을 경우 true
