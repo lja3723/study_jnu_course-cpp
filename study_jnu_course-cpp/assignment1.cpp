@@ -473,7 +473,7 @@ private:
         ///*debug*/cout << "test for \"" << source << "\"" << endl;
         for (unsigned i = index_start; i < src.length(); i++) {
             ///*debug*/cout << "  >> input " << src[i] << endl;
-            //엡실론 신호를 부여
+            //엡실론 신호를 매 주기기마다 부여함
             //check_at_front_only면 문자열 시작이 패턴과 일치하는 경우만 확인한다.
             //즉 최초 1회만 엡실론 신호를 부여한다.
             if (!check_at_front_only || i == 0) {
@@ -574,52 +574,61 @@ vector<MySimpleRegex::matched> MySimpleRegex::match_all(const string m_regex, co
 class unit_tester {
     using match = MySimpleRegex::matched;
     using matches = vector<match>;
+
 private:
-    bool view_details;
-    vector<int> test_numbers;
-    vector<string> regexes;
-    vector<vector<string>> tests;
-    vector<vector<matches>> expects;
+    struct test_case {
+        int number;
+        string regex;
+        vector<string> test;
+        vector<matches> expect;
+        bool details;
+        bool enabled;
+    };
+    vector<test_case> test_cases;
 
     void run_tests() {
-        if (!test_disables.empty()) {
+        set<int> disabled;
+        for (int t = 1; t < test_cases.size(); t++) 
+            if (!test_cases[t].enabled) disabled.insert(test_cases[t].number);
+
+        if (!disabled.empty()) {
             cout << "[스킵된 테스트 목록]  ";
-            for (int skip : test_disables) cout << skip << ";  ";
+            for (int skip: disabled) cout << skip << ";  ";
             cout << "\n\n\n";
         }
 
-        for (int test = 1; test < test_numbers.size(); test++) {
-            if (test_disables.find(test) != test_disables.end()) continue; //테스트 스킵
+        for (int test = 1; test < test_cases.size(); test++) {
+            if (disabled.find(test) != disabled.end()) continue; //테스트 스킵
 
             bool test_successed = true;
             bool regex_printed = false;
             string indent = "   ";
-            vector<bool> results = run_test(test_numbers[test]); //test 실행
+            vector<bool> results = run_test(test_cases[test].number); //test 실행
             for (int i = 0; i < results.size(); i++) {
                 if (!results[i]) {
                     test_successed = false;
                     //실패한 실행 결과 생성
-                    MySimpleRegex::compiled cp = MySimpleRegex::compile(regexes[test], test);
-                    matches result = cp.match_all(tests[test][i]);
+                    MySimpleRegex::compiled cp = MySimpleRegex::compile(test_cases[test].regex, test);
+                    matches result = cp.match_all(test_cases[test].test[i]);
 
                     //실패한 테스트 제목 출력
                     if (!regex_printed) {
                         regex_printed = true;
                         cout << "\n\n\n";
                         cout << "<<<< 테스트 #" << test << " 실패 >>>>" << endl;
-                        cout << "정규표현식: \"" << regexes[test] << "\"\n";
+                        cout << "정규표현식: \"" << test_cases[test].regex << "\"\n";
                     }
 
                     //실패한 케이스 출력
-                    cout << "케이스 #" << i << endl;
+                    cout << "케이스 #" << (i + 1) << endl;
                     cout << indent << "< 기대 결과 >" << endl;
-                    cout << indent << "\"" << tests[test][i] << "\"\n";
-                    unit_tester::match_info_print(expects[test][i], indent + " ");
-                    for (const MySimpleRegex::matched& mt : expects[test][i])
+                    cout << indent << "\"" << test_cases[test].test[i] << "\"\n";
+                    unit_tester::match_info_print(test_cases[test].expect[i], indent + " ");
+                    for (const MySimpleRegex::matched& mt : test_cases[test].expect[i])
                         cout << "\t<구간 [" << mt.start() << "," << mt.end() << ")> : " << "\"" << mt.group() << "\"\n";
 
                     cout << indent << "< 실행 결과 >" << endl;
-                    cout << indent << "\"" << tests[test][i] << "\"\n";
+                    cout << indent << "\"" << test_cases[test].test[i] << "\"\n";
                     unit_tester::match_info_print(result, indent + " ");
                     for (const MySimpleRegex::matched& mt : result)
                         cout << "\t<구간 [" << mt.start() << "," << mt.end() << ")> : " << "\"" << mt.group() << "\"\n";
@@ -630,15 +639,15 @@ private:
             }
 
             if (test_successed) {
-                if (view_details) {
+                if (test_cases[test].details) {
                     cout << "\n\n\n";
                     cout << "<테스트 #" << test << " 통과 (detailed mode enabled)>" << endl;
-                    cout << "정규표현식: \"" << regexes[test] << "\"\n";
+                    cout << "정규표현식: \"" << test_cases[test].regex << "\"\n";
 
-                    MySimpleRegex::compiled cp = MySimpleRegex::compile(regexes[test], test);
-                    for (int i = 0; i < tests[test].size(); i++) {
-                        vector<MySimpleRegex::matched> result = cp.match_all(tests[test][i]);
-                        cout << indent << "\"" << tests[test][i] << "\"";
+                    MySimpleRegex::compiled cp = MySimpleRegex::compile(test_cases[test].regex, test);
+                    for (int i = 0; i < test_cases[test].test.size(); i++) {
+                        vector<MySimpleRegex::matched> result = cp.match_all(test_cases[test].test[i]);
+                        cout << indent << "\"" << test_cases[test].test[i] << "\"";
                         if (result.empty()) {
                             cout << " -> 일치구간 없음" << endl;
                             continue;
@@ -646,7 +655,7 @@ private:
                         cout << endl;
 
                         cout << indent << "< 실행 결과 >" << endl;
-                        cout << indent << "\"" << tests[test][i] << "\"\n";
+                        cout << indent << "\"" << test_cases[test].test[i] << "\"\n";
                         unit_tester::match_info_print(result, indent + " ");
                         for (const MySimpleRegex::matched& mt : result)
                             cout << "\t<구간 [" << mt.start() << "," << mt.end() << ")> : " << "\"" << mt.group() << "\"\n";
@@ -667,27 +676,20 @@ private:
         return true;
     }
 
-    vector<bool> run_test(int test_case) {
+    vector<bool> run_test(int t) {
         vector<bool> ret;
 
-        MySimpleRegex::compiled cp = MySimpleRegex::compile(regexes[test_case], test_case);
-        for (int i = 0; i < tests[test_case].size(); i++) {
-            matches list_all = cp.match_all(tests[test_case][i]);
-            ret.push_back(assertEqual(expects[test_case][i], list_all));
+        MySimpleRegex::compiled cp = MySimpleRegex::compile(test_cases[t].regex, t);
+        for (int i = 0; i < test_cases[t].test.size(); i++) {
+            matches list_all = cp.match_all(test_cases[t].test[i]);
+            ret.push_back(assertEqual(test_cases[t].expect[i], list_all));
         }
 
         return ret;
     }
 
-public:
-    unit_tester() : view_details(false) { register_tests(); }
-
-    void run() { run_tests(); }
-
-    void show_details(bool mode) { view_details = mode; }
-
     //매치된 영역에 밑줄 표시
-    void match_info_print(const vector<MySimpleRegex::matched>& result, const string& indent) {  
+    void match_info_print(const vector<MySimpleRegex::matched>& result, const string& indent) {
         cout << indent;
         int last_print = 0;
         for (const MySimpleRegex::matched& mt : result) {
@@ -700,9 +702,49 @@ public:
         cout << endl;
     }
 
+public:
+    unit_tester() { 
+        register_tests();
+        enable_all().details_hide_all();
+    }
+
+    void run() { run_tests(); }
+
+    unit_tester& details_hide(int test_number) {
+        test_cases[test_number].details = false;
+        return *this;
+    }
+    unit_tester& details_show(int test_number) {
+        test_cases[test_number].details = true; 
+        return *this;
+    }
+    unit_tester& details_hide_all() {
+        for (test_case& t : test_cases) t.details = false;
+        return *this;
+    }
+    unit_tester& details_show_all() {
+        for (test_case& t : test_cases) t.details = true;
+        return *this;
+    }
+
+    unit_tester& enable(int test_number) {
+        test_cases[test_number].enabled = true;
+        return *this;
+    }
+    unit_tester& disable(int test_number) {
+        test_cases[test_number].enabled = false;
+        return *this;
+    }
+    unit_tester& enable_all() {
+        for (test_case& t : test_cases) t.enabled = true;
+        return *this;
+    }
+    unit_tester& disable_all() {
+        for (test_case& t : test_cases) t.enabled = false;
+        return *this;
+    }
+
 protected:
-    //실행하지 않을 테스트리스트
-    set<int> test_disables = { };
 
     //실행할 테스트 등록
     void register_tests() {
@@ -714,83 +756,76 @@ protected:
     //test func example
     void test0() {
         int t = 0;
-        test_numbers.push_back(t);
-        regexes.push_back("test_regex");
-        tests.push_back({
+        vector<string> tests({
             "test_str",
-            "test_str"
-            });
-        expects.push_back({
-            {
-                match(tests[t][0], 0, 0, true)},
-            {
-                match(tests[t][1], 0, 0, true)}
-            });
+            "test_str"});
+
+        test_cases.push_back({
+            t, "test_regex", tests,
+        {{
+            match(tests[0], 0, 0, true)},
+        {
+            match(tests[1], 0, 0, true)}}});
     }
     
     void test1() {
         int t = 1;
-        test_numbers.push_back(t);
-        regexes.push_back("abc|ade");
-        tests.push_back( {
+        static vector<string> tests({
             "abc",
             "ade",
             "aaaaabbbbabcaaaaaadeaaaaabc",
             "abbbbbbbbdddddddfdfdfdfdf",
             "zzosiduabcfdsfdafdadere",
             "aosisudababaifudiaddadeidufodi",
-            "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij" 
-        } );
-        expects.push_back( {
-            {
-                match(tests[t][0], 0, 3, true)},
-            {
-                match(tests[t][1], 0, 3, true) },
-            {
-                match(tests[t][2], 9, 12, true),
-                match(tests[t][2], 17, 20, true),
-                match(tests[t][2], 24, 27, true) },
-            { },
-            {
-                match(tests[t][4], 7, 10, true),
-                match(tests[t][4], 18, 21, true), },
-            {
-                match(tests[t][5], 20, 23, true) },
-            {
-                match(tests[t][6], 23, 26, true),
-                match(tests[t][6], 27, 30, true),
-                match(tests[t][6], 100, 103, true),
-                match(tests[t][6], 107, 110, true) }
-        });      
+            "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij" });
+        
+        test_cases.push_back({
+            t,  "abc|ade", tests,
+        {{
+            match(tests[0], 0, 3, true)},
+        {
+            match(tests[1], 0, 3, true) },
+        {
+            match(tests[2], 9, 12, true),
+            match(tests[2], 17, 20, true),
+            match(tests[2], 24, 27, true) },
+        { },
+        {
+            match(tests[4], 7, 10, true),
+            match(tests[4], 18, 21, true), },
+        {
+            match(tests[5], 20, 23, true) },
+        {
+            match(tests[6], 23, 26, true),
+            match(tests[6], 27, 30, true),
+            match(tests[6], 100, 103, true),
+            match(tests[6], 107, 110, true)}}});    
     }
     void test2() {
         int t = 2;
-        test_numbers.push_back(t);
-        regexes.push_back("aba");
-        tests.push_back({
+        static vector<string> tests({
             "aba",
             "bab",
             "baba",
             "ababababababababababab" });
-        expects.push_back({
-            {
-                match(tests[t][0], 0, 3, true)},
-            { },
-            {
-                match(tests[t][2], 1, 4, true)},
-            {
-                match(tests[t][3], 0, 3, true),
-                match(tests[t][3], 4, 7, true),
-                match(tests[t][3], 8, 11, true),
-                match(tests[t][3], 12, 15, true),
-                match(tests[t][3], 16, 19, true)}
-            });
+
+        test_cases.push_back({
+            t, "aba", tests,
+        {{
+            match(tests[0], 0, 3, true)},
+        { },
+        {
+            match(tests[2], 1, 4, true)},
+        {
+            match(tests[3], 0, 3, true),
+            match(tests[3], 4, 7, true),
+            match(tests[3], 8, 11, true),
+            match(tests[3], 12, 15, true),
+            match(tests[3], 16, 19, true)}}});
     }
     void test3() {
         int t = 3;
-        test_numbers.push_back(t);
-        regexes.push_back("NK((abc|ABC)*N|(OP)+)Q");
-        tests.push_back({
+        static vector<string> tests({
             "NKNQ",
             "NKOPQ",
             "NK",
@@ -801,34 +836,33 @@ protected:
             "NKabcABCabcABCABCabcABCNQ",
             "NKOPOPOPOPQ",
             "sofieNKNQofisNOPQkfuNKOPOPQlzNKABCNQksofuNKabcNQtttat" });
-        expects.push_back({
-            {
-                match(tests[t][0], 0, 4, true)},
-            {
-                match(tests[t][1], 0, 5, true)},
-            { },
-            { },
-            {
-                match(tests[t][4], 0, 13, true)},
-            { },
-            {
-                match(tests[t][6], 0, 10, true)},
-            {
-                match(tests[t][7], 0, 25, true)},
-            {
-                match(tests[t][8], 0, 11, true)},
-            {
-                match(tests[t][9], 5, 9, true),
-                match(tests[t][9], 20, 27, true),
-                match(tests[t][9], 29, 36, true),
-                match(tests[t][9], 41, 48, true)}
-            });
+
+        test_cases.push_back({
+            t, "NK((abc|ABC)*N|(OP)+)Q", tests,
+        {{
+            match(tests[0], 0, 4, true)},
+        {
+            match(tests[1], 0, 5, true)},
+        { },
+        { },
+        {
+            match(tests[4], 0, 13, true)},
+        { },
+        {
+            match(tests[6], 0, 10, true)},
+        {
+            match(tests[7], 0, 25, true)},
+        {
+            match(tests[8], 0, 11, true)},
+        {
+            match(tests[9], 5, 9, true),
+            match(tests[9], 20, 27, true),
+            match(tests[9], 29, 36, true),
+            match(tests[9], 41, 48, true)}}});
     }
     void test4() {
         int t = 4;
-        test_numbers.push_back(t);
-        regexes.push_back("ab+c");
-        tests.push_back({
+        static vector<string> tests({
             "a",
             "ac",
             "abc",
@@ -837,29 +871,28 @@ protected:
             "abbbc",
             "abbbbbc",
             "abbbbababcccccabbbbcabbbbabacacabccccab" });
-        expects.push_back({
-            { },
-            { },
-            {
-                match(tests[t][2], 0, 3, true)},
-            {
-                match(tests[t][3], 0, 4, true)},
-            { },
-            {
-                match(tests[t][5], 0, 5, true)},
-            {
-                match(tests[t][6], 0, 7, true)},
-            {
-                match(tests[t][7], 7, 10, true),
-                match(tests[t][7], 14, 20, true),
-                match(tests[t][7], 31, 34, true)}
-            });
+
+        test_cases.push_back({
+            t, "ab+c", tests,
+        {{ },
+        { },
+        {
+            match(tests[2], 0, 3, true)},
+        {
+            match(tests[3], 0, 4, true)},
+        { },
+        {
+            match(tests[5], 0, 5, true)},
+        {
+            match(tests[6], 0, 7, true)},
+        {
+            match(tests[7], 7, 10, true),
+            match(tests[7], 14, 20, true),
+            match(tests[7], 31, 34, true)}}});
     }
     void test5() {
         int t = 5;
-        test_numbers.push_back(t);
-        regexes.push_back("abc+");
-        tests.push_back({
+        static vector<string> tests({
             "a",
             "aaa",
             "aaaabb",
@@ -870,28 +903,27 @@ protected:
             "abccc",
             "abcccccc",
             "kkkabcccccccciabccccccabccccckkkcccccabccccccccccco" });
-        expects.push_back({
-            { }, { }, { }, { }, { },
-            {
-                match(tests[t][5], 0, 3, true)},
-            {
-                match(tests[t][6], 0, 4, true)},
-            {
-                match(tests[t][7], 0, 5, true)},
-            {
-                match(tests[t][8], 0, 8, true)},
-            {
-                match(tests[t][9], 3, 13, true),
-                match(tests[t][9], 14, 22, true),
-                match(tests[t][9], 22, 29, true),
-                match(tests[t][9], 37, 50, true)}
-            });
+
+        test_cases.push_back({
+            t, "abc+", tests,
+        {{ }, { }, { }, { }, { },
+        {
+            match(tests[5], 0, 3, true)},
+        {
+            match(tests[6], 0, 4, true)},
+        {
+            match(tests[7], 0, 5, true)},
+        {
+            match(tests[8], 0, 8, true)},
+        {
+            match(tests[9], 3, 13, true),
+            match(tests[9], 14, 22, true),
+            match(tests[9], 22, 29, true),
+            match(tests[9], 37, 50, true)}}});
     }
     void test6() {
         int t = 6;
-        test_numbers.push_back(t);
-        regexes.push_back("aB{3,6}c");
-        tests.push_back({
+        static vector<string> tests({
             "ac",
             "aBc",
             "aBBc",
@@ -907,78 +939,72 @@ protected:
             "aBBBBBBBBBBBBc",
             "aBBBBBBBBBBBBBc",
             "kaBBBcfaBBBBckkaBBckaBBBBBBcUUUaBBBBcOOOaBcTTTTaBBBBBcTTTTT" });
-        expects.push_back({
-            { }, { }, { },
-            {
-                match(tests[t][3], 0, 5, true)},
-            {
-                match(tests[t][4], 0, 6, true)},
-            {
-                match(tests[t][5], 0, 7, true)},
-            {
-                match(tests[t][6], 1, 9, true)},
-            { }, { }, { }, { },
-            { }, { }, { },
-            {
-                match(tests[t][14], 1, 6, true),
-                match(tests[t][14], 7, 13, true),
-                match(tests[t][14], 20, 28, true),
-                match(tests[t][14], 31, 37, true),
-                match(tests[t][14], 47, 54, true)}
-            });
+
+        test_cases.push_back({ 
+            t, "aB{3,6}c", tests,
+        {{ }, { }, { },
+        {
+            match(tests[3], 0, 5, true)},
+        {
+            match(tests[4], 0, 6, true)},
+        {
+            match(tests[5], 0, 7, true)},
+        {
+            match(tests[6], 1, 9, true)},
+        { }, { }, { }, { }, { }, { }, { },
+        {
+            match(tests[14], 1, 6, true),
+            match(tests[14], 7, 13, true),
+            match(tests[14], 20, 28, true),
+            match(tests[14], 31, 37, true),
+            match(tests[14], 47, 54, true)}} });
     }
     void test7() {
         int t = 7;
-        test_numbers.push_back(t);
-        regexes.push_back("jkT{4,5}");
-        tests.push_back({
+        static vector<string> tests({
             "jkTT",
             "jkTTT",
             "jkTTTT",
             "jkTTTTT",
             "jkTTTTTT",
             "jkTTTTTTT" });
-        expects.push_back({
-            { },
-            { },
-            {
-                match(tests[t][2], 0, 6, true)},
-            {
-                match(tests[t][3], 0, 7, true)},
-            {
-                match(tests[t][4], 0, 7, true)},
-            {
-                match(tests[t][5], 0, 7, true)}
-            });
+
+        test_cases.push_back({
+            t, "jkT{4,5}", tests,
+        {{ }, { },
+        {
+            match(tests[2], 0, 6, true)},
+        {
+            match(tests[3], 0, 7, true)},
+        {
+            match(tests[4], 0, 7, true)},
+        {
+            match(tests[5], 0, 7, true)}}});
     }
     void test8() {
         int t = 8;
-        test_numbers.push_back(t);
-        regexes.push_back("T{3,5}");
-        tests.push_back({
+        static vector<string> tests({
             "TT",
             "TTT",
             "TTTT",
             "TTTTT",
             "TTTTTT",
             "TTTTTTT" });
-        expects.push_back({
-            { },
-            {
-                match(tests[t][1], 0, 3, true)},
-            {
-                match(tests[t][2], 0, 4, true)},
-            {
-                match(tests[t][3], 0, 5, true)},
-            { },
-            { }
-            });
+
+        test_cases.push_back({
+            t, "T{3,5}", tests,
+        {{ },
+        {
+            match(tests[1], 0, 3, true)},
+        {
+            match(tests[2], 0, 4, true)},
+        {
+            match(tests[3], 0, 5, true)},
+        { }, { }    }});
     }
     void test9() {
         int t = 9;
-        test_numbers.push_back(t);
-        regexes.push_back("T+");
-        tests.push_back({
+        static vector<string> tests({
             "k",
             "T",
             "TT",
@@ -988,32 +1014,35 @@ protected:
             "kkkkTTTTTT",
             "TTTTTTT",
             "kkkkTTTTTTz" });
-        expects.push_back({
-            { },
-            {
-                match(tests[t][1], 0, 1, true)},
-            {
-                match(tests[t][2], 0, 2, true)},
-            {
-                match(tests[t][3], 0, 3, true)},
-            {
-                match(tests[t][4], 2, 6, true)},
-            {
-                match(tests[t][5], 0, 5, true)},
-            {
-                match(tests[t][6], 4, 10, true)},
-            {
-                match(tests[t][7], 0, 7, true)},
-            {
-                match(tests[t][8], 4, 10, true)}
-            });
+
+        test_cases.push_back({
+            t, "T+", tests,
+        {
+        { },
+        {
+            match(tests[1], 0, 1, true)},
+        {
+            match(tests[2], 0, 2, true)},
+        {
+            match(tests[3], 0, 3, true)},
+        {
+            match(tests[4], 2, 6, true)},
+        {
+            match(tests[5], 0, 5, true)},
+        {
+            match(tests[6], 4, 10, true)},
+        {
+            match(tests[7], 0, 7, true)},
+        {
+            match(tests[8], 4, 10, true)}}});;
     }
     
 };
 
 int main() {
-    unit_tester tester;
-    tester.run();
+    unit_tester test;
+    test.disable_all(); 
+    test.enable(1).enable(2).enable(5).enable(7).run();
     return 0;
 }
 
