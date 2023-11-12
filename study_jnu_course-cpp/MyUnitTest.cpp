@@ -20,7 +20,7 @@ void MyUnitTest::print_test_title(string label_left, int test_number, string lab
     cout << label_left << test_number << " \"" << tests[test_number].regex << "\"" << label_right << endl;
 }
 
-void MyUnitTest::print_match_range(string title, matches& match_result, int test_case, int elem) {
+void MyUnitTest::print_match_range(string title, vector<ranged_string>& match_result, int test_case, int elem) {
     cout << m_indent << title << endl;
     if (match_result.empty()) {
         cout << m_indent << tests[test_case].test[elem] << " -> 일치구간 없음" << "\n\n";
@@ -28,32 +28,32 @@ void MyUnitTest::print_match_range(string title, matches& match_result, int test
     }
 
     print_match_underline(match_result);
-    for (const MySimpleRegex::matched& mt : match_result) {
+    for (const ranged_string& mt : match_result) {
         cout << m_indent << m_indent;
-        cout << "-> range [" << mt.start() << "," << mt.end() << ") " << "\"" << mt.group() << "\"\n";
+        cout << "-> range [" << mt.start << "," << mt.end << ") " << "\"" << mt.group() << "\"\n";
     }
     cout << endl;
 }
 
 //매치된 영역에 밑줄 표시; 입력 문자열이 길면 newline마다 개행됨
-void MyUnitTest::print_match_underline(const vector<MySimpleRegex::matched>& result) {
+void MyUnitTest::print_match_underline(const vector<ranged_string>& result) {
     if (result.empty()) return;
-    const string& ref = result[0].ref();
+    const string& ref = result[0].ref;
 
     //문자열과 밑줄을 끊어서 출력
     for (size_t i = 0, cur_match = 0; i < ref.size(); i += m_newline) {
         size_t len = i + m_newline <= ref.size() ? m_newline : ref.size() - i;
         cout << m_indent << ref.substr(i, len) << endl; //참조 문자열 출력  
-        if (cur_match >= result.size() || i + len <= result[cur_match].start()) {
+        if (cur_match >= result.size() || i + len <= result[cur_match].start) {
             cout << endl;
             continue;
         }
 
         cout << m_indent;
         for (size_t j = i; j < i + len; j++) {
-            const MySimpleRegex::matched& match = result[cur_match];
-            cout << (match.start() <= j && j < match.end() ? m_underline_marker : ' '); // 밑줄 출력
-            if (j + 1 >= match.end()) cur_match++;
+            const ranged_string& str = result[cur_match];
+            cout << (str.start <= j && j < str.end ? m_underline_marker : ' '); // 밑줄 출력
+            if (j + 1 >= str.end) cur_match++;
             if (cur_match >= result.size()) break;
         }
         cout << endl;
@@ -71,7 +71,7 @@ void MyUnitTest::print_successed_test(vector<int>& successed_list, int test_numb
     MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex, test_number);
 
     for (int i = 0; i < tests[test_number].test.size(); i++) {
-        vector<MySimpleRegex::matched> result = cp.match_all(tests[test_number].test[i]);
+        vector<ranged_string> result = cp.match_all(tests[test_number].test[i]);
         cout << "case #" << (i + 1) << endl;
         print_match_range("< 실행결과 >", result, test_number, i);
     }
@@ -84,7 +84,7 @@ void MyUnitTest::print_failed_test(vector<int>& failed_list, vector<bool>& resul
     bool title_printed = false;
     for (int i = 0; i < results.size(); i++) {
         if (!tests[test_number].details && results[i] == true) continue;
-        matches result = cp.match_all(tests[test_number].test[i]);
+        vector<ranged_string> result = cp.match_all(tests[test_number].test[i]);
 
         //실패한 테스트 제목 출력 (최초 1회만)
         if (!title_printed) {
@@ -164,13 +164,13 @@ void MyUnitTest::print_tests_summary(set<int>& disabled, vector<int>& successed_
 
 
 /*******************   테스트 실행 함수   *******************/
-bool MyUnitTest::assertEqual(matches& expect, matches& result) {
+bool MyUnitTest::assertEqual(vector<ranged_string>& expect, vector<ranged_string>& result) {
     if (expect.size() != result.size()) return false;
 
     for (int i = 0; i < expect.size(); i++) {
-        if (expect[i].start() != result[i].start()) return false;
-        if (expect[i].end() != result[i].end())     return false;
-        if (expect[i].valid() != result[i].valid()) return false;
+        if (expect[i].start != result[i].start) return false;
+        if (expect[i].end != result[i].end)     return false;
+        if (expect[i].is_valid != result[i].is_valid) return false;
     }
     return true;
 }
@@ -180,7 +180,7 @@ vector<bool> MyUnitTest::run_test(int t) {
 
     MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[t].regex, t);
     for (int i = 0; i < tests[t].test.size(); i++) {
-        matches list_all = cp.match_all(tests[t].test[i]);
+        vector<ranged_string> list_all = cp.match_all(tests[t].test[i]);
         ret.push_back(assertEqual(tests[t].expect[i], list_all));
     }
 
@@ -252,24 +252,24 @@ void MyUnitTest::test1() {
     tests.push_back({
         t,  "abc|ade", test,
     {{
-        match(test[0], 0, 3, true)},
+        ranged_string(test[0], 0, 3, true)},
     {
-        match(test[1], 0, 3, true) },
+        ranged_string(test[1], 0, 3, true) },
     {
-        match(test[2], 9, 12, true),
-        match(test[2], 17, 20, true),
-        match(test[2], 24, 27, true) },
+        ranged_string(test[2], 9, 12, true),
+        ranged_string(test[2], 17, 20, true),
+        ranged_string(test[2], 24, 27, true) },
     { },
     {
-        match(test[4], 7, 10, true),
-        match(test[4], 18, 21, true), },
+        ranged_string(test[4], 7, 10, true),
+        ranged_string(test[4], 18, 21, true), },
     {
-        match(test[5], 20, 23, true) },
+        ranged_string(test[5], 20, 23, true) },
     {
-        match(test[6], 23, 26, true),
-        match(test[6], 27, 30, true),
-        match(test[6], 100, 103, true),
-        match(test[6], 107, 110, true)}} });
+        ranged_string(test[6], 23, 26, true),
+        ranged_string(test[6], 27, 30, true),
+        ranged_string(test[6], 100, 103, true),
+        ranged_string(test[6], 107, 110, true)}} });
 }
 void MyUnitTest::test2() {
     int t = 2;
@@ -282,16 +282,16 @@ void MyUnitTest::test2() {
     tests.push_back({
         t, "aba", test,
     {{
-        match(test[0], 0, 3, true)},
+        ranged_string(test[0], 0, 3, true)},
     { },
     {
-        match(test[2], 1, 4, true)},
+        ranged_string(test[2], 1, 4, true)},
     {
-        match(test[3], 0, 3, true),
-        match(test[3], 4, 7, true),
-        match(test[3], 8, 11, true),
-        match(test[3], 12, 15, true),
-        match(test[3], 16, 19, true)}} });
+        ranged_string(test[3], 0, 3, true),
+        ranged_string(test[3], 4, 7, true),
+        ranged_string(test[3], 8, 11, true),
+        ranged_string(test[3], 12, 15, true),
+        ranged_string(test[3], 16, 19, true)}} });
 }
 void MyUnitTest::test3() {
     int t = 3;
@@ -310,25 +310,25 @@ void MyUnitTest::test3() {
     tests.push_back({
         t, "NK((abc|ABC)*N|(OP)+)Q", test,
     {{
-        match(test[0], 0, 4, true)},
+        ranged_string(test[0], 0, 4, true)},
     {
-        match(test[1], 0, 5, true)},
+        ranged_string(test[1], 0, 5, true)},
     { },
     { },
     {
-        match(test[4], 0, 13, true)},
+        ranged_string(test[4], 0, 13, true)},
     { },
     {
-        match(test[6], 0, 10, true)},
+        ranged_string(test[6], 0, 10, true)},
     {
-        match(test[7], 0, 25, true)},
+        ranged_string(test[7], 0, 25, true)},
     {
-        match(test[8], 0, 11, true)},
+        ranged_string(test[8], 0, 11, true)},
     {
-        match(test[9], 5, 9, true),
-        match(test[9], 20, 27, true),
-        match(test[9], 29, 36, true),
-        match(test[9], 41, 48, true)}} });
+        ranged_string(test[9], 5, 9, true),
+        ranged_string(test[9], 20, 27, true),
+        ranged_string(test[9], 29, 36, true),
+        ranged_string(test[9], 41, 48, true)}} });
 }
 void MyUnitTest::test4() {
     int t = 4;
@@ -347,18 +347,18 @@ void MyUnitTest::test4() {
     {{ },
     { },
     {
-        match(test[2], 0, 3, true)},
+        ranged_string(test[2], 0, 3, true)},
     {
-        match(test[3], 0, 4, true)},
+        ranged_string(test[3], 0, 4, true)},
     { },
     {
-        match(test[5], 0, 5, true)},
+        ranged_string(test[5], 0, 5, true)},
     {
-        match(test[6], 0, 7, true)},
+        ranged_string(test[6], 0, 7, true)},
     {
-        match(test[7], 7, 10, true),
-        match(test[7], 14, 20, true),
-        match(test[7], 31, 34, true)}} });
+        ranged_string(test[7], 7, 10, true),
+        ranged_string(test[7], 14, 20, true),
+        ranged_string(test[7], 31, 34, true)}} });
 }
 void MyUnitTest::test5() {
     int t = 5;
@@ -378,18 +378,18 @@ void MyUnitTest::test5() {
         t, "abc+", test,
     {{ }, { }, { }, { }, { },
     {
-        match(test[5], 0, 3, true)},
+        ranged_string(test[5], 0, 3, true)},
     {
-        match(test[6], 0, 4, true)},
+        ranged_string(test[6], 0, 4, true)},
     {
-        match(test[7], 0, 5, true)},
+        ranged_string(test[7], 0, 5, true)},
     {
-        match(test[8], 0, 8, true)},
+        ranged_string(test[8], 0, 8, true)},
     {
-        match(test[9], 3, 13, true),
-        match(test[9], 14, 22, true),
-        match(test[9], 22, 29, true),
-        match(test[9], 37, 50, true)}} });
+        ranged_string(test[9], 3, 13, true),
+        ranged_string(test[9], 14, 22, true),
+        ranged_string(test[9], 22, 29, true),
+        ranged_string(test[9], 37, 50, true)}} });
 }
 void MyUnitTest::test6() {
     int t = 6;
@@ -414,20 +414,20 @@ void MyUnitTest::test6() {
         t, "aB{3,6}c", test,
     {{ }, { }, { },
     {
-        match(test[3], 0, 5, true)},
+        ranged_string(test[3], 0, 5, true)},
     {
-        match(test[4], 0, 6, true)},
+        ranged_string(test[4], 0, 6, true)},
     {
-        match(test[5], 0, 7, true)},
+        ranged_string(test[5], 0, 7, true)},
     {
-        match(test[6], 1, 9, true)},
+        ranged_string(test[6], 1, 9, true)},
     { }, { }, { }, { }, { }, { }, { },
     {
-        match(test[14], 1, 6, true),
-        match(test[14], 7, 13, true),
-        match(test[14], 20, 28, true),
-        match(test[14], 31, 37, true),
-        match(test[14], 47, 54, true)}} });
+        ranged_string(test[14], 1, 6, true),
+        ranged_string(test[14], 7, 13, true),
+        ranged_string(test[14], 20, 28, true),
+        ranged_string(test[14], 31, 37, true),
+        ranged_string(test[14], 47, 54, true)}} });
 }
 void MyUnitTest::test7() {
     int t = 7;
@@ -443,13 +443,13 @@ void MyUnitTest::test7() {
         t, "jkT{4,5}", test,
     {{ }, { },
     {
-        match(test[2], 0, 6, true)},
+        ranged_string(test[2], 0, 6, true)},
     {
-        match(test[3], 0, 7, true)},
+        ranged_string(test[3], 0, 7, true)},
     {
-        match(test[4], 0, 7, true)},
+        ranged_string(test[4], 0, 7, true)},
     {
-        match(test[5], 0, 7, true)}} });
+        ranged_string(test[5], 0, 7, true)}} });
 }
 void MyUnitTest::test8() {
     int t = 8;
@@ -465,11 +465,11 @@ void MyUnitTest::test8() {
         t, "T{3,5}", test,
     {{ },
     {
-        match(test[1], 0, 3, true)},
+        ranged_string(test[1], 0, 3, true)},
     {
-        match(test[2], 0, 4, true)},
+        ranged_string(test[2], 0, 4, true)},
     {
-        match(test[3], 0, 5, true)},
+        ranged_string(test[3], 0, 5, true)},
     { }, { }    } });
 }
 void MyUnitTest::test9() {
@@ -490,21 +490,21 @@ void MyUnitTest::test9() {
     {
     { },
     {
-        match(test[1], 0, 1, true)},
+        ranged_string(test[1], 0, 1, true)},
     {
-        match(test[2], 0, 2, true)},
+        ranged_string(test[2], 0, 2, true)},
     {
-        match(test[3], 0, 3, true)},
+        ranged_string(test[3], 0, 3, true)},
     {
-        match(test[4], 2, 6, true)},
+        ranged_string(test[4], 2, 6, true)},
     {
-        match(test[5], 0, 5, true)},
+        ranged_string(test[5], 0, 5, true)},
     {
-        match(test[6], 4, 10, true)},
+        ranged_string(test[6], 4, 10, true)},
     {
-        match(test[7], 0, 7, true)},
+        ranged_string(test[7], 0, 7, true)},
     {
-        match(test[8], 4, 10, true)}} });;
+        ranged_string(test[8], 4, 10, true)}} });;
 }
 
 

@@ -13,6 +13,11 @@ namespace assignment1 {
 
         return 0;
     }
+
+    int main1() {
+        TestDataReader::read("test_data.txt");
+        return 0;
+    }
 }
 
 int main() { assignment1::main(); }

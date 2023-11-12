@@ -96,4 +96,7 @@
       <Filter>소스 파일\과제\assignment1</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="test_data.txt" />
+  </ItemGroup>
 </Project>

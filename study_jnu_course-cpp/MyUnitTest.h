@@ -1,5 +1,9 @@
 #ifndef __MY_UNIT_TEST_H__
 #define __MY_UNIT_TEST_H__
+#include <iostream>
+#include <fstream>
+#include <string>
+
 #include <vector>
 #include <set>
 #include "MySimpleRegex.h"
@@ -9,15 +13,12 @@ using namespace std;
 
 
 class MyUnitTest {
-    using match = MySimpleRegex::matched;
-    using matches = vector<match>;
-
 private:
     struct test {               //test
         int number;             //test case number
         string regex;           //regex of test
         vector<string> test;    //input strings for regex
-        vector<matches> expect; //expect results
+        vector<vector<ranged_string>> expect; //expect results
         bool details;           //0: less detail, 1: more detail
         bool enabled;           //0: test disabled, 1: test enabled
     };
@@ -30,8 +31,8 @@ private:
 
     void print_run_title();
     void print_test_title(string label_left, int test_number, string label_right);
-    void print_match_range(string title, matches& match_result, int test_case, int elem);
-    void print_match_underline(const vector<MySimpleRegex::matched>& result);
+    void print_match_range(string title, vector<ranged_string>& match_result, int test_case, int elem);
+    void print_match_underline(const vector<ranged_string>& result);
     void print_successed_test(vector<int>& successed_list, int test_number);
     void print_failed_test(vector<int>& failed_list, vector<bool>& results, int test_number);
     void print_tests_summary(set<int>& disabled, vector<int>& successed_list, vector<int>& failed_list);
@@ -40,7 +41,7 @@ private:
     //실제 테스트 수행 함수
     void run_tests();
     vector<bool> run_test(int t);
-    bool assertEqual(matches& expect, matches& result);
+    bool assertEqual(vector<ranged_string>& expect, vector<ranged_string>& result);
 
 
 public:
@@ -137,9 +138,9 @@ protected:
         tests.push_back({
             t, "test_regex", test,
         {{
-            match(test[0], 0, 0, true)},
+            ranged_string(test[0], 0, 0, true)},
         {
-            match(test[1], 0, 0, true)}} });
+            ranged_string(test[1], 0, 0, true)}} });
     }
 
 
@@ -153,6 +154,25 @@ protected:
     void test7();
     void test8();
     void test9();
+};
+
+
+class TestDataReader {
+public:
+    static void read(const char* filename) {
+        ifstream test_data;
+        test_data.open(filename);
+        if (!test_data.is_open()) {
+            cout << filename << " 파일을 읽을 수 없습니다." << endl;
+            return;
+        }
+
+        string line;
+        int line_number = 0;
+        while (getline(test_data, line)) {
+            cout << ++line_number << ":  " << line << endl;
+        }
+    }
 };
 
 

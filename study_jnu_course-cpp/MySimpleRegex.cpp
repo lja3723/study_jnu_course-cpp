@@ -2,7 +2,6 @@
 #include <map>
 
 namespace assignment1 { 
-using matched = MySimpleRegex::matched;
 using compiled = MySimpleRegex::compiled;
 
 
@@ -10,10 +9,10 @@ using compiled = MySimpleRegex::compiled;
 compiled MySimpleRegex::compile(const string& m_regex, int test = 0) {
     return compiled(m_regex, test);
 }
-matched MySimpleRegex::match(const string& m_regex, const string& source) {
+ranged_string MySimpleRegex::match(const string& m_regex, const string& source) {
     return compiled(m_regex).match(source);
 }
-vector<matched> MySimpleRegex::match_all(const string m_regex, const string& source) {
+vector<ranged_string> MySimpleRegex::match_all(const string m_regex, const string& source) {
     return compiled(m_regex).match_all(source);
 }
 
@@ -309,8 +308,8 @@ void compiled::delete_state_machine() {
 
 //TODO: T* , T+ 같은 케이스에서 그리디하게 동작하게 바꿔야 함
 //상태기계에 문자열을 입력으로 받고, 가장 처음으로 accept된 일치 정보를 출력한다.
-matched compiled::state_machine_input(const string& src, unsigned index_start, bool check_at_front_only) {
-    map<int, matched*> found;
+ranged_string compiled::state_machine_input(const string& src, unsigned index_start, bool check_at_front_only) {
+    map<int, ranged_string*> found;
     vector<node*> actives;
     vector<active_request_info> next_actives;
 
@@ -350,7 +349,7 @@ matched compiled::state_machine_input(const string& src, unsigned index_start, b
                 ///*debug*/cout << "       active_count: " << nv[j].active_count() << endl;
                 unsigned istart = terminal->index_start();
                 if (found.find(istart) != found.end()) delete found[istart];
-                found[istart] = new matched(src, istart, i + 1, true);
+                found[istart] = new ranged_string(src, istart, i + 1, true);
             }
         }
     }
@@ -361,9 +360,9 @@ matched compiled::state_machine_input(const string& src, unsigned index_start, b
 
 
     if (found.empty()) //일치하는 패턴 없음
-        return matched::invalid();
+        return ranged_string::invalid();
     else {
-        matched ret = *found.begin()->second;
+        ranged_string ret = *found.begin()->second;
         for (auto& p : found)
             delete p.second;
 

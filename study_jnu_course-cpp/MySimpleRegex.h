@@ -7,58 +7,44 @@ namespace assignment1 {
 using namespace std;
 
 
+// 특정한 구간을 표현하는 문자열
+struct ranged_string {
+    const string& ref;          //참조 문자열
+    const bool is_valid;        //객체 유효성
+    const unsigned start, end;  //참조 문자열에서의 범위
+
+    ranged_string(const string& ref, const unsigned start, const unsigned end, const bool is_valid) :
+        ref(ref), start(start), end(end), is_valid(is_valid) {}
+
+    //범위
+    pair<unsigned, unsigned> span() const { return pair<unsigned, unsigned>(start, end); }
+
+    //범위에 속하는 문자열 반환
+    string group() const { return ref.substr(start, size_t(end - start)); }
+
+    //유효하지 않은 ranged_string 객체를 반환한다.
+    static const ranged_string invalid() { return ranged_string("", 0, 0, false); }
+};
+
+
 //Regex를 입력으로 받아 패턴을 인식하는 클래스
 class MySimpleRegex {
 private: MySimpleRegex();
     //이 클래스는 static 메서드만 있으므로 생성자를 private로 둔다.
 
 public:
-    class matched;
     class compiled;
     
     //정규표현식을 컴파일한 객체를 반환한다.
     static compiled compile(const string& m_regex, int test); 
 
     //source에서 정규표현식과 가장 먼저 일치하는 범위(유효하지 않을 수도 있음)를 구한다.
-    static matched match(const string& m_regex, const string& source);   
+    static ranged_string match(const string& m_regex, const string& source);   
 
     //source에서 정규표현식과 일치하는 모든 범위를 구한다. 일치정보가 없을 경우 빈 vector가 반환된다.
-    static vector<matched> match_all(const string m_regex, const string& source);
+    static vector<ranged_string> match_all(const string m_regex, const string& source);
 };
 
-
-// 문자열에서 패턴과 일치된 범위를 표현한다.
-class MySimpleRegex::matched {
-private:
-    const string& m_ref;            //참조 문자열
-    const bool m_valid;             //객체 유효성
-    const unsigned m_start, m_end;  //참조 문자열에서의 범위
-
-public:
-    matched(const string& ref, unsigned start, unsigned end, bool valid) :
-        m_ref(ref), m_start(start), m_end(end), m_valid(valid) {}
-
-    //해당 객체가 유효한 지 여부 확인 (false는 유효하지 않음)
-    bool valid() const { return m_valid; }
-
-    //범위의 시작값
-    unsigned start() const { return m_start; }
-
-    //범위의 끝값
-    unsigned end() const { return m_end; }
-
-    //범위
-    pair<unsigned, unsigned> span() const { return pair<unsigned, unsigned>(m_start, m_end); }
-
-    //범위가 참조하는 원본 문자열 참조 반환
-    const string& ref() const { return m_ref; }
-
-    //범위에 속하는 문자열 반환
-    string group() const { return m_ref.substr(m_start, size_t(m_end - m_start)); }
-
-    //유효하지 않은 matched 객체를 반환한다.
-    static const matched invalid() { return matched("", 0, 0, false); }
-};
 
 
 //정규표현식을 컴파일한 객체로, 확인할 문자열을 입력하면 일치 정보를 반환한다.
@@ -131,7 +117,7 @@ private:
     public:
         static const unsigned INF = ~0U; //2^32 - 1
 
-        node_ptr(Imatchable* match, node* pNode) : m_pNode(pNode), matcher(match) {}
+        node_ptr(Imatchable* ranged_string, node* pNode) : m_pNode(pNode), matcher(ranged_string) {}
         ~node_ptr();
 
         //포인터와 관련된 플래그를 클리어한다. 필요한 경우만 오버라이드한다.
@@ -206,7 +192,7 @@ private:
     /****************************/
     void create_state_machine(int test);    //상태기계 노드 컨테이너에 상태기계를 생성한다.    
     void delete_state_machine();            //생성된 상태기계를 삭제한다.   
-    matched state_machine_input(    //상태기계에 문자열을 입력으로 받고, 
+    ranged_string state_machine_input(    //상태기계에 문자열을 입력으로 받고, 
                                     //가장 처음으로 accept된 일치 정보를 출력한다.
         const string& src, 
         unsigned index_start = 0,
@@ -223,19 +209,19 @@ public:
     ~compiled() { delete_state_machine(); }
 
     //source에서 start_idx부터 탐색을 시작해 가장 처음으로 발견된 일치 정보를 반환한다.
-    matched match(const string& source, unsigned index_start = 0) {
+    ranged_string match(const string& source, unsigned index_start = 0) {
         return state_machine_input(source, index_start, false);
     }
 
     //source에서 발견되는 모든 일치 정보를 반환한다.
-    vector<matched> match_all(const string& source) {
-        vector<matched> ret;
+    vector<ranged_string> match_all(const string& source) {
+        vector<ranged_string> ret;
         unsigned found_idx = 0;
         while (found_idx < source.size()) {
-            matched ans = match(source, found_idx);
-            if (!ans.valid()) break;
+            ranged_string ans = match(source, found_idx);
+            if (!ans.is_valid) break;
             ret.push_back(ans);
-            found_idx = ret.back().end();
+            found_idx = ret.back().end;
         }
         return ret;
     }

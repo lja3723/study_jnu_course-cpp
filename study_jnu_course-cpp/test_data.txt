@@ -1,0 +1,64 @@
+//테스트 데이터입니다.
+//주석은 이렇게 작성합니다.
+
+test_no: 1
+regex: abc|ade
+test_cases:
+	case:
+		input: abc
+		output:
+		0 3
+	case:
+		input: ade
+		output:
+		0 3
+	case:
+		input: aaaaabbbbabcaaaaaadeaaaaabc
+		output:
+			9 12
+			17 20
+			24 27
+	case:
+		input: abbbbbbbbdddddddfdfdfdfdf
+		output:
+			NULL
+	case:
+		input: aosisudababaifudiaddadeidufodi
+		output:
+			7 10
+			18 21
+	case:
+		input: asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij
+		output:
+			23 26
+			27 30
+			100 103
+			107 110
+
+
+test_no: 2
+regex: aba
+test_cases:
+	case:
+		input: aba
+		output:
+			0 3
+	case:
+		input: bab
+		output:
+			NULL
+	case:
+		input: baba
+		output:
+			1 4
+	case:
+		input: ababababababababababab
+		output:
+			0 3
+			4 7
+			8 11
+			12 15
+			16 19
+	
+	
+	
