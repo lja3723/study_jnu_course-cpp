@@ -508,4 +508,17 @@ void MyUnitTest::test9() {
 }
 
 
+//**************************  Reader Test  **********************************
+
+void MyUnitTest::reader_test(const char* filename) {
+    TestDataFileReader reader;
+    bool result = reader.read(filename, tests);
+    cout << filename << " 파일을 ";
+    if (result) {
+        cout << "성공적으로 읽었습니다. \n";
+    }
+    else
+        cout << "읽기에 실패했습니다. \n";
+}
+
 } //end of namespace assignment1

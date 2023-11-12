@@ -10,18 +10,19 @@ namespace assignment1 {
 using namespace std;
 
 template <typename Data>
-class DataReader {
+class MyFileReader {
 public:
-    void read(const char* filename, Data& container) { 
-        read_file(filename, container); 
+    //파일 읽기 성공 시 true, 아닐 시 false 반환
+    virtual bool read(const char* filename, Data& container) final { 
+        return read_file(filename, container); 
     }
 
 
 private:
-    virtual bool read_file(const char* filename, Data& container) final {
+    bool read_file(const char* filename, Data& container) {
         //파일 열기
         ifstream opened_file;
-        file_read_successed = true;
+        bool read_successed = true;
 
         opened_file.open(filename);
         if (!opened_file.is_open()) {
@@ -30,14 +31,14 @@ private:
         }
 
         //한 줄씩 읽기
-        cur_line = 0;
+        int cur_line = 0;
         string line;
         while (getline(opened_file, line)) {
             cur_line++;
             if (is_comment_or_blank(line)) continue;
 
             //한 줄 토큰화
-            tokens.clear();
+            vector<string> tokens;
             string split;
             stringstream sstream(line);
             while (getline(sstream, split, ' ')) {
@@ -47,17 +48,17 @@ private:
             }
 
             //각 줄마다 작업 수행
-            file_read_successed = single_line_action(container);
-            if (!file_read_successed) break;
+            read_successed = single_line_action(container, tokens, cur_line);
+            if (!read_successed) break;
         }
 
         //파일 끝에서 필요한 작업 수행
-        file_read_successed &= end_file_action(container);
+        read_successed &= end_file_action(container, read_successed);
         opened_file.close();
-        return file_read_successed;
+        return read_successed;
     }
 
-    virtual bool is_comment_or_blank(const string& line) final {
+    bool is_comment_or_blank(const string& line) {
         string l = trim(line);
         if (l.size() >= 2)  return l.substr(0, 2) == "//";
         else if (l.empty()) return true;
@@ -73,14 +74,13 @@ private:
 
 
 protected:
-    int cur_line;
-    vector<string> tokens;
-    bool file_read_successed;
 
     //파생 클래스마다 특수화된 작업 실행
     //false: 작업 실패  true: 작업 성공
-    virtual bool single_line_action(Data& container) = 0;
-    virtual bool end_file_action(Data& container) = 0;
+    virtual bool single_line_action(
+        Data& container, vector<string>& tokens, int cur_line) = 0;
+
+    virtual bool end_file_action(Data& container, bool read_successed) = 0;
 };
 
 }

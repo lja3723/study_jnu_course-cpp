@@ -2,6 +2,7 @@
 #define __MY_UNIT_TEST_H__
 #include <iostream>
 #include <vector>
+#include <string>
 #include <set>
 
 #include "MySimpleRegex.h"
@@ -12,7 +13,7 @@ using namespace std;
 
 
 class MyUnitTest {
-    friend class TestDataReader;
+    friend class TestDataFileReader;
 private:
     struct test {               //test
         int number;             //test case number
@@ -31,10 +32,7 @@ private:
 
 
 
-    class TestDataReader : public DataReader<vector<MyUnitTest::test>> {
-    public:
-
-    };
+    class TestDataFileReader;
 
 
     void print_run_title();
@@ -127,9 +125,8 @@ public:
         return *this;
     }
 
-    void reader_test(const char* filename) {
-        TestDataReader().read(filename, tests);
-    }
+    /*debug*/ void reader_test(const char* filename);
+
 
 //실행할 테스트를 등록한다.
 protected:
@@ -165,6 +162,92 @@ protected:
     void test7();
     void test8();
     void test9();
+};
+
+
+class MyUnitTest::TestDataFileReader : public MyFileReader<vector<MyUnitTest::test>> {
+protected:
+    using Data = vector<MyUnitTest::test>;
+    using Tokens = vector<string>;
+
+    enum _state {
+        test,
+        regex,
+        get_cases,
+        get_case,
+        input,
+        output,
+        range,
+        unknown //총 8가지 상태
+    } cur_state;
+
+    _state interpret(const string& str) {
+        if (str == "test_no:") return test;
+        if (str == "regex:") return regex;
+        if (str == "test_cases") return get_cases;
+        if (str == "case:") return get_case;
+        if (str == "input:") return input;
+        if (str == "output:") return output;
+        if (is_digit(str)) return range;
+        return unknown;
+    }
+
+    bool is_digit(const string& s) {
+        bool ret = true;
+        for (char c : s) ret &= ('0' <= c && c <= '9');
+        return ret;
+    }
+
+    bool state_test(Data& container, Tokens& tokens, int cur_line) {
+        return true;
+    }
+
+    bool state_regex(Data& container, Tokens& tokens, int cur_line) {
+        return true;
+    }
+
+    bool state_get_cases(Data& container, Tokens& tokens, int cur_line) {
+        return true;
+    }
+
+    bool state_get_case(Data& container, Tokens& tokens, int cur_line) {
+        return true;
+    }
+
+    bool state_input(Data& container, Tokens& tokens, int cur_line) {
+        return true;
+    }
+
+    bool state_output(Data& container, Tokens& tokens, int cur_line) {
+        return true;
+    }
+
+    bool state_range(Data& container, Tokens& tokens, int cur_line) {
+        return true;
+    }
+
+    virtual bool single_line_action(Data& container, Tokens& tokens, int cur_line) {
+        switch (cur_state) {
+        case test: return state_test(container, tokens, cur_line);
+        case unknown: return false;
+            
+        }
+
+        return true;
+    }
+
+    virtual bool end_file_action(Data& container, bool read_successed) {
+        cout << "파일의 끝에 도달했습니다." << endl;
+
+        return true;
+    }
+
+public:
+    TestDataFileReader()
+        : cur_state(test)
+    {
+         
+    }
 };
 
 
