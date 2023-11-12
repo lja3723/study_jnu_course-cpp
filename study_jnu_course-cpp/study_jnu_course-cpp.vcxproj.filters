@@ -19,6 +19,9 @@
     <Filter Include="소스 파일\수업">
       <UniqueIdentifier>{0de7258d-4726-4c03-9ed8-5ddb90e2c213}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\과제\assignment1">
+      <UniqueIdentifier>{cdb5ab27-09fc-4a36-952b-24515411a376}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cpp02_practice.cpp">
@@ -72,11 +75,25 @@
     <ClCompile Include="cpp14_practice_class.cpp">
       <Filter>소스 파일\과제</Filter>
     </ClCompile>
-    <ClCompile Include="assignment1.cpp">
-      <Filter>소스 파일\과제</Filter>
-    </ClCompile>
     <ClCompile Include="cpp15_practice_class2.cpp">
       <Filter>소스 파일\과제</Filter>
     </ClCompile>
+    <ClCompile Include="regex.cpp">
+      <Filter>소스 파일\과제\assignment1</Filter>
+    </ClCompile>
+    <ClCompile Include="MyUnitTest.cpp">
+      <Filter>소스 파일\과제\assignment1</Filter>
+    </ClCompile>
+    <ClCompile Include="MySimpleRegex.cpp">
+      <Filter>소스 파일\과제\assignment1</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MySimpleRegex.h">
+      <Filter>소스 파일\과제\assignment1</Filter>
+    </ClInclude>
+    <ClInclude Include="MyUnitTest.h">
+      <Filter>소스 파일\과제\assignment1</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
