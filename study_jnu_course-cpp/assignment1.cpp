@@ -580,18 +580,18 @@ class MyUnitTest {
 
 private:
     struct test {
-        int number;
-        string regex;
-        vector<string> test;
-        vector<matches> expect;
-        bool details;
-        bool enabled;
+        int number;             //test case number
+        string regex;           //regex of test
+        vector<string> test;    //input strings for regex
+        vector<matches> expect; //expect results
+        bool details;           //0: less detail, 1: more detail
+        bool enabled;           //0: test disabled, 1: test enabled
     };
     vector<test> tests;         //테스트 목록
     int m_newline;              //개행이 필요할 때 기준 문자 수
     char m_underline_marker;    //밑줄 표시할 글자
     string m_indent;            //들여쓰기 문자
-    int tests_summary_enable;   //테스트 요약 표시여부
+    int details_summary_mode;   //테스트 요약 표시여부
 
     bool assertEqual(matches& expect, matches& result) {
         if (expect.size() != result.size()) return false;
@@ -631,56 +631,93 @@ private:
             if (disabled.find(t) != disabled.end()) continue; //disabled된 테스트 스킵
             vector<bool> results = run_test(tests[t].number); //테스트 수행
 
+            //테스트 성공여부
             bool test_successed = true;
             for (bool result : results) test_successed &= result;
 
-            if (test_successed) {
-                successed_list.push_back(t);
-                if (!tests[t].details) {
-                    cout << "테스트 #" << t << " 통과" << endl;
-                    continue;
-                }
-
-                print_test_title("테스트 #", t, " 통과 (more detail mode enabled)");
-                MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[t].regex, t);
-
-                for (int i = 0; i < tests[t].test.size(); i++) {
-                    vector<MySimpleRegex::matched> result = cp.match_all(tests[t].test[i]);
-                    cout << "case #" << (i + 1) << endl;
-                    print_elem_with_range("< 실행결과 >", result, t, i);
-                }
-            }
-
-            if (!test_successed)  {
-                failed_list.push_back(t);
-                MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[t].regex, t);
-                bool title_printed = false;
-                for (int i = 0; i < results.size(); i++) {
-                    if (!tests[t].details && results[i] == true) continue;
-                    matches result = cp.match_all(tests[t].test[i]);
-
-                    //실패한 테스트 제목 출력 (최초 1회만)
-                    if (!title_printed) {
-                        title_printed = true;
-                        if (!tests[i].details)
-                            print_test_title("<!>>>>>>> 테스트 #", t, " 실패");
-                        else
-                            print_test_title("<!>>>>>>> 테스트 #", t, " 실패 (more detail mode enabled)");
-                    }
-
-                    //실패한 케이스 출력
-                    cout << "case #" << (i + 1) << (results[i] ? " (통과)" : " (실패)") << endl;
-                    if (!results[i])
-                        print_elem_with_range("< 기대결과 >", tests[t].expect[i], t, i);
-                    print_elem_with_range("< 실행결과 >", result, t, i);
-                }
-            }
+            if (test_successed)
+                print_successed_test(successed_list, t);
+            else
+                print_failed_test(failed_list, results, t);
             cout << "\n\n";
         }
 
         //테스트 종합 결과 출력
-        if (tests_summary_enable)
-            print_tests_summary(disabled, successed_list, failed_list);
+        print_tests_summary(disabled, successed_list, failed_list);
+    }
+
+    void print_successed_test(vector<int>& successed_list, int test_number) {
+        successed_list.push_back(test_number);
+        if (!tests[test_number].details) {
+            cout << "테스트 #" << test_number << " 통과" << endl;
+            return;
+        }
+
+        print_test_title("테스트 #", test_number, " 통과 (more detail mode enabled)");
+        MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex, test_number);
+
+        for (int i = 0; i < tests[test_number].test.size(); i++) {
+            vector<MySimpleRegex::matched> result = cp.match_all(tests[test_number].test[i]);
+            cout << "case #" << (i + 1) << endl;
+            print_elem_with_range("< 실행결과 >", result, test_number, i);
+        }
+    }
+
+    void print_failed_test(vector<int>& failed_list, vector<bool>& results, int test_number) {
+        failed_list.push_back(test_number);
+        MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex, test_number);
+        bool title_printed = false;
+        for (int i = 0; i < results.size(); i++) {
+            if (!tests[test_number].details && results[i] == true) continue;
+            matches result = cp.match_all(tests[test_number].test[i]);
+
+            //실패한 테스트 제목 출력 (최초 1회만)
+            if (!title_printed) {
+                title_printed = true;
+                if (!tests[i].details)
+                    print_test_title("<!>>>>>>> 테스트 #", test_number, " 실패");
+                else
+                    print_test_title("<!>>>>>>> 테스트 #", test_number, " 실패 (more detail mode enabled)");
+            }
+
+            //실패한 케이스 출력
+            cout << "case #" << (i + 1) << (results[i] ? " (통과)" : " (실패)") << endl;
+            if (!results[i])
+                print_elem_with_range("< 기대결과 >", tests[test_number].expect[i], test_number, i);
+            print_elem_with_range("< 실행결과 >", result, test_number, i);
+        }
+    }
+
+    void print_tests_summary(set<int>& disabled, vector<int>& successed_list, vector<int>& failed_list) {
+        if (details_summary_mode) {
+            string line = "=========================";
+            unsigned tests_size = unsigned(tests.size() - 1);
+            cout << line << "  [테스트 종합 결과]  " << line << endl;
+            cout << "총 테스트케이스 수:\t" << tests_size << " 개\n";
+            if (!disabled.empty())
+                cout << "비활성화된 테스트 수:\t" << disabled.size() << " 개\n";
+            cout << "수행한 테스트 수:\t" << (tests_size - disabled.size()) << " 개\n";
+            cout << "성공한 테스트케이스 수:\t" << (successed_list.size()) << " 개\n";
+            if (!failed_list.empty())
+                cout << "실패한 테스트케이스 수:\t" << failed_list.size() << " 개\n";
+            cout << endl;
+
+            if (!disabled.empty()) {
+                cout << "비활성화된 테스트케이스 목록:" << endl << m_indent << m_indent;
+                for (int test : disabled) cout << test << ";  ";
+                cout << endl;
+            }
+            if (!disabled.empty()) {
+                cout << "성공한 테스트케이스 목록:" << endl << m_indent << m_indent;
+                for (int test : successed_list) cout << test << ";  ";
+                cout << endl;
+            }
+            if (!failed_list.empty()) {
+                cout << "실패한 테스트케이스 목록:" << endl << m_indent << m_indent;
+                for (int test : failed_list) cout << test << ";  ";
+                cout << endl;
+            }
+        }
         else {
             if (failed_list.empty()) {
                 cout << "테스트를 모두 통과하였습니다." << endl;
@@ -692,37 +729,17 @@ private:
                 cout << "실패한 테스트가 있습니다." << endl << m_indent << "리스트:  ";
                 for (int test : failed_list) cout << test << ";  ";
             }
-                
+            cout << endl;
         }
-    }
-
-    void print_tests_summary(set<int>& disabled, vector<int>& successed_list, vector<int>& failed_list) {
-        string line = "=========================";
-        unsigned tests_size = unsigned(tests.size() - 1);
-        cout << line << "  [테스트 종합 결과]  " << line << endl;
-        cout << "총 테스트케이스 수:\t" << tests_size << " 개\n";
-        cout << "수행한 테스트 수:\t" << (tests_size - disabled.size()) << " 개\n";
-        if (!disabled.empty())
-            cout << "비활성화된 테스트 수:\t" << disabled.size() << " 개\n";
-        cout << "성공한 테스트케이스 수:\t" << (tests_size - failed_list.size()) << " 개\n";
-        if (!failed_list.empty())
-            cout << "실패한 테스트케이스 수:\t" << failed_list.size() << " 개\n";
-
         cout << endl;
-        if (!disabled.empty()) {
-            cout << "비활성화된 테스트케이스 목록:" << endl << m_indent << m_indent;
-            for (int test : disabled) cout << test << ";  ";
-            cout << endl;
-        }
-        if (!disabled.empty()) {
-            cout << "성공한 테스트케이스 목록:" << endl << m_indent << m_indent;
-            for (int test : successed_list) cout << test << ";  ";
-            cout << endl;
-        }
-        if (!failed_list.empty()) {
-            cout << "실패한 테스트케이스 목록:" << endl << m_indent << m_indent;
-            for (int test : failed_list) cout << test << ";  ";
-            cout << endl;
+        
+        //less_details_all이 활성화인지 확인
+        bool less_details_all = true;
+        for (int i = 1; i < tests.size(); i++) 
+            less_details_all &= !tests[i].details;
+        if (less_details_all) {
+            cout << "간략화된 테스트 결과 보기가 켜져 있습니다." << endl;
+            cout << "더 자세한 테스트 결과를 보시려면 run() 실행 이전에 more_details_all()을 실행하세요." << endl;
         }
     }
 
@@ -776,7 +793,7 @@ public:
         m_newline(80), 
         m_underline_marker('^') {
         set_indent_level(3);
-        test_summary_show();
+        set_summary_more_details();
 
         register_tests();
         enable_all().more_details_all();
@@ -796,12 +813,12 @@ public:
         for (int i = 0; i < indent_level; i++) m_indent += " ";
         return *this;
     }
-    MyUnitTest& test_summary_show() {
-        tests_summary_enable = true;
+    MyUnitTest& set_summary_more_details() {
+        details_summary_mode = true;
         return *this;
     }
-    MyUnitTest& test_summary_hide() {
-        tests_summary_enable = false;
+    MyUnitTest& set_summary_less_details() {
+        details_summary_mode = false;
         return *this;
     }
 
@@ -1158,7 +1175,7 @@ protected:
 
 int main() {
     MyUnitTest test;
-    test.less_details_all().run();
+    test.less_details_all().disable({1}).run();
 
     return 0;
 }
