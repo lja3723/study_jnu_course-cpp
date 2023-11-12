@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DataReader.h" />
     <ClCompile Include="MySimpleRegex.cpp" />
     <ClCompile Include="regex.cpp" />
     <ClCompile Include="ch04.cpp" />

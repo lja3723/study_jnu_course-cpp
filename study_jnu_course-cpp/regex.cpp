@@ -14,10 +14,12 @@ namespace assignment1 {
         return 0;
     }
 
-    int main1() {
-        TestDataReader::read("test_data.txt");
+    int readerTest() {
+        MyUnitTest t;
+        t.reader_test("test_data.txt");
+
         return 0;
     }
 }
 
-int main() { assignment1::main(); }
+int main() { assignment1::readerTest(); }

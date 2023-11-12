@@ -1,18 +1,18 @@
 #ifndef __MY_UNIT_TEST_H__
 #define __MY_UNIT_TEST_H__
 #include <iostream>
-#include <fstream>
-#include <string>
-
 #include <vector>
 #include <set>
+
 #include "MySimpleRegex.h"
+#include "DataReader.h"
 
 namespace assignment1 {
 using namespace std;
 
 
 class MyUnitTest {
+    friend class TestDataReader;
 private:
     struct test {               //test
         int number;             //test case number
@@ -22,11 +22,19 @@ private:
         bool details;           //0: less detail, 1: more detail
         bool enabled;           //0: test disabled, 1: test enabled
     };
+
     vector<test> tests;         //테스트 목록
     int m_newline;              //개행이 필요할 때 기준 문자 수
     char m_underline_marker;    //밑줄 표시할 글자
     string m_indent;            //들여쓰기 문자
     int details_summary_mode;   //테스트 요약 표시여부
+
+
+
+    class TestDataReader : public DataReader<vector<MyUnitTest::test>> {
+    public:
+
+    };
 
 
     void print_run_title();
@@ -119,6 +127,9 @@ public:
         return *this;
     }
 
+    void reader_test(const char* filename) {
+        TestDataReader().read(filename, tests);
+    }
 
 //실행할 테스트를 등록한다.
 protected:
@@ -154,25 +165,6 @@ protected:
     void test7();
     void test8();
     void test9();
-};
-
-
-class TestDataReader {
-public:
-    static void read(const char* filename) {
-        ifstream test_data;
-        test_data.open(filename);
-        if (!test_data.is_open()) {
-            cout << filename << " 파일을 읽을 수 없습니다." << endl;
-            return;
-        }
-
-        string line;
-        int line_number = 0;
-        while (getline(test_data, line)) {
-            cout << ++line_number << ":  " << line << endl;
-        }
-    }
 };
 
 

@@ -106,9 +106,9 @@ void MyUnitTest::print_failed_test(vector<int>& failed_list, vector<bool>& resul
 void MyUnitTest::print_tests_summary(set<int>& disabled, vector<int>& successed_list, vector<int>& failed_list) {
     cout << "\n\n";
     if (details_summary_mode) {
-        string line = "=========================";
+        string lines = "=========================";
         unsigned tests_size = unsigned(tests.size() - 1);
-        cout << line << "  [테스트 종합 결과]  " << line << endl;
+        cout << lines << "  [테스트 종합 결과]  " << lines << endl;
         cout << "총 테스트케이스 수:\t" << tests_size << " 개\n";
         if (!disabled.empty())
             cout << "비활성화된 테스트 수:\t" << disabled.size() << " 개\n";
