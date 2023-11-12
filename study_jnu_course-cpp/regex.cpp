@@ -20,6 +20,12 @@ namespace assignment1 {
 
         return 0;
     }
+
+    void stoitest() {
+        string s = "ad23";
+        int k = stoi(s);
+        cout << k << endl;
+    }
 }
 
 int main() { assignment1::readerTest(); }

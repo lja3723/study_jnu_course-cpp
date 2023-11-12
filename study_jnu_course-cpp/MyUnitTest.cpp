@@ -38,6 +38,9 @@ void MyUnitTest::print_match_range(string title, vector<ranged_string>& match_re
 //매치된 영역에 밑줄 표시; 입력 문자열이 길면 newline마다 개행됨
 void MyUnitTest::print_match_underline(const vector<ranged_string>& result) {
     if (result.empty()) return;
+
+    //TODO: ref가 NULL인 버그 발생
+    //해결하자
     const string& ref = result[0].ref;
 
     //문자열과 밑줄을 끊어서 출력
@@ -507,5 +510,21 @@ void MyUnitTest::test9() {
         ranged_string(test[8], 4, 10, true)}} });;
 }
 
+
+//**************************  Reader Test  **********************************
+
+void MyUnitTest::reader_test(const char* filename) {
+    TestDataFileReader reader;
+    bool result = reader.read(filename, tests);
+    cout << filename << " 파일을 ";
+    if (result) {
+        cout << "성공적으로 읽었습니다. \n";
+    }
+    else
+        cout << "읽기에 실패했습니다. \n";
+
+    more_details_all();
+    run_tests();
+}
 
 } //end of namespace assignment1
