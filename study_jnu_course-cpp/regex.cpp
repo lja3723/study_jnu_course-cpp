@@ -28,4 +28,4 @@ namespace assignment1 {
     }
 }
 
-int main() { assignment1::readerTest(); }
+//int main() { assignment1::readerTest(); }

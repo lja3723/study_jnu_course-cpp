@@ -171,6 +171,7 @@ private:
     using Tokens = vector<string>;
 
     enum _state {   //총 8가지 상태
+        init,       //파일 최초 오픈
         regex,      //regex:
         get_cases,  //test_cases:
         get_case,   //case:
@@ -187,6 +188,13 @@ private:
     bool is_range_null;
     bool is_file_end;
 
+    bool prev_state_init(Data& container) {
+        if (is_file_end) {
+            cout << "파일에서 읽어온 내용이 없습니다. 테스트가 정상적으로 수행되지 않을 수 있습니다." << endl;
+            return true;
+        }
+        return false;
+    }
 
     bool prev_state_regex(Data& container) {
         if (is_file_end) return error_file_end();
@@ -265,10 +273,8 @@ private:
 
     bool prev_state_range(Data& container) {
         if (is_file_end) {
-            if (cur_test.number > 0) {
-                expect_push_and_clear(container);
-                container.push_back(cur_test);
-            }
+            expect_push_and_clear(container);
+            container.push_back(cur_test);
             return true;
         }
 
@@ -282,22 +288,8 @@ private:
             return add_range();
         }
 
-        if (line_means == regex) {
-            if (m_tokens.size() <= 1)
-                return error_argument_missing();
-            
-            if (cur_test.number > 0) {
-                expect_push_and_clear(container);
-                container.push_back(cur_test);
-            }
-
-            init_cur_test(++cur_test_num);
-            cur_test.regex = m_tokens[1];
-
-            is_range_null = false;
-            prev_state = regex;
-            return true;
-        }
+        if (line_means == regex)
+            return action_state_regex(container);
 
         if (line_means == get_case) {
             if (!is_range_null) 
@@ -315,6 +307,39 @@ private:
         });
     }
     
+    bool action_state_init(Data& container) {
+        return true;
+    }
+    bool action_state_regex(Data& container) {
+        if (m_tokens.size() <= 1)
+            return error_argument_missing();
+
+        expect_push_and_clear(container);
+        container.push_back(cur_test);
+        init_cur_test(++cur_test_num);
+        cur_test.regex = m_tokens[1];
+
+        is_range_null = false;
+        prev_state = regex;
+        return true;
+    }
+    bool action_state_get_cases(Data& container) {
+        return true;
+    }
+    bool action_state_get_case(Data& container) {
+        return true;
+    }
+    bool action_state_input(Data& container) {
+        return true;
+    }
+    bool action_state_output(Data& container) {
+        return true;
+    }
+    bool action_state_range(Data& container) {
+        return true;
+    }
+
+
     void expect_push_and_clear(Data& container) {
         cur_test.expect.push_back(cur_test_expect);
         cur_test_expect.clear();
@@ -434,7 +459,7 @@ protected:
 
 public:
     TestDataFileReader() : 
-        prev_state(range), line_means(unknown), 
+        prev_state(init), line_means(init), 
         cur_test_num(0), is_file_end(false), is_range_null(false) {
         init_cur_test(0);
     }

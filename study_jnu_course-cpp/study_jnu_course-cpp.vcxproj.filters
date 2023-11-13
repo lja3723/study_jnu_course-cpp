@@ -90,6 +90,12 @@
     <ClCompile Include="DataReader.h">
       <Filter>소스 파일\과제\assignment1</Filter>
     </ClCompile>
+    <ClCompile Include="ch10.cpp">
+      <Filter>소스 파일\수업</Filter>
+    </ClCompile>
+    <ClCompile Include="ch00.cpp">
+      <Filter>소스 파일\수업</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MySimpleRegex.h">
