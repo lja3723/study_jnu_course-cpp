@@ -8,8 +8,7 @@ namespace assignment1 {
         string test_data = "test_data.txt";
         MyUnitTest unit_test(test_data);
         if (!unit_test.is_open()) {
-            cout << "\"" << test_data;
-            cout << "\" 파일이 존재하지 않습니다. ";
+            cout << "\"" << test_data << "\" 파일이 존재하지 않습니다. ";
             cout << "테스트를 수행할 수 없습니다." << endl;
             return -1;
         }

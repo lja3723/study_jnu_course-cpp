@@ -5,26 +5,26 @@
 
 #Test No. 1
 regex: abc|ade
-test_cases:			//있어도 되고 없어도 됨
+test_cases:	//있어도 되고 없어도 됨
 	case: #1
 		input: abc
-		output:		//range: 도 가능
+		output:	//range: 도 가능
 			0	3
-	case: #2
+	case: #2 <= 주석이니까 없어도 OK
 		input: ade
 		range:
 			0 3
-	case: #3
+	case:
 		input: aaaaabbbbabcaaaaaadeaaaaabc
 		output:
 			9 12
-			17 20
+			17		20 //탭으로 구분 가능
 			24 27
-	case: #4
-		input: abbbbbbbbdddddddfdfdfdfdf
+	case:
+		input:		abbbbbbbbdddddddfdfdfdfdf
 		output:
 			NULL
-	case: #5
+	case: #5 <= 그런데 있는게 보기 편하죠
 		input: zzosiduabcfdsfdafdadere
 		range:
 			7 10
@@ -43,7 +43,7 @@ test_cases:			//있어도 되고 없어도 됨
 			107 110
 
 
-#Test No. 2
+#Test No. 2 <= 요거도 마찬가지
 regex: aba
 //test_cases:
 	case:
