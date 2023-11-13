@@ -5,27 +5,21 @@ namespace assignment1 {
     using namespace std;
 
     int main() {
-        MyUnitTest()
+        string test_data = "test_data.txt";
+        MyUnitTest test(test_data);
+        if (!test.is_open()) {
+            cout << "\"" << test_data << "\" 파일이 존재하지 않습니다. 테스트를 수행할 수 없습니다." << endl;
+            return -1;
+        }
+
+        test
             .less_details_all()
             //.set_summary_less_details()
-            .disable({1, 8, 9})
+            .disable({})
             .run();        
 
         return 0;
     }
-
-    int readerTest() {
-        MyUnitTest t;
-        t.reader_test("test_data.txt");
-
-        return 0;
-    }
-
-    void stoitest() {
-        string s = "ad23";
-        int k = stoi(s);
-        cout << k << endl;
-    }
 }
 
-//int main() { assignment1::readerTest(); }
+int main() { assignment1::main(); }

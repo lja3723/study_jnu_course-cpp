@@ -83,7 +83,10 @@ void MyUnitTest::print_successed_test(vector<int>& successed_list, int test_numb
 
 void MyUnitTest::print_failed_test(vector<int>& failed_list, vector<bool>& results, int test_number) {
     failed_list.push_back(test_number);
+
+    //실패한 테스트를 재현하기 위해 정규식 재컴파일
     MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex, test_number);
+    
     bool title_printed = false;
     for (int i = 0; i < results.size(); i++) {
         if (!tests[test_number].details && results[i] == true) continue;
@@ -221,9 +224,26 @@ void MyUnitTest::run_tests() {
     print_tests_summary(disabled, successed_list, failed_list);
 }
 
+void MyUnitTest::run() { 
+    if (m_is_file_open && !m_is_file_syntax_error)
+        run_tests(); 
+}
 
 
-/*******************   테스트 정의함수   *******************/
+/*******************   기타 함수   *******************/
+void MyUnitTest::clear_tests() {
+    tests.clear();
+    tests.push_back({ 0, "", vector<string>(), vector<vector<ranged_string>>() });
+}
+void MyUnitTest::file_open(const char* name) {
+    TestDataFileReader reader;
+    m_is_file_open = reader.open(name);
+    if (!m_is_file_open) return;
+    m_is_file_syntax_error = !reader.read(tests);
+}
+bool MyUnitTest::is_open() { return m_is_file_open; }
+
+
 void MyUnitTest::test1() {
     int t = 1;
     static vector<string> test({
@@ -510,22 +530,5 @@ void MyUnitTest::test9() {
         ranged_string(test[8], 4, 10, true)}} });;
 }
 
-
-
-//**************************  Reader Test  **********************************
-
-void MyUnitTest::reader_test(const char* filename) {
-    TestDataFileReader reader;
-    bool result = reader.read(filename, tests);
-    cout << filename << " 파일을 ";
-    if (result) {
-        cout << "성공적으로 읽었습니다. \n";
-    }
-    else
-        cout << "읽기에 실패했습니다. \n";
-
-    more_details_all();
-    run_tests();
-}
 
 } //end of namespace assignment1

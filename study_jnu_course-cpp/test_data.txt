@@ -1,38 +1,40 @@
 //MySimpleRegex 테스트용 데이터입니다.
 //이렇게 쓰면 주석입니다.
+# 이렇게 써도 주석입니다.
+//모든 구문은 대소문자 구별 X
 
-//test no. 1
+#Test No. 1
 regex: abc|ade
-test_cases:      //있어도 되고 없어도 됨
-	case:
+test_cases:			//있어도 되고 없어도 됨
+	case: #1
 		input: abc
-		output:  //range: 도 가능
-			0 3
-	case:
+		output:		//range: 도 가능
+			0	3
+	case: #2
 		input: ade
 		range:
 			0 3
-	case:
+	case: #3
 		input: aaaaabbbbabcaaaaaadeaaaaabc
 		output:
 			9 12
 			17 20
 			24 27
-	case:
+	case: #4
 		input: abbbbbbbbdddddddfdfdfdfdf
 		output:
 			NULL
-	case:
+	case: #5
 		input: zzosiduabcfdsfdafdadere
 		range:
 			7 10
 			18 21
-	case:
+	case: #6
 		input: aosisudababaifudiaddadeidufodi
 		range:
 			20 23
 			//4 39
-	case:
+	case: #7
 		input: asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij
 		range:
 			23 26
@@ -41,7 +43,7 @@ test_cases:      //있어도 되고 없어도 됨
 			107 110
 
 
-//test no. 2
+#Test No. 2
 regex: aba
 //test_cases:
 	case:
@@ -64,6 +66,300 @@ regex: aba
 			8 11
 			12 15
 			16 19
-	
-	
-	
+
+
+#Test No. 3
+regex: NK((abc|ABC)*N|(OP)+)Q
+	case: #1
+		input: NKNQ
+		range:
+			0 4
+	case: #2
+		input: NKOPQ
+		range:
+			0 5
+	case: #3
+		input: NK
+		range:
+			null
+	case: #4
+		input: OPQ
+		range:
+			null
+	case: #5
+		input: NKabcabcabcNQ
+		range:
+			0 13
+	case: #6
+		input: oosoiduuufufffii
+		range:
+			null
+	case: #7
+		input: NKABCABCNQ
+		range:
+			0 10
+	case: #8
+		input: NKabcABCabcABCABCabcABCNQ
+		range:
+			0 25
+	case: #9
+		input: NKOPOPOPOPQ
+		range:
+			0 11
+	case: #10
+		input: sofieNKNQofisNOPQkfuNKOPOPQlzNKABCNQksofuNKabcNQtttat
+		range:
+			5 9
+			20 27
+			29 36
+			41 48
+
+
+#Test No. 4
+regex: ab+c
+	case: #1
+		input: a
+		range:
+			null
+	case: #2
+		input: ac
+		range:
+			null
+	case: #3
+		input: abc
+		range:
+			0 3
+	case: #4
+		input: abbc
+		range:
+			0 4
+	case: #5
+		input: abbbbbb
+		range:
+			NULL
+	case: #6
+		input: abbbc
+		range:
+			0 5
+	case: #7
+		input: abbbbbc
+		range:
+			0 7
+	case: #8
+		input: abbbbababcccccabbbbcabbbbabacacabccccab
+		range:
+			7 10
+			14 20
+			31 34
+
+
+#Test No. 5
+regex: abc+
+	case: #1
+		input: a
+		range:
+			NULL
+	case: #2
+		input: aaa
+		range:
+			NULL
+	case: #3
+		input: aaaabb
+		range:
+			NULL
+	case: #4
+		input: aabbcc
+		range:
+			NULL
+	case: #5
+		input: ab
+		range:
+			NULL
+	case: #6
+		input: abc
+		range:
+			0 3
+	case: #7
+		input: abcc
+		range:
+			0 4
+	case: #8
+		input: abccc
+		range:
+			0 5
+	case: #9
+		input: abcccccc
+		range:
+			0 8
+	case: #10
+		input: kkkabcccccccciabccccccabccccckkkcccccabccccccccccco
+		range:
+			3 13
+			14 22
+			22 29
+			37 50			
+
+
+#Test No. 6
+regex: aB{3,6}c
+	case: #1
+		input: ac
+		range:
+			null
+	case: #2
+		input: aBc
+		range:
+			null
+	case: #3
+		input: aBBc
+		range:
+			null
+	case: #4
+		input: aBBBc
+		range:
+			0 5
+	case: #5
+		input: aBBBBc
+		range:
+			0 6
+	case: #6
+		input: aBBBBBc
+		range:
+			0 7
+	case: #7
+		input: gaBBBBBBc
+		range:
+			1 9
+	case: #8
+		input: ggaBBBBBBBc
+		range:
+			null
+	case: #9
+		input: aBBBBBBBBc
+		range:
+			null
+	case: #10
+		input: aBBBBBBBBBc
+		range:
+			null
+	case: #11
+		input: aBBBBBBBBBBcg
+		range:
+			null
+	case: #12
+		input: aBBBBBBBBBBBcgg
+		range:
+			null
+	case: #13
+		input: aBBBBBBBBBBBBc
+		range:
+			null
+	case: #14
+		input: aBBBBBBBBBBBBBc
+		range:
+			null
+	case: #15
+		input: kaBBBcfaBBBBckkaBBckaBBBBBBcUUUaBBBBcOOOaBcTTTTaBBBBBcTTTTT
+		range:
+			1 6
+			7 13
+			20 28
+			31 37
+			47 54			
+
+
+#Test No. 7
+regex: jkT{4,5}
+	case: #1
+		input: jkTT
+		range:
+			null
+	case: #2
+		input: jkTTT
+		range:
+			null
+	case: #3
+		input: jkTTTT
+		range:
+			0 6
+	case: #4
+		input: jkTTTTT
+		range:
+			0 7
+	case: #5
+		input: jkTTTTTT
+		range:
+			0 7
+	case: #6
+		input: jkTTTTTTT
+		range:
+			0 7
+
+
+#Test No. 8
+regex: T{3,5}
+	case: #1
+		input: TT
+		range:
+			null
+	case: #2
+		input: TTT
+		range:
+			0 3
+	case: #3
+		input: TTTT
+		range:
+			0 4
+	case: #4
+		input: TTTTT
+		range:
+			0 5
+	case: #5
+		input: TTTTTT
+		range:
+			null
+	case: #6
+		input: TTTTTTT
+		range:
+			null
+
+
+#Test No. 9
+regex: T+
+	case: #1
+		input: T
+		range:
+			0 1
+	case: #2
+		input: TT
+		range:
+			0 2
+	case: #3
+		input: TTT
+		range:
+			0 3
+	case: #4
+		input: kkTTTT
+		range:
+			2 6
+	case: #5
+		input: TTTTT
+		range:
+			0 5
+	case: #6
+		input: kkkkTTTTTT
+		range:
+			4 10
+	case: #7
+		input: TTTTTTT
+		range:
+			0 7
+	case: #8
+		input: kkkkTTTTTTz
+		range:
+			4 10
+	case: #9
+		input: k
+		range:
+			null
+

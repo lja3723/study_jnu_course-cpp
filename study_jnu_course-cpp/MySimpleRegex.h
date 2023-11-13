@@ -9,7 +9,7 @@ using namespace std;
 
 // 특정한 구간을 표현하는 문자열
 struct ranged_string {
-    const string& ref;          //참조 문자열
+    const string ref;          //참조 문자열
     const bool is_valid;        //객체 유효성
     const unsigned start, end;  //참조 문자열에서의 범위
 
@@ -23,7 +23,7 @@ struct ranged_string {
     string group() const { return ref.substr(start, size_t(end - start)); }
 
     //유효하지 않은 ranged_string 객체를 반환한다.
-    static const ranged_string invalid() { return ranged_string("", 0, 0, false); }
+    static const ranged_string invalid() { return ranged_string(string(), 0, 0, false); }
 };
 
 
