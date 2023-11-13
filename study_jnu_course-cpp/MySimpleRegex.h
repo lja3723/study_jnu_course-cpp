@@ -7,9 +7,9 @@ namespace assignment1 {
 using namespace std;
 
 
-// 특정한 구간을 표현하는 문자열
+//특정한 구간을 표현하는 문자열
 struct ranged_string {
-    const string ref;          //참조 문자열
+    const string ref;           //참조 문자열
     const bool is_valid;        //객체 유효성
     const unsigned start, end;  //참조 문자열에서의 범위
 
@@ -27,182 +27,98 @@ struct ranged_string {
 };
 
 
-//Regex를 입력으로 받아 패턴을 인식하는 클래스
+
+//Regex를 입력으로 받아 패턴을 인식하는 래퍼 클래스
+//MySimpleRegex::compiled 클래스가 본체이다.
 class MySimpleRegex {
 private: MySimpleRegex();
     //이 클래스는 static 메서드만 있으므로 생성자를 private로 둔다.
 
 public:
-    class compiled;
+    class compiled; //진짜 기능을 하는 클래스
     
-    //정규표현식을 컴파일한 객체를 반환한다.
-    static compiled compile(const string& m_regex, int test); 
+    //정규표현식을 컴파일한 객체 compiled를 반환한다.
+    static compiled compile(const string& m_regex); 
 
-    //source에서 정규표현식과 가장 먼저 일치하는 범위(유효하지 않을 수도 있음)를 구한다.
+    //source에서 정규표현식과 가장 먼저 일치하는 범위를 구한다.
+    //그런 범위가 없으면 invalid한 객체를 반환한다.
     static ranged_string match(const string& m_regex, const string& source);   
 
-    //source에서 정규표현식과 일치하는 모든 범위를 구한다. 일치정보가 없을 경우 빈 vector가 반환된다.
+    //source에서 정규표현식과 일치하는 모든 범위를 구한다
+    //일치정보가 없을 경우 empty()한 vector가 반환된다.
     static vector<ranged_string> match_all(const string m_regex, const string& source);
 };
 
 
 
-//정규표현식을 컴파일한 객체로, 확인할 문자열을 입력하면 일치 정보를 반환한다.
+/*
+class MySimpleRegex::compiled:
+정규표현식을 컴파일한 객체이다. 생성자 호출 시 정규표현식을 입력받는다.
+입력으로 들어온 정규표현식을 파싱 후 그에 맞는 state-machine을 내부적으로 생성한다.
+
+범위를 구할 input 문자열이 들어오면 상태기계를 이용해 매치되는 범위를 구한다.
+일치하는 범위가 없으면 invalid한 ranged_string이 반환된다.
+
+다양한 문자열을 비교하기 위한 매치 클래스 및 파생 클래스와
+다양한 노드 포인터를 포현하기 위한 노드 포인터 클래스 및 파생 클래스를 정의한다.
+
+*/
 class MySimpleRegex::compiled {
 private:    
     /****************************/
-    /*       inner classes      */
+    /*      Inner Classes       */
     /****************************/
 
-
+    //input char을 판별하기 위한 매치 클래스
+    //상속으로 다형성을 구현한다.
     class Imatchable;   //매치 객체 인터페이스    
     class match_single; //단일 문자 매치    
     class match_dot;    //모든 문자 매치
 
-    class node;             //유한 오토마타를 구성하는 노드
-    class node_ptr;         //노드를 가리키는 포인터 (가상 클래스)
-    class node_ptr_direct;  //노드를 직접 연결하는 포인터
-                            //전이 요청을 받으면 무조건 전이 신호 보내줌
-    class node_ptr_cnt_inner;   //노드를 조건부로 연결하는 포인터
-                                //전이 요청을 일정 횟수 받은 경우에만 전이 신호 보내줌
 
-    //해당 노드에 요청할 때 전달하는 정보
+    //상태머신의 노드와 노드 포인터를 표현하는 클래스이다    
+    //node를 가리키는 node_ptr 추상 클래스와 파생 클래스로 구성된다.
+    //활성화 신호를 바로 전달하는 node_ptr_direct 포인터,
+    //내부에 카운터가 있어 카운트가 일정 이상이 되면 활성화 신호를 전달하는
+    //node_ptr_cnt_inner 포인터가 존재한다.
+    class node;         //상태머신의 노드
+    class node_ptr;         
+    class node_ptr_direct;  
+    class node_ptr_cnt_inner;
+
+
+    //다음 활성화 노드에 대한 정보로, 다음 활성화 노드 대상인 target과, 
+    //활성화 상태와 같이 전이되는 상태인 start_index 정보를 담는다.
     struct active_request_info {
         node* target;
         unsigned start_index;
     };
 
-    class node {
-    private:
-        string m_name;              // state node name
-        unsigned m_state_istart;    // state가 첫 active되었을 때 입력되었던 문자의 인덱스
-        bool m_state_active;        // 0: deactive, 1: active
-        bool m_is_terminal;         // 0: terminal, 1: non-terminal
-
-        vector<node_ptr*> next; // next link
-        vector<node*> reverse_ref; //이 노드를 가리키는 역참조
-
-    public:
-        //생성자
-        node(string name = "", bool isTerminal = false) :
-            m_name(name), m_is_terminal(isTerminal), next(0) {
-            m_state_istart = 0;
-            m_state_active = false;
-        }
-
-        //소멸자: new로 할당받은 메모리를 반환한다.
-        ~node() {
-            for (int i = 0; i < next.size(); i++)
-                if (next[i] != nullptr)
-                    delete next[i];
-        }
-
-        unsigned index_start() const;
-        void addNode(node_ptr* _next);
-        void add_link_reverse_ref(node* ref);
-        void active(int state_istart);
-        void clear_flags();
-        bool is_accepted() const;
-        void input(vector<active_request_info>& next_active, const char ch);
-    };
-
-    class node_ptr {
-    protected:
-        node* m_pNode;
-        Imatchable* matcher;
-
-        //각 포인터가 수행할 전이 동작을 수행한다.
-        virtual void transition_action(vector<active_request_info>& next_active, unsigned state_istart) = 0;
-
-    public:
-        static const unsigned INF = ~0U; //2^32 - 1
-
-        node_ptr(Imatchable* ranged_string, node* pNode) : m_pNode(pNode), matcher(ranged_string) {}
-        ~node_ptr();
-
-        //포인터와 관련된 플래그를 클리어한다. 필요한 경우만 오버라이드한다.
-        virtual void clear_flag() {}
-
-        //연결된 노드에 active를 요청한다. 한번에 될 수도 있고, 그렇지 않을 수도 있음
-        virtual void active_request(
-            vector<active_request_info>& next_active,
-            unsigned state_istart, char ch
-        ) final;
-
-        //연결된 노드의 역참조를 주어진 노드로 연결한다
-        virtual void link_reverse_ref(node* ref) final {
-            m_pNode->add_link_reverse_ref(ref);
-        }
-    };
-
-    class node_ptr_direct : public node_ptr {
-    protected:
-        virtual void transition_action(vector<active_request_info>& next_active, unsigned state_istart) override {
-            next_active.push_back({ m_pNode, state_istart });
-        }
-
-    public:
-        node_ptr_direct(Imatchable* matcher, node* pNode) : node_ptr(matcher, pNode) {}
-
-    };
-
-    class node_ptr_cnt_inner : public node_ptr {
-    private:
-        unsigned lower_bound;
-        unsigned upper_bound;
-
-        unsigned counter;
-        unsigned prev_istart;
-
-    protected:
-        virtual void transition_action(vector<active_request_info>& next_active, unsigned state_istart) override {
-            if (prev_istart != state_istart) {
-                prev_istart = state_istart;
-                counter = 0;
-            }
-            counter++;
-
-            //범위에 들었을 경우만 state를 전달한다
-            if (lower_bound <= counter && counter <= upper_bound)
-                next_active.push_back({ m_pNode, state_istart });
-        }
-
-    public:
-        node_ptr_cnt_inner(Imatchable* matcher, node* pNode, unsigned low_bound = 0, unsigned up_bound = node_ptr::INF) :
-            node_ptr(matcher, pNode), lower_bound(low_bound), upper_bound(up_bound) {
-            clear_flag();
-        }
-
-        virtual void clear_flag() override {
-            counter = 0;
-            prev_istart = node_ptr::INF;
-        }
-    };
 
     /****************************/
     /*      Private fields      */
     /****************************/
-    vector<node*> m_node;           //상태기계 노드 컨테이너
-    vector<node*> m_get_epsilon;    //엡실론 신호를 받는 노드리스트
-    vector<node*> m_terminal;       //터미널 노드리스트
-    const string& m_regex;          //저장된 정규표현식
+    vector<node*> m_node;           //상태기계 노드 컨테이너 (원본 포인터)
+    vector<node*> m_get_epsilon;    //엡실론 신호를 받는 노드 리스트 (얕은 복사됨)
+    vector<node*> m_terminal;       //터미널 노드 리스트 (얕은 복사됨)
+    string m_regex;                 //저장된 정규표현식
+
 
     /****************************/
     /*    Private functions     */
     /****************************/
-    void create_state_machine(int test);    //상태기계 노드 컨테이너에 상태기계를 생성한다.    
-    void delete_state_machine();            //생성된 상태기계를 삭제한다.   
-    ranged_string state_machine_input(    //상태기계에 문자열을 입력으로 받고, 
-                                    //가장 처음으로 accept된 일치 정보를 출력한다.
-        const string& src, 
-        unsigned index_start = 0,
+    void create_state_machine();    //상태기계 노드 컨테이너에 상태기계를 생성한다.    
+    void delete_state_machine();    //생성된 상태기계를 삭제한다.   
+    ranged_string state_machine_input(      //상태기계에 문자열을 입력으로 넣어주면
+        const string& src,                  //가장 처음으로 accept된 일치 정보를 출력한다.
+        unsigned index_start = 0,           //매치된 구간이 없으면 invalid한 객체를 반환한다.
         bool check_at_front_only = false);
 
 
 public:
     //주어진 정규표현식으로 내부적으로 상태기계를 생성한다.
-    compiled(const string& m_regex = "", int test = 0) : m_regex(m_regex) {
-        create_state_machine(test);
+    compiled(const string& m_regex = "") : m_regex(m_regex) {
+        create_state_machine();
     }
 
     //소멸자 (메모리 반환 필요)
@@ -214,6 +130,7 @@ public:
     }
 
     //source에서 발견되는 모든 일치 정보를 반환한다.
+    //아무 구간도 매치되지 않으면 empty() 한 vector가 반환된다.
     vector<ranged_string> match_all(const string& source) {
         vector<ranged_string> ret;
         unsigned found_idx = 0;
@@ -226,6 +143,7 @@ public:
         return ret;
     }
 };
+
 
 
 } //end of namespace assignment1

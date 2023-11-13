@@ -13,13 +13,15 @@ void MyUnitTest::print_run_title() {
     cout << t_indent << "****                                                        ****" << endl;
     cout << t_indent << "****************************************************************" << endl;
     cout << "\n\n";
-}
-    
+
+
+}  
 void MyUnitTest::print_test_title(string label_left, int test_number, string label_right) {
     cout << "\n\n\n";
     cout << label_left << test_number << " \"" << tests[test_number].regex << "\"" << label_right << endl;
-}
 
+
+}
 void MyUnitTest::print_match_range(string title, vector<ranged_string>& match_result, int test_case, int elem) {
     cout << m_indent << title << endl;
     if (match_result.empty()) {
@@ -33,14 +35,13 @@ void MyUnitTest::print_match_range(string title, vector<ranged_string>& match_re
         cout << "-> range [" << mt.start << "," << mt.end << ") " << "\"" << mt.group() << "\"\n";
     }
     cout << endl;
-}
 
-//매치된 영역에 밑줄 표시; 입력 문자열이 길면 newline마다 개행됨
+
+}
 void MyUnitTest::print_match_underline(const vector<ranged_string>& result) {
+    //매치된 영역에 밑줄 표시; 입력 문자열이 길면 newline마다 개행됨
     if (result.empty()) return;
 
-    //TODO: ref가 NULL인 버그 발생
-    //해결하자
     const string& ref = result[0].ref;
 
     //문자열과 밑줄을 끊어서 출력
@@ -61,8 +62,9 @@ void MyUnitTest::print_match_underline(const vector<ranged_string>& result) {
         }
         cout << endl;
     }
-}
 
+
+}
 void MyUnitTest::print_successed_test(vector<int>& successed_list, int test_number) {
     successed_list.push_back(test_number);
     if (!tests[test_number].details) {
@@ -71,7 +73,7 @@ void MyUnitTest::print_successed_test(vector<int>& successed_list, int test_numb
     }
 
     print_test_title("테스트 #", test_number, " 통과 (more detail mode enabled)");
-    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex, test_number);
+    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex);
 
     for (int i = 0; i < tests[test_number].test.size(); i++) {
         vector<ranged_string> result = cp.match_all(tests[test_number].test[i]);
@@ -79,13 +81,14 @@ void MyUnitTest::print_successed_test(vector<int>& successed_list, int test_numb
         print_match_range("< 실행결과 >", result, test_number, i);
     }
     cout << "\n\n";
-}
 
+
+}
 void MyUnitTest::print_failed_test(vector<int>& failed_list, vector<bool>& results, int test_number) {
     failed_list.push_back(test_number);
 
     //실패한 테스트를 재현하기 위해 정규식 재컴파일
-    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex, test_number);
+    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex);
     
     bool title_printed = false;
     for (int i = 0; i < results.size(); i++) {
@@ -107,8 +110,9 @@ void MyUnitTest::print_failed_test(vector<int>& failed_list, vector<bool>& resul
         print_match_range("< 실행결과 >", result, test_number, i);
     }
     cout << "\n\n";
-}
 
+
+}
 void MyUnitTest::print_tests_summary(set<int>& disabled, vector<int>& successed_list, vector<int>& failed_list) {
     cout << "\n\n";
     if (details_summary_mode) {
@@ -179,20 +183,22 @@ bool MyUnitTest::assertEqual(vector<ranged_string>& expect, vector<ranged_string
         if (expect[i].is_valid != result[i].is_valid) return false;
     }
     return true;
-}
 
+
+}
 vector<bool> MyUnitTest::run_test(int t) {
     vector<bool> ret;
 
-    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[t].regex, t);
+    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[t].regex);
     for (int i = 0; i < tests[t].test.size(); i++) {
         vector<ranged_string> list_all = cp.match_all(tests[t].test[i]);
         ret.push_back(assertEqual(tests[t].expect[i], list_all));
     }
 
     return ret;
-}
 
+
+}
 void MyUnitTest::run_tests() {
     print_run_title();
 
@@ -222,312 +228,106 @@ void MyUnitTest::run_tests() {
 
     //테스트 종합 결과 출력
     print_tests_summary(disabled, successed_list, failed_list);
+
+
+}
+void MyUnitTest::run() { 
+    if (m_is_file_open && m_no_syntax_error) {
+        run_tests();
+    }
 }
 
-void MyUnitTest::run() { 
-    if (m_is_file_open && !m_is_file_syntax_error)
-        run_tests(); 
-}
 
 
 /*******************   기타 함수   *******************/
 void MyUnitTest::clear_tests() {
     tests.clear();
     tests.push_back({ 0, "", vector<string>(), vector<vector<ranged_string>>() });
+
+
 }
 void MyUnitTest::file_open(const char* name) {
     TestDataFileReader reader;
     m_is_file_open = reader.open(name);
     if (!m_is_file_open) return;
-    m_is_file_syntax_error = !reader.read(tests);
+
+    m_no_syntax_error = reader.read(tests);
+    if (m_no_syntax_error)
+        cout << "\"" << name << "\" 파일을 성공적으로 읽었습니다." << endl;
+
+
 }
 bool MyUnitTest::is_open() { return m_is_file_open; }
 
 
-void MyUnitTest::test1() {
-    int t = 1;
-    static vector<string> test({
-        "abc",
-        "ade",
-        "aaaaabbbbabcaaaaaadeaaaaabc",
-        "abbbbbbbbdddddddfdfdfdfdf",
-        "zzosiduabcfdsfdafdadere",
-        "aosisudababaifudiaddadeidufodi",
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij"
-        "asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij" });
 
-    tests.push_back({
-        t,  "abc|ade", test,
-    {{
-        ranged_string(test[0], 0, 3, true)},
-    {
-        ranged_string(test[1], 0, 3, true) },
-    {
-        ranged_string(test[2], 9, 12, true),
-        ranged_string(test[2], 17, 20, true),
-        ranged_string(test[2], 24, 27, true) },
-    { },
-    {
-        ranged_string(test[4], 7, 10, true),
-        ranged_string(test[4], 18, 21, true), },
-    {
-        ranged_string(test[5], 20, 23, true) },
-    {
-        ranged_string(test[6], 23, 26, true),
-        ranged_string(test[6], 27, 30, true),
-        ranged_string(test[6], 100, 103, true),
-        ranged_string(test[6], 107, 110, true)}} });
+/*******************   테스트 옵션   *******************/
+MyUnitTest& MyUnitTest::set_newline(int newline) {
+    m_newline = newline;
+    return *this;
 }
-void MyUnitTest::test2() {
-    int t = 2;
-    static vector<string> test({
-        "aba",
-        "bab",
-        "baba",
-        "ababababababababababab" });
-
-    tests.push_back({
-        t, "aba", test,
-    {{
-        ranged_string(test[0], 0, 3, true)},
-    { },
-    {
-        ranged_string(test[2], 1, 4, true)},
-    {
-        ranged_string(test[3], 0, 3, true),
-        ranged_string(test[3], 4, 7, true),
-        ranged_string(test[3], 8, 11, true),
-        ranged_string(test[3], 12, 15, true),
-        ranged_string(test[3], 16, 19, true)}} });
+MyUnitTest& MyUnitTest::set_underline_marker(char marker) {
+    m_underline_marker = marker;
+    return *this;
 }
-void MyUnitTest::test3() {
-    int t = 3;
-    static vector<string> test({
-        "NKNQ",
-        "NKOPQ",
-        "NK",
-        "OPQ",
-        "NKabcabcabcNQ",
-        "oosoiduuufufffii",
-        "NKABCABCNQ",
-        "NKabcABCabcABCABCabcABCNQ",
-        "NKOPOPOPOPQ",
-        "sofieNKNQofisNOPQkfuNKOPOPQlzNKABCNQksofuNKabcNQtttat" });
-
-    tests.push_back({
-        t, "NK((abc|ABC)*N|(OP)+)Q", test,
-    {{
-        ranged_string(test[0], 0, 4, true)},
-    {
-        ranged_string(test[1], 0, 5, true)},
-    { },
-    { },
-    {
-        ranged_string(test[4], 0, 13, true)},
-    { },
-    {
-        ranged_string(test[6], 0, 10, true)},
-    {
-        ranged_string(test[7], 0, 25, true)},
-    {
-        ranged_string(test[8], 0, 11, true)},
-    {
-        ranged_string(test[9], 5, 9, true),
-        ranged_string(test[9], 20, 27, true),
-        ranged_string(test[9], 29, 36, true),
-        ranged_string(test[9], 41, 48, true)}} });
+MyUnitTest& MyUnitTest::set_indent_level(int indent_level) {
+    m_indent = "";
+    for (int i = 0; i < indent_level; i++) m_indent += " ";
+    return *this;
 }
-void MyUnitTest::test4() {
-    int t = 4;
-    static vector<string> test({
-        "a",
-        "ac",
-        "abc",
-        "abbc",
-        "abbbbbb",
-        "abbbc",
-        "abbbbbc",
-        "abbbbababcccccabbbbcabbbbabacacabccccab" });
-
-    tests.push_back({
-        t, "ab+c", test,
-    {{ },
-    { },
-    {
-        ranged_string(test[2], 0, 3, true)},
-    {
-        ranged_string(test[3], 0, 4, true)},
-    { },
-    {
-        ranged_string(test[5], 0, 5, true)},
-    {
-        ranged_string(test[6], 0, 7, true)},
-    {
-        ranged_string(test[7], 7, 10, true),
-        ranged_string(test[7], 14, 20, true),
-        ranged_string(test[7], 31, 34, true)}} });
+MyUnitTest& MyUnitTest::set_summary_more_details() {
+    details_summary_mode = true;
+    return *this;
 }
-void MyUnitTest::test5() {
-    int t = 5;
-    static vector<string> test({
-        "a",
-        "aaa",
-        "aaaabb",
-        "aabbcc",
-        "ab",
-        "abc",
-        "abcc",
-        "abccc",
-        "abcccccc",
-        "kkkabcccccccciabccccccabccccckkkcccccabccccccccccco" });
+MyUnitTest& MyUnitTest::set_summary_less_details() {
+    details_summary_mode = false;
+    return *this;
 
-    tests.push_back({
-        t, "abc+", test,
-    {{ }, { }, { }, { }, { },
-    {
-        ranged_string(test[5], 0, 3, true)},
-    {
-        ranged_string(test[6], 0, 4, true)},
-    {
-        ranged_string(test[7], 0, 5, true)},
-    {
-        ranged_string(test[8], 0, 8, true)},
-    {
-        ranged_string(test[9], 3, 13, true),
-        ranged_string(test[9], 14, 22, true),
-        ranged_string(test[9], 22, 29, true),
-        ranged_string(test[9], 37, 50, true)}} });
+
 }
-void MyUnitTest::test6() {
-    int t = 6;
-    static vector<string> test({
-        "ac",
-        "aBc",
-        "aBBc",
-        "aBBBc",
-        "aBBBBc",
-        "aBBBBBc",
-        "gaBBBBBBc",
-        "ggaBBBBBBBc",
-        "aBBBBBBBBc",
-        "aBBBBBBBBBc",
-        "aBBBBBBBBBBcg",
-        "aBBBBBBBBBBBcgg",
-        "aBBBBBBBBBBBBc",
-        "aBBBBBBBBBBBBBc",
-        "kaBBBcfaBBBBckkaBBckaBBBBBBcUUUaBBBBcOOOaBcTTTTaBBBBBcTTTTT" });
 
-    tests.push_back({
-        t, "aB{3,6}c", test,
-    {{ }, { }, { },
-    {
-        ranged_string(test[3], 0, 5, true)},
-    {
-        ranged_string(test[4], 0, 6, true)},
-    {
-        ranged_string(test[5], 0, 7, true)},
-    {
-        ranged_string(test[6], 1, 9, true)},
-    { }, { }, { }, { }, { }, { }, { },
-    {
-        ranged_string(test[14], 1, 6, true),
-        ranged_string(test[14], 7, 13, true),
-        ranged_string(test[14], 20, 28, true),
-        ranged_string(test[14], 31, 37, true),
-        ranged_string(test[14], 47, 54, true)}} });
+MyUnitTest& MyUnitTest::more_details(int test) { return more_details({ test }); }
+MyUnitTest& MyUnitTest::more_details(initializer_list<int> tests_list) {
+    for (int test_num : tests_list) tests[test_num].details = true;
+    return *this;
 }
-void MyUnitTest::test7() {
-    int t = 7;
-    static vector<string> test({
-        "jkTT",
-        "jkTTT",
-        "jkTTTT",
-        "jkTTTTT",
-        "jkTTTTTT",
-        "jkTTTTTTT" });
+MyUnitTest& MyUnitTest::less_details(int test) { return less_details({ test }); }
+MyUnitTest& MyUnitTest::less_details(initializer_list<int> tests_list) {
+    for (int test_num : tests_list) tests[test_num].details = false;
+    return *this;
 
-    tests.push_back({
-        t, "jkT{4,5}", test,
-    {{ }, { },
-    {
-        ranged_string(test[2], 0, 6, true)},
-    {
-        ranged_string(test[3], 0, 7, true)},
-    {
-        ranged_string(test[4], 0, 7, true)},
-    {
-        ranged_string(test[5], 0, 7, true)}} });
+
 }
-void MyUnitTest::test8() {
-    int t = 8;
-    static vector<string> test({
-        "TT",
-        "TTT",
-        "TTTT",
-        "TTTTT",
-        "TTTTTT",
-        "TTTTTTT" });
 
-    tests.push_back({
-        t, "T{3,5}", test,
-    {{ },
-    {
-        ranged_string(test[1], 0, 3, true)},
-    {
-        ranged_string(test[2], 0, 4, true)},
-    {
-        ranged_string(test[3], 0, 5, true)},
-    { }, { }    } });
+MyUnitTest& MyUnitTest::enable(int test) { return enable({ test }); }
+MyUnitTest& MyUnitTest::enable(initializer_list<int> tests_list) {
+    cout << "initializer_list" << endl;
+    for (int test_num : tests_list) tests[test_num].enabled = true;
+    return *this;
 }
-void MyUnitTest::test9() {
-    int t = 9;
-    static vector<string> test({
-        "k",
-        "T",
-        "TT",
-        "TTT",
-        "kkTTTT",
-        "TTTTT",
-        "kkkkTTTTTT",
-        "TTTTTTT",
-        "kkkkTTTTTTz" });
+MyUnitTest& MyUnitTest::disable(int test) { return disable({ test }); }
+MyUnitTest& MyUnitTest::disable(initializer_list<int> tests_list) {
+    for (int test_num : tests_list) tests[test_num].enabled = false;
+    return *this;
 
-    tests.push_back({
-        t, "T+", test,
-    {
-    { },
-    {
-        ranged_string(test[1], 0, 1, true)},
-    {
-        ranged_string(test[2], 0, 2, true)},
-    {
-        ranged_string(test[3], 0, 3, true)},
-    {
-        ranged_string(test[4], 2, 6, true)},
-    {
-        ranged_string(test[5], 0, 5, true)},
-    {
-        ranged_string(test[6], 4, 10, true)},
-    {
-        ranged_string(test[7], 0, 7, true)},
-    {
-        ranged_string(test[8], 4, 10, true)}} });;
+
+}
+
+MyUnitTest& MyUnitTest::more_details_all() {
+    for (Test& t : tests) t.details = true;
+    return *this;
+}
+MyUnitTest& MyUnitTest::less_details_all() {
+    for (Test& t : tests) t.details = false;
+    return *this;
+}
+MyUnitTest& MyUnitTest::enable_all() {
+    for (Test& t : tests) t.enabled = true;
+    return *this;
+}
+MyUnitTest& MyUnitTest::disable_all() {
+    for (Test& t : tests) t.enabled = false;
+    return *this;
 }
 
 

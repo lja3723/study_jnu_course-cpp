@@ -12,19 +12,38 @@ namespace assignment1 {
 using namespace std;
 
 
+/*
+class MyUnitTest:
+MySimpleRegex의 동작이 올바른지 자동으로 테스트한다.
+
+테스트 데이터 txt 파일에서 테스트할 케이스를 불러온다.
+    생성자 MyUnitTest(파일이름) 호출로 파일을 오픈한다.
+    is_open() : 파일이 정상적으로 열렸는지 확인한다.
+    run() : 읽어온 데이터에 대해 테스트를 수행한다.
+     
+테스트가 종료되면 요약 결과를 출력한다.
+    set_summary_more_details() : 요약 결과를 상세히 출력한다.
+ 
+옵션을 다르게 주어 자세한 테스트 결과 출력할 수 있다. 
+    more_details_all() : 모든 테스트 결과를 자세히 출력한다.
+    less_details_all() : 모든 테스트 결과를 간략히 출력한다.
+
+옵션을 다르게 주어 단위 테스트 수행을 각각 활성화하거나 비활성화 할 수 있다.
+    enable_all() : 모든 테스트를 수행(활성화)한다.
+    disable_all() : 모든 테스트를 비활성화한다. 수행하지 않는다.
+ */
 class MyUnitTest {
     friend class TestDataFileReader;
 private:
-    class TestDataFileReader;
-    struct Test {               //test
-        int number;             //test case number
+    class TestDataFileReader;   //테스트데이터 파일 리더
+    struct Test {               //단위 테스트
+        int number = 0;         //test case number
         string regex;           //regex of test
         vector<string> test;    //input strings for regex
         vector<vector<ranged_string>> expect; //expect results
-        bool details;           //0: less detail, 1: more detail
-        bool enabled;           //0: test disabled, 1: test enabled
+        bool details = false;   //0: less detail, 1: more detail
+        bool enabled = true;    //0: test disabled, 1: test enabled
     }; 
-    class TestDataFileReader;
 
 
     vector<Test> tests;         //테스트 목록
@@ -32,10 +51,11 @@ private:
     char m_underline_marker;    //밑줄 표시할 글자
     string m_indent;            //들여쓰기 문자
     int details_summary_mode;   //테스트 요약 표시여부
-    bool m_is_file_open;
-    bool m_is_file_syntax_error;
+    bool m_is_file_open;        //파일 열림 여부
+    bool m_no_syntax_error;     //파일 문법 올바름 여부
 
 
+    /***************  출력 함수  ***************/
     void print_run_title();
     void print_test_title(string label_left, int test_number, string label_right);
     void print_match_range(string title, vector<ranged_string>& match_result, int test_case, int elem);
@@ -43,113 +63,67 @@ private:
     void print_successed_test(vector<int>& successed_list, int test_number);
     void print_failed_test(vector<int>& failed_list, vector<bool>& results, int test_number);
     void print_tests_summary(set<int>& disabled, vector<int>& successed_list, vector<int>& failed_list);
+
+
+    /***************  유틸 함수  ***************/
     void clear_tests();
     void file_open(const char* name);
 
 
-    //실제 테스트 수행 함수
-    void run_tests();
-    vector<bool> run_test(int t);
+    /***************  테스트 수행 함수  ***************/
     bool assertEqual(vector<ranged_string>& expect, vector<ranged_string>& result);
+    vector<bool> run_test(int t); //각각의 단위 테스트 수행
+    void run_tests(); //모든 테스트 수행
 
 
 public:
     /**********     file open and read test     **********/
-    MyUnitTest(string& filename) : MyUnitTest(filename.c_str()) {}
     MyUnitTest(const char* test_filename) :
         m_newline(80),
         m_underline_marker('^'),
-        m_is_file_syntax_error(false) {
+        m_no_syntax_error(true) {
         set_indent_level(3);
-        set_summary_more_details();
         clear_tests();
         file_open(test_filename);
+
+        set_summary_more_details();
         enable_all().more_details_all();
     }
+    MyUnitTest(string& filename) : MyUnitTest(filename.c_str()) {}
     bool is_open();
     void run();
 
 
     /**********     Test Options     **********/
-    MyUnitTest& set_newline(int newline) {
-        m_newline = newline;
-        return *this;
-    }
-    MyUnitTest& set_underline_marker(char marker) {
-        m_underline_marker = marker;
-        return *this;
-    }
-    MyUnitTest& set_indent_level(int indent_level) {
-        m_indent = "";
-        for (int i = 0; i < indent_level; i++) m_indent += " ";
-        return *this;
-    }
-    MyUnitTest& set_summary_more_details() {
-        details_summary_mode = true;
-        return *this;
-    }
-    MyUnitTest& set_summary_less_details() {
-        details_summary_mode = false;
-        return *this;
-    }
+    MyUnitTest& set_newline(int newline);
+    MyUnitTest& set_underline_marker(char marker);
+    MyUnitTest& set_indent_level(int indent_level);
+    MyUnitTest& set_summary_more_details();
+    MyUnitTest& set_summary_less_details();
 
-    MyUnitTest& more_details(int test) { return more_details({ test }); }
-    MyUnitTest& more_details(initializer_list<int> tests_list) {
-        for (int test_num : tests_list) tests[test_num].details = true;
-        return *this;
-    }
-    MyUnitTest& less_details(int test) { return less_details({ test }); }
-    MyUnitTest& less_details(initializer_list<int> tests_list) {
-        for (int test_num : tests_list) tests[test_num].details = false;
-        return *this;
-    }
-    MyUnitTest& more_details_all() {
-        for (Test& t : tests) t.details = true;
-        return *this;
-    }
-    MyUnitTest& less_details_all() {
-        for (Test& t : tests) t.details = false;
-        return *this;
-    }
+    MyUnitTest& more_details(int test);
+    MyUnitTest& more_details(initializer_list<int> tests_list);
+    MyUnitTest& less_details(int test);
+    MyUnitTest& less_details(initializer_list<int> tests_list);
 
-    MyUnitTest& enable(int test) { return enable({ test }); }
-    MyUnitTest& enable(initializer_list<int> tests_list) {
-        cout << "initializer_list" << endl;
-        for (int test_num : tests_list) tests[test_num].enabled = true;
-        return *this;
-    }
-    MyUnitTest& disable(int test) { return disable({ test }); }
-    MyUnitTest& disable(initializer_list<int> tests_list) {
-        for (int test_num : tests_list) tests[test_num].enabled = false;
-        return *this;
-    }
-    MyUnitTest& enable_all() {
-        for (Test& t : tests) t.enabled = true;
-        return *this;
-    }
-    MyUnitTest& disable_all() {
-        for (Test& t : tests) t.enabled = false;
-        return *this;
-    }
+    MyUnitTest& enable(int test);
+    MyUnitTest& enable(initializer_list<int> tests_list);
+    MyUnitTest& disable(int test);
+    MyUnitTest& disable(initializer_list<int> tests_list);
+
+    MyUnitTest& more_details_all();
+    MyUnitTest& less_details_all();
+    MyUnitTest& enable_all();
+    MyUnitTest& disable_all();
 
 
-//실행할 테스트를 등록한다.
-protected:
-
-    //실행할 테스트 등록    
-    void test1();
-    void test2();
-    void test3();
-    void test4();
-    void test5();
-    void test6();
-    void test7();
-    void test8();
-    void test9();
 };
 
 
-class MyUnitTest::TestDataFileReader : public MyFileReader<vector<MyUnitTest::Test>> {
+
+//테스트 데이터 txt 파일을 읽어 단위 테스트 객체 배열을 생성한다.
+class MyUnitTest::TestDataFileReader 
+    : public MyFileReader<vector<MyUnitTest::Test>> {
 private:
     using Test = MyUnitTest::Test;
     using Data = vector<Test>;
@@ -185,6 +159,8 @@ private:
     bool is_file_end_unexpected;
 
 
+
+    /****************  상태 함수  ****************/
     bool prev_state_init(Data& container) {
         if (is_file_end) {
             if (!m_unexcepted_file_end)
@@ -338,7 +314,7 @@ private:
         return true;
     }
 
-
+    /****************  유틸 함수  ****************/
     _state interpret(const string& str) {
         if (lowercase(str) == syntax_regex) return regex;
         if (lowercase(str) == syntax_get_cases) return get_cases;
@@ -381,7 +357,7 @@ private:
         cur_test.enabled = true;
     }
 
-
+    /****************  오류 함수  ****************/
     bool error_unexpected_file_end() {
         if (!m_unexcepted_file_end) {
             showline();
@@ -407,6 +383,7 @@ private:
         show_expected_syntax(expects);
         return false;
     }
+
 
 
 protected:
