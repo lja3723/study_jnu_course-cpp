@@ -2,6 +2,7 @@
 #define __MY_SIMPLE_REGEX_H__
 #include <iostream>
 #include <vector>
+#include <map>
 
 namespace assignment1 {
 using namespace std;
@@ -63,6 +64,9 @@ class MySimpleRegex::compiled:
 다양한 노드 포인터를 포현하기 위한 노드 포인터 클래스 및 파생 클래스를 정의한다.
 
 */
+
+//TODO: 엡실론을 주는 주체를 리스트에서 한 특별한 노드로 변경하기
+// T* 같은 케이스 생각해보기
 class MySimpleRegex::compiled {
 private:    
     /****************************/
@@ -113,6 +117,10 @@ private:
         const string& src,                  //가장 처음으로 accept된 일치 정보를 출력한다.
         unsigned index_start = 0,           //매치된 구간이 없으면 invalid한 객체를 반환한다.
         bool check_at_front_only = false);
+    
+
+    void request_active_nexttime(    //active 시킬 노드를 active_list에 등록한다.
+        map<string, node*>& actives, node* to_active, unsigned state_istart);
 
 
 public:

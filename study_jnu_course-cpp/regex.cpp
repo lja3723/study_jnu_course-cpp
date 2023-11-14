@@ -12,8 +12,6 @@ namespace assignment1 {
             cout << "테스트를 수행할 수 없습니다." << endl;
             return -1;
         }
-
-        cout << "오후 5:47" << endl;
         
         unit_test
         //원하는 옵션에 주석 해제 후 사용
@@ -30,8 +28,12 @@ namespace assignment1 {
             
         //Additional Settings
             //.less_details({ 1, 2 }) //set less details
-            .disable({ 8 })      //desable some testcases
+            //.disable({ })      //desable some testcases
+            //.disable_all()
+            //.enable({8})
             .run(); //run unit test
+
+        cout << "최종 컴파일 시간: 15일(수) 오전 1:52" << endl;
 
         return 0;
     }

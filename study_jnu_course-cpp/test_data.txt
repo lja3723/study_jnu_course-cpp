@@ -317,11 +317,39 @@ regex: T{3,5}
 	case: #5
 		input: TTTTTT
 		range:
-			null
+			0 5
 	case: #6
 		input: TTTTTTT
 		range:
-			null
+			0 5
+	case: #7
+		input: TTTTTTTT
+		range:
+			0 5
+			5 8			
+	case: #8
+		input: TTTTTTTTT
+		range:
+			0 5
+			5 9
+	case: #9
+		input: TTTTTTTTTT
+		range:
+			0 5
+			5 10
+	case: #10
+		input: TTTTTTTTTTT
+		range:
+			0 5
+			5 10
+	case: #11
+		input: TTTTnTTTTTTTTTkTTnTTTTTTTTTTT
+		range:
+			0 4
+			5 10
+			10 14
+			18 23
+			23 28
 
 
 #Test No. 9
@@ -363,3 +391,32 @@ regex: T+
 		range:
 			null
 
+#Test No. 10
+regex: Tn(abTn)*
+	case: #1
+		input: Tn
+		range:
+			0 2
+	case: #2
+		input: TnabTn
+		range:
+			0 6
+	case: #3
+		input: TnabTnabTn
+		range:
+			0 10
+	case: #4
+		input: TnabTnabTnabTn
+		range:
+			0 14
+	case: #5
+		input: TnsidabTnabTnsdabTnabiiTniabT
+		range:
+			0 2
+			7 13
+			17 19
+			23 25
+	case: #6
+		input: abTnab
+		range:
+			2 4
