@@ -22,13 +22,13 @@ vector<ranged_string> MySimpleRegex::match_all(const string m_regex, const strin
 class compiled::Imatchable {
 public:
     virtual bool test(char ch) = 0;
-};   /************************ class end ************************/
+};   
 class compiled::match_single : public compiled::Imatchable {
 private: char ch;
 public:
     match_single(char ch) : ch(ch) {}
     virtual bool test(char _ch) override { return ch == _ch; }
-}; /************************ class end ************************/
+};
 class compiled::match_dot : public compiled::Imatchable {
 public:
     virtual bool test(char _ch) override {
@@ -385,7 +385,7 @@ void compiled::create_state_machine() {
         m_node[1] = new node("s1", true);
 
         m_node[0]->addNode(new node_ptr_direct(new match_single('T'), m_node[1]));
-        m_node[0]->addNode(new node_ptr_direct(new match_single('T'), m_node[1]));
+        m_node[0]->addNode(new node_ptr_direct(new match_single('T'), m_node[0]));
 
         m_get_epsilon.push_back(m_node[0]);
         m_terminal.push_back(m_node[1]);
@@ -412,7 +412,7 @@ ranged_string compiled::state_machine_input(const string& src, unsigned index_st
         //엡실론 신호를 매 주기기마다 부여함
         //check_at_front_only면 문자열 시작이 패턴과 일치하는 경우만 확인한다.
         //즉 최초 1회만 엡실론 신호를 부여한다.
-        if (!check_at_front_only || i == 0) {
+        if ( !(check_at_front_only && i > 0) ) {
             for (node*& target : m_get_epsilon) {
                 target->active(i);
                 actives.push_back(target);
@@ -431,7 +431,8 @@ ranged_string compiled::state_machine_input(const string& src, unsigned index_st
         //다음 활성화될 노드 리스트를 받아오고 활성화한다.
         while (!next_actives.empty()) {
             active_request_info& info = next_actives.back();
-            (info.target)->active(info.start_index);
+            int sidx = info.target->index_start();
+            info.target->active(info.start_index);
             actives.push_back(info.target);
             next_actives.pop_back();
         }
