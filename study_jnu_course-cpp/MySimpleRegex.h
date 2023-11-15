@@ -75,9 +75,13 @@ private:
 
     //input char을 판별하기 위한 매치 클래스
     //상속으로 다형성을 구현한다.
-    class Imatchable;   //매치 객체 인터페이스    
-    class match_single; //단일 문자 매치    
-    class match_dot;    //모든 문자 매치
+    class Imatchable;       //매치 객체 인터페이스    
+    class matcher_single;   //단일 문자 매치    
+    class matcher_alphabet; //알파벳 매치
+    class matcher_number;   //숫자 매치
+    class matcher_word;     //알파벳+숫자+밑줄(_) 매치
+    class matcher_space;    //모든 공백 문자 매치
+    class matcher_dot;      //모든 문자 매치(개행 문자 제외)
 
 
     //상태머신의 노드와 노드 포인터를 표현하는 클래스이다    
@@ -88,7 +92,7 @@ private:
     class node;         //상태머신의 노드
     class node_ptr;         
     class node_ptr_direct;  
-    class node_ptr_cnt_inner;
+    class node_ptr_inner_counter;
 
 
     //다음 활성화 노드에 대한 정보로, 다음 활성화 노드 대상인 target과, 

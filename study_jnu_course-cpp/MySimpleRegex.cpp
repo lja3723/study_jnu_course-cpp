@@ -22,16 +22,46 @@ class compiled::Imatchable {
 public:
     virtual bool test(char ch) = 0;
 };   
-class compiled::match_single : public compiled::Imatchable {
+class compiled::matcher_single : public compiled::Imatchable {
 private: char ch;
 public:
-    match_single(char ch) : ch(ch) {}
+    matcher_single(char ch) : ch(ch) {}
     virtual bool test(char _ch) override { return ch == _ch; }
 };
-class compiled::match_dot : public compiled::Imatchable {
+class compiled::matcher_alphabet : public compiled::Imatchable {
 public:
     virtual bool test(char _ch) override {
         return ('A' <= _ch && _ch <= 'Z') || ('a' <= _ch && _ch <= 'z');
+    }
+};
+class compiled::matcher_number : public compiled::Imatchable {
+public:
+    virtual bool test(char _ch) override {
+        return ('0' <= _ch && _ch <= '9');
+    }
+};
+class compiled::matcher_word : public compiled::Imatchable {
+public:
+    virtual bool test(char _ch) override {
+        return
+            matcher_number().test(_ch)      ||
+            matcher_alphabet().test(_ch)    ||
+            matcher_single('_').test(_ch);
+    }
+};
+class compiled::matcher_space : public compiled::Imatchable {
+public:
+    virtual bool test(char _ch) override {
+        string s = "\t\n\v\f\r ";
+        bool ret = false;
+        for (char c : s) ret |= c == _ch;
+        return ret;
+    }
+};
+class compiled::matcher_dot : public compiled::Imatchable {
+public:
+    virtual bool test(char _ch) override {
+        return _ch != '\n'; //개행 문자가 아니면 모두 일치
     }
 };
 
@@ -52,7 +82,7 @@ private:
     void add_link_reverse_ref(node* ref); //역링크를 추가한다.
 
 public:
-    node(string name = "", bool isTerminal = false);
+    node(string name, bool isTerminal = false);
     ~node();
 
     /*********  조회 함수  *********/
@@ -89,15 +119,15 @@ protected:
         m_pNode->add_link_reverse_ref(ref);
     }
 
+    //포인터와 관련된 플래그를 클리어한다. 필요한 경우만 오버라이드한다.
+    virtual void clear_flag() {}
+
 
 public:
     static const unsigned INF = ~0U; //2^32 - 1
 
     node_ptr(Imatchable* ranged_string, node* pNode) : m_pNode(pNode), matcher(ranged_string) {}
     ~node_ptr();
-
-    //포인터와 관련된 플래그를 클리어한다. 필요한 경우만 오버라이드한다.
-    virtual void clear_flag() {}
 
     //연결된 노드가 다음 사이클에 active 되도록 요청한다.
     //한번에 될 수도 있고, 그렇지 않을 수도 있음
@@ -119,13 +149,14 @@ public:
 
 
 }; /************************ node_ptr_direct end ************************/
-class compiled::node_ptr_cnt_inner : public node_ptr {
+class compiled::node_ptr_inner_counter : public node_ptr {
 private:
     unsigned lower_bound;
     unsigned upper_bound;
 
     unsigned counter;
     unsigned prev_istart;
+
 
 protected:
     virtual void transition_action(vector<active_request_info>& next_active, unsigned state_istart) override {
@@ -138,17 +169,18 @@ protected:
         //범위에 들었을 경우만 state를 전달한다
         if (lower_bound <= counter && counter <= upper_bound)
             next_active.push_back({ m_pNode, state_istart });
-        }
-
-public:
-    node_ptr_cnt_inner(Imatchable* matcher, node* pNode, unsigned low_bound = 0, unsigned up_bound = node_ptr::INF) :
-        node_ptr(matcher, pNode), lower_bound(low_bound), upper_bound(up_bound) {
-        clear_flag();
     }
 
     virtual void clear_flag() override {
         counter = 0;
         prev_istart = node_ptr::INF;
+    }
+
+
+public:
+    node_ptr_inner_counter(Imatchable* matcher, node* pNode, unsigned low_bound = 0, unsigned up_bound = node_ptr::INF) :
+        node_ptr(matcher, pNode), lower_bound(low_bound), upper_bound(up_bound) {
+        clear_flag();
     }
 
 
@@ -168,8 +200,12 @@ compiled::node::~node() {
             delete m_next[i]; //new로 할당받은 메모리를 반환한다.
 }
 
-const string& compiled::node::name() const { return m_name; }
-unsigned compiled::node::index_start() const { return m_state_istart; }
+const string& compiled::node::name() const {
+    return m_name; 
+}
+unsigned compiled::node::index_start() const {
+    return m_state_istart; 
+}
 bool compiled::node::is_accepted() const {
     return m_is_terminal && m_state_active;
 }
@@ -192,18 +228,14 @@ void compiled::node::clear_flags() {
     m_state_istart = 0;
     m_state_active = false;
 
-    for (node_ptr* p : m_next)
-        p->clear_flag();
+    for (node_ptr* p : m_next) p->clear_flag();
 }
 void compiled::node::input(vector<active_request_info>& next_active, const char ch) {
     if (!m_state_active) return;
 
-    for (int i = 0; i < m_next.size(); i++) {
+    for (int i = 0; i < m_next.size(); i++)
         m_next[i]->request_active_nexttime(next_active, m_state_istart, ch);
-    }
 
-    //인식되었을 경우 true
-    //m_isAccepted = m_state_active && match && m_isTerminal;
     m_state_active = false; // deactivate this node after matching
 }
 
@@ -236,14 +268,14 @@ void compiled::create_state_machine() {
         m_node[5] = new node("s5");
 
         // set links
-        m_node[0]->add_link(new node_ptr_direct(new match_single('a'), m_node[1]));
-        m_node[0]->add_link(new node_ptr_direct(new match_single('a'), m_node[4]));
+        m_node[0]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[1]));
+        m_node[0]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[4]));
 
-        m_node[1]->add_link(new node_ptr_direct(new match_single('b'), m_node[2]));
-        m_node[2]->add_link(new node_ptr_direct(new match_single('c'), m_node[3]));
+        m_node[1]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[2]));
+        m_node[2]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[3]));
 
-        m_node[4]->add_link(new node_ptr_direct(new match_single('d'), m_node[5]));
-        m_node[5]->add_link(new node_ptr_direct(new match_single('e'), m_node[3]));
+        m_node[4]->add_link(new node_ptr_direct(new matcher_single('d'), m_node[5]));
+        m_node[5]->add_link(new node_ptr_direct(new matcher_single('e'), m_node[3]));
 
         // 엡실론 신호 받는 노드 설정
         m_get_epsilon.push_back(m_node[0]);
@@ -259,9 +291,9 @@ void compiled::create_state_machine() {
         m_node[2] = new node("s2");
         m_node[3] = new node("s3", true);
 
-        m_node[0]->add_link(new node_ptr_direct(new match_single('a'), m_node[1]));
-        m_node[1]->add_link(new node_ptr_direct(new match_single('b'), m_node[2]));
-        m_node[2]->add_link(new node_ptr_direct(new match_single('a'), m_node[3]));
+        m_node[0]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[1]));
+        m_node[1]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[2]));
+        m_node[2]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[3]));
 
         m_get_epsilon.push_back(m_node[0]);
 
@@ -283,33 +315,33 @@ void compiled::create_state_machine() {
         m_node[10] = new node("s10");
         m_node[11] = new node("s11", true);
 
-        m_node[0]->add_link(new node_ptr_direct(new match_single('N'), m_node[1]));
+        m_node[0]->add_link(new node_ptr_direct(new matcher_single('N'), m_node[1]));
 
-        m_node[1]->add_link(new node_ptr_direct(new match_single('K'), m_node[5]));
-        m_node[1]->add_link(new node_ptr_direct(new match_single('K'), m_node[2]));
-        m_node[1]->add_link(new node_ptr_direct(new match_single('K'), m_node[8]));
+        m_node[1]->add_link(new node_ptr_direct(new matcher_single('K'), m_node[5]));
+        m_node[1]->add_link(new node_ptr_direct(new matcher_single('K'), m_node[2]));
+        m_node[1]->add_link(new node_ptr_direct(new matcher_single('K'), m_node[8]));
 
-        m_node[2]->add_link(new node_ptr_direct(new match_single('a'), m_node[3]));
-        m_node[2]->add_link(new node_ptr_direct(new match_single('A'), m_node[6]));
+        m_node[2]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[3]));
+        m_node[2]->add_link(new node_ptr_direct(new matcher_single('A'), m_node[6]));
 
-        m_node[3]->add_link(new node_ptr_direct(new match_single('b'), m_node[4]));
+        m_node[3]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[4]));
 
-        m_node[4]->add_link(new node_ptr_direct(new match_single('c'), m_node[2]));
-        m_node[4]->add_link(new node_ptr_direct(new match_single('c'), m_node[5]));
+        m_node[4]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[2]));
+        m_node[4]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[5]));
 
-        m_node[5]->add_link(new node_ptr_direct(new match_single('N'), m_node[10]));
+        m_node[5]->add_link(new node_ptr_direct(new matcher_single('N'), m_node[10]));
 
-        m_node[6]->add_link(new node_ptr_direct(new match_single('B'), m_node[7]));
+        m_node[6]->add_link(new node_ptr_direct(new matcher_single('B'), m_node[7]));
 
-        m_node[7]->add_link(new node_ptr_direct(new match_single('C'), m_node[2]));
-        m_node[7]->add_link(new node_ptr_direct(new match_single('C'), m_node[5]));
+        m_node[7]->add_link(new node_ptr_direct(new matcher_single('C'), m_node[2]));
+        m_node[7]->add_link(new node_ptr_direct(new matcher_single('C'), m_node[5]));
 
-        m_node[8]->add_link(new node_ptr_direct(new match_single('O'), m_node[9]));
+        m_node[8]->add_link(new node_ptr_direct(new matcher_single('O'), m_node[9]));
 
-        m_node[9]->add_link(new node_ptr_direct(new match_single('P'), m_node[8]));
-        m_node[9]->add_link(new node_ptr_direct(new match_single('P'), m_node[10]));
+        m_node[9]->add_link(new node_ptr_direct(new matcher_single('P'), m_node[8]));
+        m_node[9]->add_link(new node_ptr_direct(new matcher_single('P'), m_node[10]));
 
-        m_node[10]->add_link(new node_ptr_direct(new match_single('Q'), m_node[11]));
+        m_node[10]->add_link(new node_ptr_direct(new matcher_single('Q'), m_node[11]));
 
         m_get_epsilon.push_back(m_node[0]);
         m_terminal.push_back(m_node[11]);
@@ -322,10 +354,10 @@ void compiled::create_state_machine() {
         m_node[2] = new node("s2");
         m_node[3] = new node("s3", true);
 
-        m_node[0]->add_link(new node_ptr_direct(new match_single('a'), m_node[1]));
-        m_node[1]->add_link(new node_ptr_direct(new match_single('b'), m_node[1]));
-        m_node[1]->add_link(new node_ptr_direct(new match_single('b'), m_node[2]));
-        m_node[2]->add_link(new node_ptr_direct(new match_single('c'), m_node[3]));
+        m_node[0]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[1]));
+        m_node[1]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[1]));
+        m_node[1]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[2]));
+        m_node[2]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[3]));
 
         m_get_epsilon.push_back(m_node[0]);
         m_terminal.push_back(m_node[3]);
@@ -338,10 +370,10 @@ void compiled::create_state_machine() {
         m_node[2] = new node("s2");
         m_node[3] = new node("s3", true);
 
-        m_node[0]->add_link(new node_ptr_direct(new match_single('a'), m_node[1]));
-        m_node[1]->add_link(new node_ptr_direct(new match_single('b'), m_node[2]));
-        m_node[2]->add_link(new node_ptr_direct(new match_single('c'), m_node[2]));
-        m_node[2]->add_link(new node_ptr_direct(new match_single('c'), m_node[3]));
+        m_node[0]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[1]));
+        m_node[1]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[2]));
+        m_node[2]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[2]));
+        m_node[2]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[3]));
 
         m_get_epsilon.push_back(m_node[0]);
         m_terminal.push_back(m_node[3]);
@@ -354,11 +386,11 @@ void compiled::create_state_machine() {
         m_node[2] = new node("s2");
         m_node[3] = new node("s3", true);
 
-        m_node[0]->add_link(new node_ptr_direct(new match_single('a'), m_node[1]));
-        m_node[1]->add_link(new node_ptr_direct(new match_single('B'), m_node[1]));
+        m_node[0]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[1]));
+        m_node[1]->add_link(new node_ptr_direct(new matcher_single('B'), m_node[1]));
         //새로운 노드포인터!!
-        m_node[1]->add_link(new node_ptr_cnt_inner(new match_single('B'), m_node[2], 3, 6));
-        m_node[2]->add_link(new node_ptr_direct(new match_single('c'), m_node[3]));
+        m_node[1]->add_link(new node_ptr_inner_counter(new matcher_single('B'), m_node[2], 3, 6));
+        m_node[2]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[3]));
 
         m_get_epsilon.push_back(m_node[0]);
         m_terminal.push_back(m_node[3]);
@@ -371,10 +403,10 @@ void compiled::create_state_machine() {
         m_node[2] = new node("s2");
         m_node[3] = new node("s3", true);
 
-        m_node[0]->add_link(new node_ptr_direct(new match_single('j'), m_node[1]));
-        m_node[1]->add_link(new node_ptr_direct(new match_single('k'), m_node[2]));
-        m_node[2]->add_link(new node_ptr_direct(new match_single('T'), m_node[2]));
-        m_node[2]->add_link(new node_ptr_cnt_inner(new match_single('T'), m_node[3], 4, 5));
+        m_node[0]->add_link(new node_ptr_direct(new matcher_single('j'), m_node[1]));
+        m_node[1]->add_link(new node_ptr_direct(new matcher_single('k'), m_node[2]));
+        m_node[2]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[2]));
+        m_node[2]->add_link(new node_ptr_inner_counter(new matcher_single('T'), m_node[3], 4, 5));
 
         m_get_epsilon.push_back(m_node[0]);
         m_terminal.push_back(m_node[3]);
@@ -385,8 +417,8 @@ void compiled::create_state_machine() {
         m_node[0] = new node("s0");
         m_node[1] = new node("s1", true);
 
-        m_node[0]->add_link(new node_ptr_direct(new match_single('T'), m_node[0]));
-        m_node[0]->add_link(new node_ptr_cnt_inner(new match_single('T'), m_node[1], 3, 5));
+        m_node[0]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[0]));
+        m_node[0]->add_link(new node_ptr_inner_counter(new matcher_single('T'), m_node[1], 3, 5));
 
         m_get_epsilon.push_back(m_node[0]);
         m_terminal.push_back(m_node[1]);
@@ -397,8 +429,8 @@ void compiled::create_state_machine() {
         m_node[0] = new node("s0");
         m_node[1] = new node("s1", true);
 
-        m_node[0]->add_link(new node_ptr_direct(new match_single('T'), m_node[1]));
-        m_node[0]->add_link(new node_ptr_direct(new match_single('T'), m_node[0]));
+        m_node[0]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[1]));
+        m_node[0]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[0]));
 
         m_get_epsilon.push_back(m_node[0]);
         m_terminal.push_back(m_node[1]);
@@ -413,11 +445,11 @@ void compiled::create_state_machine() {
         m_node[4] = new node("s4");
 
 
-        m_node[0]->add_link(new node_ptr_direct(new match_single('T'), m_node[1]));
-        m_node[1]->add_link(new node_ptr_direct(new match_single('n'), m_node[2]));
-        m_node[2]->add_link(new node_ptr_direct(new match_single('a'), m_node[3]));
-        m_node[3]->add_link(new node_ptr_direct(new match_single('b'), m_node[4]));
-        m_node[4]->add_link(new node_ptr_direct(new match_single('T'), m_node[1]));
+        m_node[0]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[1]));
+        m_node[1]->add_link(new node_ptr_direct(new matcher_single('n'), m_node[2]));
+        m_node[2]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[3]));
+        m_node[3]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[4]));
+        m_node[4]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[1]));
 
         m_get_epsilon.push_back(m_node[0]);
         m_terminal.push_back(m_node[2]);
