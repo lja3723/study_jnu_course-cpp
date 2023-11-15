@@ -36,18 +36,34 @@ private: MySimpleRegex();
     //이 클래스는 static 메서드만 있으므로 생성자를 private로 둔다.
 
 public:
+    //정규식 해석 모드 (일반적인 모드와 assignment1 전용 모드가 있음)]
+    enum interpret_mode {
+        general_interpret,
+        assignment1_interpret
+    };
+    static const interpret_mode general = general_interpret;
+    static const interpret_mode assignment1 = assignment1_interpret;
+
     class compiled; //진짜 기능을 하는 클래스
     
     //정규표현식을 컴파일한 객체 compiled를 반환한다.
-    static compiled compile(const string& m_regex); 
+    static compiled compile(
+        const string& m_regex, 
+        interpret_mode mode = assignment1); 
 
     //source에서 정규표현식과 가장 먼저 일치하는 범위를 구한다.
     //그런 범위가 없으면 invalid한 객체를 반환한다.
-    static ranged_string match(const string& m_regex, const string& source);   
+    static ranged_string match(
+        const string& m_regex, 
+        const string& source, 
+        interpret_mode mode = assignment1);
 
     //source에서 정규표현식과 일치하는 모든 범위를 구한다
     //일치정보가 없을 경우 empty()한 vector가 반환된다.
-    static vector<ranged_string> match_all(const string m_regex, const string& source);
+    static vector<ranged_string> match_all(
+        const string m_regex, 
+        const string& source, 
+        interpret_mode mode = assignment1);
 };
 
 
@@ -68,7 +84,8 @@ class MySimpleRegex::compiled:
 //TODO: 엡실론을 주는 주체를 리스트에서 한 특별한 노드로 변경하기
 // T* 같은 케이스 생각해보기
 class MySimpleRegex::compiled {
-private:    
+private:
+
     /****************************/
     /*      Inner Classes       */
     /****************************/
@@ -76,13 +93,16 @@ private:
     //input char을 판별하기 위한 매치 클래스
     //상속으로 다형성을 구현한다.
     class Imatchable;       //매치 객체 인터페이스    
+    class matcher_true;     //항상 매치
+    class matcher_not;      //반대 조건 매치
+    class matcher_combine;  //결합 조건 매치
+    class matcher_range;    //범위 안 모든 문자 매치
     class matcher_single;   //단일 문자 매치    
     class matcher_alphabet; //알파벳 매치
     class matcher_number;   //숫자 매치
     class matcher_word;     //알파벳+숫자+밑줄(_) 매치
     class matcher_space;    //모든 공백 문자 매치
     class matcher_dot;      //모든 문자 매치(개행 문자 제외)
-    class matcher_true;     //항상 매치
 
 
     //상태머신의 노드와 노드 포인터를 표현하는 클래스이다    
@@ -107,6 +127,7 @@ private:
     /****************************/
     /*      Private fields      */
     /****************************/
+    interpret_mode m_interpret_mode;
     vector<node*> m_node;           //상태기계 노드 컨테이너 (원본 포인터)
     node* m_epsilon;                //엡실론 신호를 next에 주는 노드
     vector<node*> m_terminal;       //터미널 노드 리스트 (얕은 복사됨)
@@ -116,6 +137,7 @@ private:
     /****************************/
     /*    Private functions     */
     /****************************/
+    void create_state_machine_for_assignment1();  //assignment1만을 위한 정규식 해석방법
     void create_state_machine();    //상태기계 노드 컨테이너에 상태기계를 생성한다.    
     void delete_state_machine();    //생성된 상태기계를 삭제한다.   
     ranged_string state_machine_input(      //상태기계에 문자열을 입력으로 넣어주면
@@ -123,15 +145,21 @@ private:
         unsigned index_start = 0,           //매치된 구간이 없으면 invalid한 객체를 반환한다.
         bool check_at_front_only = false);
     
-
+    void clear_nodes();      //노드 컨테이너를 초기화한다.
+    void add_to_epsilon(node* target); //epsilon을 받을 노드를 등록한다.
     void request_active(    //active 시킬 노드를 active_list에 등록한다.
         map<string, node*>& actives, node* to_active, unsigned state_istart);
 
 
 public:
+
     //주어진 정규표현식으로 내부적으로 상태기계를 생성한다.
-    compiled(const string& m_regex = "") : m_regex(m_regex), m_epsilon(nullptr) {
-        create_state_machine();
+    compiled(const string& m_regex, interpret_mode mode) : m_regex(m_regex), m_epsilon(nullptr) {
+        //해석 모드마다 다른 상태머신 생성됨
+        if (mode == general)
+            create_state_machine();
+        else if (mode == assignment1)
+            create_state_machine_for_assignment1();
     }
 
     //소멸자 (메모리 반환 필요)

@@ -5,7 +5,7 @@ namespace assignment1 {
     using namespace std;
 
     int main() {
-        string test_data = "test_data.txt";
+        string test_data = "test_data_for_general.txt";
         MyUnitTest unit_test(test_data);
         if (!unit_test.is_open()) {
             cout << "\"" << test_data << "\" 파일이 존재하지 않습니다. ";
@@ -24,19 +24,21 @@ namespace assignment1 {
             //.set_summary_more_details()
             //.enable_all()
             //.more_details_all()
-            .less_details_all()
+            //.less_details_all()
             
         //Additional Settings
             //.less_details({ 1, 2 }) //set less details
             //.disable({ })      //desable some testcases
+            .set_regex_interpret_mode(MySimpleRegex::assignment1) // or
+            .set_regex_interpret_mode(MySimpleRegex::general)
             //.disable_all()
             //.enable({8})
             .run(); //run unit test
 
-        cout << "최종 컴파일 시간: 15일(수) 오전 1:52" << endl;
+        cout << "최종 컴파일 시간: 15일(수) 오후 2:18" << endl;
 
         return 0;
     }
 }
 
-//int main() { assignment1::main(); }
+int main() { assignment1::main(); }

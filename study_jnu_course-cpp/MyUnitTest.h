@@ -33,73 +33,43 @@ MySimpleRegex의 동작이 올바른지 자동으로 테스트한다.
     disable_all() : 모든 테스트를 비활성화한다. 수행하지 않는다.
  */
 class MyUnitTest {
-    friend class TestDataFileReader;
-private:
-    class TestDataFileReader;   //테스트데이터 파일 리더
-    struct Test {               //단위 테스트
-        int number = 0;         //test case number
-        string regex;           //regex of test
-        vector<string> test;    //input strings for regex
-        vector<vector<ranged_string>> expect; //expect results
-        bool details = false;   //0: less detail, 1: more detail
-        bool enabled = true;    //0: test disabled, 1: test enabled
-    }; 
+    friend class TestDataFileReader; //테스트 데이터 파일 리더기
 
 
-    vector<Test> tests;         //테스트 목록
-    int m_newline;              //개행이 필요할 때 기준 문자 수
-    char m_underline_marker;    //밑줄 표시할 글자
-    string m_indent;            //들여쓰기 문자
-    int details_summary_mode;   //테스트 요약 표시여부
-    bool m_is_file_open;        //파일 열림 여부
-    bool m_no_syntax_error;     //파일 문법 올바름 여부
-
-
-    /***************  출력 함수  ***************/
-    void print_run_title();
-    void print_test_title(string label_left, int test_number, string label_right);
-    void print_match_range(string title, vector<ranged_string>& match_result, int test_case, int elem);
-    void print_match_underline(const vector<ranged_string>& result);
-    void print_successed_test(vector<int>& successed_list, int test_number);
-    void print_failed_test(vector<int>& failed_list, vector<bool>& results, int test_number);
-    void print_tests_summary(set<int>& disabled, vector<int>& successed_list, vector<int>& failed_list);
-
-
-    /***************  유틸 함수  ***************/
-    void clear_tests();
-    void file_open(const char* name);
-
-
-    /***************  테스트 수행 함수  ***************/
-    bool assertEqual(vector<ranged_string>& expect, vector<ranged_string>& result);
-    vector<bool> run_test(int t); //각각의 단위 테스트 수행
-    void run_tests(); //모든 테스트 수행
-
-
+/*************************************/
+/*      테스트 실행 및 관련 유틸 함수   */
+/*      실행 순서대로 배치되었음        */
+/*************************************/
 public:
-    /**********     file open and read test     **********/
-    MyUnitTest(const char* test_filename) :
-        m_newline(80),
-        m_underline_marker('^'),
-        m_no_syntax_error(true) {
-        set_indent_level(3);
-        clear_tests();
-        file_open(test_filename);
-
-        set_summary_more_details();
-        enable_all().more_details_all();
-    }
+    //생성자 호출 동시에 파일이름 제공 필요
+    MyUnitTest(const char* test_filename); //생성 시 테스트파일 이름 필요
     MyUnitTest(string& filename) : MyUnitTest(filename.c_str()) {}
+
+    //테스트 실행 명령
     bool is_open();
     void run();
 
+private:
+    //단위 테스트 위한 초기화 과정 및 파일 열기
+    void clear_tests();
+    void file_open(const char* name); //파일을 열어야함
 
-    /**********     Test Options     **********/
+    // 테스트 실제 수행 함수
+    void run_tests(); //모든 테스트 케이스 수행
+    vector<bool> run_test(int t); //각각의 단위 테스트 수행
+    bool assertEqual(vector<ranged_string>& expect, vector<ranged_string>& result);
+/****************************************************/
+
+
+
+public:
+    /**********     테스트 옵션     **********/
     MyUnitTest& set_newline(int newline);
     MyUnitTest& set_underline_marker(char marker);
     MyUnitTest& set_indent_level(int indent_level);
     MyUnitTest& set_summary_more_details();
     MyUnitTest& set_summary_less_details();
+    MyUnitTest& set_regex_interpret_mode(MySimpleRegex::interpret_mode mode);
 
     MyUnitTest& more_details(int test);
     MyUnitTest& more_details(initializer_list<int> tests_list);
@@ -115,6 +85,39 @@ public:
     MyUnitTest& less_details_all();
     MyUnitTest& enable_all();
     MyUnitTest& disable_all();
+
+
+
+private:
+    /***************  출력 함수  ***************/
+    void print_run_title();
+    void print_test_title(string label_left, int test_number, string label_right);
+    void print_match_range(string title, vector<ranged_string>& match_result, int test_case, int elem);
+    void print_match_underline(const vector<ranged_string>& result);
+    void print_successed_test(vector<int>& successed_list, int test_number);
+    void print_failed_test(vector<int>& failed_list, vector<bool>& results, int test_number);
+    void print_tests_summary(set<int>& disabled, vector<int>& successed_list, vector<int>& failed_list);
+
+
+    /**********   private fields   **********/
+    class TestDataFileReader;   //테스트데이터 파일 리더
+    struct Test {               //단위 테스트
+        int number = 0;         //test case number
+        string regex;           //regex of test
+        vector<string> test;    //input strings for regex
+        vector<vector<ranged_string>> expect; //expect results
+        bool details = false;   //0: less detail, 1: more detail
+        bool enabled = true;    //0: test disabled, 1: test enabled
+    }; 
+
+    MySimpleRegex::interpret_mode m_interpret_mode; //정규식 해석 모드(일반적, 과제)
+    vector<Test> tests;         //테스트 목록
+    int m_newline;              //개행이 필요할 때 기준 문자 수
+    char m_underline_marker;    //밑줄 표시할 글자
+    string m_indent;            //들여쓰기 문자
+    int details_summary_mode;   //테스트 요약 표시여부
+    bool m_is_file_open;        //파일 열림 여부
+    bool m_no_syntax_error;     //파일 문법 올바름 여부
 
 
 };

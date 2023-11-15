@@ -3,6 +3,196 @@
 namespace assignment1 {
 	
 
+/*************************************/
+/*      테스트 실행 및 관련 유틸 함수   */
+/*      실행 순서대로 배치되었음        */
+/*************************************/
+MyUnitTest::MyUnitTest(const char* test_filename) :
+    m_interpret_mode(MySimpleRegex::assignment1),
+    m_newline(80),
+    m_underline_marker('^'),
+    m_no_syntax_error(true)
+{
+    set_indent_level(3);
+    clear_tests();
+    file_open(test_filename);
+
+    set_summary_more_details();
+    enable_all().more_details_all();
+
+
+}
+void MyUnitTest::clear_tests() {
+    tests.clear();
+    tests.push_back({ 0, "", vector<string>(), vector<vector<ranged_string>>() });
+
+
+}
+void MyUnitTest::file_open(const char* name) {
+    TestDataFileReader reader;
+    m_is_file_open = reader.open(name);
+    if (!m_is_file_open) return;
+
+    m_no_syntax_error = reader.read(tests);
+    if (m_no_syntax_error)
+        cout << "\"" << name << "\" 파일을 성공적으로 읽었습니다." << endl;
+
+
+}
+bool MyUnitTest::is_open() { 
+    return m_is_file_open; 
+
+
+}
+void MyUnitTest::run() {
+    if (m_is_file_open && m_no_syntax_error) {
+        run_tests();
+    }
+
+
+}
+void MyUnitTest::run_tests() {
+    print_run_title();
+
+    //비활성화된 테스트 리스트 구하기
+    set<int> disabled;
+    for (int t = 1; t < tests.size(); t++)
+        if (!tests[t].enabled) disabled.insert(tests[t].number);
+
+    //테스트 통계 출력 위한 결과 수집변수
+    vector<int> successed_list;
+    vector<int> failed_list;
+
+    //각 테스트 게이스에 대해 테스트 수행
+    for (int t = 1; t < tests.size(); t++) {
+        //disabled된 테스트 스킵
+        if (disabled.find(t) != disabled.end()) continue;
+
+        //테스트 수행
+        vector<bool> results = run_test(tests[t].number);
+
+        //테스트 성공여부 계산
+        bool test_successed = true;
+        for (bool result : results) test_successed &= result;
+
+        if (test_successed)
+            print_successed_test(successed_list, t);
+        else
+            print_failed_test(failed_list, results, t);
+    }
+
+    //테스트 종합 결과 출력
+    print_tests_summary(disabled, successed_list, failed_list);
+
+
+}
+vector<bool> MyUnitTest::run_test(int t) {
+    vector<bool> ret;
+
+    //정규식을 컴파일한다.
+    MySimpleRegex::compiled cp 
+        = MySimpleRegex::compile(tests[t].regex, m_interpret_mode);
+
+    //각 케이스 문자열마다 기대값(expect)과 실행값(result)이 같은지 비교한다.
+    for (int i = 0; i < tests[t].test.size(); i++) {
+        vector<ranged_string> result = cp.match_all(tests[t].test[i]);
+        ret.push_back(assertEqual(tests[t].expect[i], result));
+    }
+
+    return ret;
+
+
+}
+bool MyUnitTest::assertEqual(vector<ranged_string>& expect, vector<ranged_string>& result) {
+    if (expect.size() != result.size()) return false;
+
+    for (int i = 0; i < expect.size(); i++) {
+        if (expect[i].start != result[i].start) return false;
+        if (expect[i].end != result[i].end)     return false;
+        if (expect[i].is_valid != result[i].is_valid) return false;
+    }
+    return true;
+
+
+}
+
+
+
+/*******************   테스트 옵션   *******************/
+MyUnitTest& MyUnitTest::set_newline(int newline) {
+    m_newline = newline;
+    return *this;
+}
+MyUnitTest& MyUnitTest::set_underline_marker(char marker) {
+    m_underline_marker = marker;
+    return *this;
+}
+MyUnitTest& MyUnitTest::set_indent_level(int indent_level) {
+    m_indent = "";
+    for (int i = 0; i < indent_level; i++) m_indent += " ";
+    return *this;
+}
+MyUnitTest& MyUnitTest::set_summary_more_details() {
+    details_summary_mode = true;
+    return *this;
+}
+MyUnitTest& MyUnitTest::set_summary_less_details() {
+    details_summary_mode = false;
+    return *this;
+}
+MyUnitTest& MyUnitTest::set_regex_interpret_mode(MySimpleRegex::interpret_mode mode) {
+    m_interpret_mode = mode;
+    return *this;
+
+
+}
+
+MyUnitTest& MyUnitTest::more_details(int test) { return more_details({ test }); }
+MyUnitTest& MyUnitTest::more_details(initializer_list<int> tests_list) {
+    for (int test_num : tests_list) tests[test_num].details = true;
+    return *this;
+}
+MyUnitTest& MyUnitTest::less_details(int test) { return less_details({ test }); }
+MyUnitTest& MyUnitTest::less_details(initializer_list<int> tests_list) {
+    for (int test_num : tests_list) tests[test_num].details = false;
+    return *this;
+
+
+}
+
+MyUnitTest& MyUnitTest::enable(int test) { return enable({ test }); }
+MyUnitTest& MyUnitTest::enable(initializer_list<int> tests_list) {
+    cout << "initializer_list" << endl;
+    for (int test_num : tests_list) tests[test_num].enabled = true;
+    return *this;
+}
+MyUnitTest& MyUnitTest::disable(int test) { return disable({ test }); }
+MyUnitTest& MyUnitTest::disable(initializer_list<int> tests_list) {
+    for (int test_num : tests_list) tests[test_num].enabled = false;
+    return *this;
+
+
+}
+
+MyUnitTest& MyUnitTest::more_details_all() {
+    for (Test& t : tests) t.details = true;
+    return *this;
+}
+MyUnitTest& MyUnitTest::less_details_all() {
+    for (Test& t : tests) t.details = false;
+    return *this;
+}
+MyUnitTest& MyUnitTest::enable_all() {
+    for (Test& t : tests) t.enabled = true;
+    return *this;
+}
+MyUnitTest& MyUnitTest::disable_all() {
+    for (Test& t : tests) t.enabled = false;
+    return *this;
+}
+
+
+
 /*******************   출력 함수   *******************/
 void MyUnitTest::print_run_title() {
     string t_indent = m_indent + m_indent;
@@ -15,7 +205,7 @@ void MyUnitTest::print_run_title() {
     cout << "\n\n";
 
 
-}  
+}
 void MyUnitTest::print_test_title(string label_left, int test_number, string label_right) {
     cout << "\n\n\n";
     cout << label_left << test_number << " \"" << tests[test_number].regex << "\"" << label_right << endl;
@@ -73,7 +263,7 @@ void MyUnitTest::print_successed_test(vector<int>& successed_list, int test_numb
     }
 
     print_test_title("테스트 #", test_number, " 통과 (more detail mode enabled)");
-    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex);
+    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex, m_interpret_mode);
 
     for (int i = 0; i < tests[test_number].test.size(); i++) {
         vector<ranged_string> result = cp.match_all(tests[test_number].test[i]);
@@ -88,8 +278,8 @@ void MyUnitTest::print_failed_test(vector<int>& failed_list, vector<bool>& resul
     failed_list.push_back(test_number);
 
     //실패한 테스트를 재현하기 위해 정규식 재컴파일
-    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex);
-    
+    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex, m_interpret_mode);
+
     bool title_printed = false;
     for (int i = 0; i < results.size(); i++) {
         if (!tests[test_number].details && results[i] == true) continue;
@@ -171,164 +361,6 @@ void MyUnitTest::print_tests_summary(set<int>& disabled, vector<int>& successed_
     cout << "\n\n";
 }
 
-
-
-/*******************   테스트 실행 함수   *******************/
-bool MyUnitTest::assertEqual(vector<ranged_string>& expect, vector<ranged_string>& result) {
-    if (expect.size() != result.size()) return false;
-
-    for (int i = 0; i < expect.size(); i++) {
-        if (expect[i].start != result[i].start) return false;
-        if (expect[i].end != result[i].end)     return false;
-        if (expect[i].is_valid != result[i].is_valid) return false;
-    }
-    return true;
-
-
-}
-vector<bool> MyUnitTest::run_test(int t) {
-    vector<bool> ret;
-
-    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[t].regex);
-    for (int i = 0; i < tests[t].test.size(); i++) {
-        vector<ranged_string> list_all = cp.match_all(tests[t].test[i]);
-        ret.push_back(assertEqual(tests[t].expect[i], list_all));
-    }
-
-    return ret;
-
-
-}
-void MyUnitTest::run_tests() {
-    print_run_title();
-
-    //비활성화된 테스트 리스트 구하기
-    set<int> disabled;
-    for (int t = 1; t < tests.size(); t++)
-        if (!tests[t].enabled) disabled.insert(tests[t].number);
-
-    //테스트 통계 출력 위한 결과 수집변수
-    vector<int> successed_list;
-    vector<int> failed_list;
-
-    //각 테스트 게이스에 대해 테스트 수행
-    for (int t = 1; t < tests.size(); t++) {
-        if (disabled.find(t) != disabled.end()) continue; //disabled된 테스트 스킵
-        vector<bool> results = run_test(tests[t].number); //테스트 수행
-
-        //테스트 성공여부
-        bool test_successed = true;
-        for (bool result : results) test_successed &= result;
-
-        if (test_successed)
-            print_successed_test(successed_list, t);
-        else
-            print_failed_test(failed_list, results, t);
-    }
-
-    //테스트 종합 결과 출력
-    print_tests_summary(disabled, successed_list, failed_list);
-
-
-}
-void MyUnitTest::run() { 
-    if (m_is_file_open && m_no_syntax_error) {
-        run_tests();
-    }
-}
-
-
-
-/*******************   기타 함수   *******************/
-void MyUnitTest::clear_tests() {
-    tests.clear();
-    tests.push_back({ 0, "", vector<string>(), vector<vector<ranged_string>>() });
-
-
-}
-void MyUnitTest::file_open(const char* name) {
-    TestDataFileReader reader;
-    m_is_file_open = reader.open(name);
-    if (!m_is_file_open) return;
-
-    m_no_syntax_error = reader.read(tests);
-    if (m_no_syntax_error)
-        cout << "\"" << name << "\" 파일을 성공적으로 읽었습니다." << endl;
-
-
-}
-bool MyUnitTest::is_open() { return m_is_file_open; }
-
-
-
-/*******************   테스트 옵션   *******************/
-MyUnitTest& MyUnitTest::set_newline(int newline) {
-    m_newline = newline;
-    return *this;
-}
-MyUnitTest& MyUnitTest::set_underline_marker(char marker) {
-    m_underline_marker = marker;
-    return *this;
-}
-MyUnitTest& MyUnitTest::set_indent_level(int indent_level) {
-    m_indent = "";
-    for (int i = 0; i < indent_level; i++) m_indent += " ";
-    return *this;
-}
-MyUnitTest& MyUnitTest::set_summary_more_details() {
-    details_summary_mode = true;
-    return *this;
-}
-MyUnitTest& MyUnitTest::set_summary_less_details() {
-    details_summary_mode = false;
-    return *this;
-
-
-}
-
-MyUnitTest& MyUnitTest::more_details(int test) { return more_details({ test }); }
-MyUnitTest& MyUnitTest::more_details(initializer_list<int> tests_list) {
-    for (int test_num : tests_list) tests[test_num].details = true;
-    return *this;
-}
-MyUnitTest& MyUnitTest::less_details(int test) { return less_details({ test }); }
-MyUnitTest& MyUnitTest::less_details(initializer_list<int> tests_list) {
-    for (int test_num : tests_list) tests[test_num].details = false;
-    return *this;
-
-
-}
-
-MyUnitTest& MyUnitTest::enable(int test) { return enable({ test }); }
-MyUnitTest& MyUnitTest::enable(initializer_list<int> tests_list) {
-    cout << "initializer_list" << endl;
-    for (int test_num : tests_list) tests[test_num].enabled = true;
-    return *this;
-}
-MyUnitTest& MyUnitTest::disable(int test) { return disable({ test }); }
-MyUnitTest& MyUnitTest::disable(initializer_list<int> tests_list) {
-    for (int test_num : tests_list) tests[test_num].enabled = false;
-    return *this;
-
-
-}
-
-MyUnitTest& MyUnitTest::more_details_all() {
-    for (Test& t : tests) t.details = true;
-    return *this;
-}
-MyUnitTest& MyUnitTest::less_details_all() {
-    for (Test& t : tests) t.details = false;
-    return *this;
-}
-MyUnitTest& MyUnitTest::enable_all() {
-    for (Test& t : tests) t.enabled = true;
-    return *this;
-}
-MyUnitTest& MyUnitTest::disable_all() {
-    for (Test& t : tests) t.enabled = false;
-    return *this;
-}
 
 
 } //end of namespace assignment1

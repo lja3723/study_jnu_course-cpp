@@ -149,7 +149,31 @@ namespace CH10 {
 		}
 	};
 
+
+	//member pointer ex
+	class MyClass {
+	public:
+		int mem;
+		void func() { cout << "mem func" << endl; }
+	};
+
 	
+	//my nullpte example
+	const class {
+	public:
+		template <class T>
+		operator T* () const {
+			return 0;
+		}
+
+		//멤버 함수를 가리키는 포인터에 대한 변환
+		template<class c, class t>
+		operator t c::* () const {
+			return 0;
+		}
+
+		void operator&() const = delete;
+	} my_nullptr = {};
 
 	void nptr_ex_func(int n) {
 		cout << "void nptr_ex_func(int) called" << endl;
@@ -158,8 +182,6 @@ namespace CH10 {
 	void nptr_ex_func(char* p) {
 		cout << "void nptr_ex_func(char*) called" << endl;
 	}
-
-
 
 	class RunExample {
 	public:
@@ -353,18 +375,30 @@ namespace CH10 {
 			ptr = reinterpret_cast<int*>(&pi); 
 			cout << *ptr << endl;
 
-			//const를 벗겨낸다
-			const char str[] = "Hello world!";
-			const char* cstr = str;
-			char* c = const_cast<char*>(cstr);
-			c[0] = 'K';			
-			cout << str << endl;
+		}
+		FN type_casting_ex2() {
+			int i;
+			const char str[] = { 'a', 'b', 'c' };
+			const char* p_cstr = &str[1];
+			//str[1] = 'B'; unable; because const!
+			char* p_str = const_cast<char*>(p_cstr);
+			*p_str = 'Z';
+			for (i = 0; i < 3; i++) cout << str[i] << " "; //a Z c 출력
+			cout << endl; 
 
-			const int CINT = 100;
-			const int* pint = &CINT;
-			int* hack = const_cast<int*>(pint);
-			*hack = -100; //수정이 안되네용? 왤까요?
-			cout << CINT << endl;
+			const int ARR[] = { 1, 2, 3 };
+			const int* p_cARR = &ARR[1];
+			int* p_ARR = const_cast<int*>(p_cARR);
+			//ARR[1] = -200; unable; because const!
+			*p_ARR = -200;
+			for (i=0; i<3; i++) cout << ARR[i] << " "; //1 -200 3 출력
+			cout << endl;
+
+			const int INT = 1;
+			const int* p_cINT = &INT;
+			int* hack = const_cast<int*>(p_cINT);
+			*hack = -100;
+			cout << INT << endl; //1 출력
 		}
 		FN nullptr_ex() {
 			char str[] = { 'H', 'e', 'l', 'l', 'o', NULL };
@@ -376,9 +410,15 @@ namespace CH10 {
 			nptr_ex_func(nullptr);
 
 			//nullptr은 클래스에요! 포인터 형변환 호용하면서 다른것은 막은 상수 클래스
-			
+			nptr_ex_func(my_nullptr);
 		}
-
+		FN mem_ptr_ex() {
+			MyClass c;
+			void (MyClass:: * mptr)();
+			mptr = my_nullptr; // 이렇게 멤버함수를 가리키는 포인터로 변환이 가능하다.
+			mptr = &MyClass::func;
+			(c.*mptr)();
+		}
 
 
 	};
@@ -386,4 +426,4 @@ namespace CH10 {
 
 }
 
-int main() { CH10::RunExample::type_casting_ex(); }
+//int main() { CH10::RunExample::type_casting_ex2(); }

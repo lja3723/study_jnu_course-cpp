@@ -5,14 +5,14 @@ using compiled = MySimpleRegex::compiled;
 
 
 /*******************   MySimpleRegex static 함수   *******************/
-compiled MySimpleRegex::compile(const string& m_regex) {
-    return compiled(m_regex);
+compiled MySimpleRegex::compile(const string& m_regex, interpret_mode mode) {
+    return compiled(m_regex, mode);
 }
-ranged_string MySimpleRegex::match(const string& m_regex, const string& source) {
-    return compiled(m_regex).match(source);
+ranged_string MySimpleRegex::match(const string& m_regex, const string& source, interpret_mode mode) {
+    return compiled(m_regex, mode).match(source);
 }
-vector<ranged_string> MySimpleRegex::match_all(const string m_regex, const string& source) {
-    return compiled(m_regex).match_all(source);
+vector<ranged_string> MySimpleRegex::match_all(const string m_regex, const string& source, interpret_mode mode) {
+    return compiled(m_regex, mode).match_all(source);
 }
 
 
@@ -22,6 +22,50 @@ class compiled::Imatchable {
 public:
     virtual bool test(char ch) = 0;
 };   
+class compiled::matcher_true : public compiled::Imatchable {
+public:
+    virtual bool test(char _ch) override {
+        return true;
+    }
+};
+class compiled::matcher_not : public compiled::Imatchable {
+private:
+    Imatchable* m;
+public:
+    matcher_not(Imatchable* to_not) : m(to_not) {}
+    ~matcher_not() { if (m != nullptr) delete m; }
+    virtual bool test(char _ch) override {
+        return !m->test(_ch);
+    }
+};
+class compiled::matcher_combine : public compiled::Imatchable {
+private:
+    vector<Imatchable*> m;
+public:
+    matcher_combine(initializer_list<Imatchable*> to_combine) {
+        for (Imatchable* c : to_combine)
+            m.push_back(c);
+    }
+    ~matcher_combine() {
+        for (Imatchable* c : m)
+            if (c != nullptr) delete c;
+    }
+    virtual bool test(char _ch) override {
+        bool ret = false;
+        for (Imatchable* c : m)
+            ret |= c->test(_ch);
+        return ret;
+    }
+};
+class compiled::matcher_range : public compiled::Imatchable {
+private:
+    char _start, _end;
+public:
+    matcher_range(char _ch_start, char _ch_end) : _start(_ch_start), _end(_ch_end) {}
+    virtual bool test(char _ch) override {
+        return _start <= _ch && _ch <= _end;
+    }
+};
 class compiled::matcher_single : public compiled::Imatchable {
 private: char ch;
 public:
@@ -31,22 +75,26 @@ public:
 class compiled::matcher_alphabet : public compiled::Imatchable {
 public:
     virtual bool test(char _ch) override {
-        return ('A' <= _ch && _ch <= 'Z') || ('a' <= _ch && _ch <= 'z');
+        return matcher_combine({
+            new matcher_range('A', 'Z'),
+            new matcher_range('a', 'z')}
+        ).test(_ch);
     }
 };
 class compiled::matcher_number : public compiled::Imatchable {
 public:
     virtual bool test(char _ch) override {
-        return ('0' <= _ch && _ch <= '9');
+        return matcher_range('0', '9').test(_ch);
     }
 };
 class compiled::matcher_word : public compiled::Imatchable {
 public:
     virtual bool test(char _ch) override {
-        return
-            matcher_number().test(_ch)      ||
-            matcher_alphabet().test(_ch)    ||
-            matcher_single('_').test(_ch);
+        return matcher_combine({
+            new matcher_alphabet(),
+            new matcher_number(),
+            new matcher_single('_')
+            }).test(_ch);
     }
 };
 class compiled::matcher_space : public compiled::Imatchable {
@@ -61,15 +109,10 @@ public:
 class compiled::matcher_dot : public compiled::Imatchable {
 public:
     virtual bool test(char _ch) override {
-        return _ch != '\n'; //개행 문자가 아니면 모두 일치
+        return matcher_not(new matcher_single('\n')).test(_ch);
     }
 };
-class compiled::matcher_true : public compiled::Imatchable {
-public:
-    virtual bool test(char _ch) override {
-        return true;
-    }
-};
+
 
 
 /*******************   node 및 파생 클래스   *******************/
@@ -248,7 +291,6 @@ void compiled::node::input(vector<active_request_info>& next_active, const char 
     m_state_active = false; // deactivate this node after matching
 }
 
-
 compiled::node_ptr::~node_ptr() { 
     if (matcher != nullptr) 
         delete matcher; //동적 할당된 matcher를 반환한다.
@@ -263,7 +305,15 @@ void compiled::node_ptr::request_active_nexttime(vector<active_request_info>& ne
 
 /*******************   compiled 클래스 멤버함수   *******************/
 //TODO: 주어진 정규표현식으로 상태머신 생성하기 필요
+void compiled::create_state_machine_for_assignment1() {
+    clear_nodes();
+    if (m_epsilon == nullptr)
+        m_epsilon = new node("epsilon");
+
+    
+}
 void compiled::create_state_machine() {
+    clear_nodes();
     if (m_epsilon == nullptr)
         m_epsilon = new node("epsilon");
 
@@ -463,18 +513,31 @@ void compiled::create_state_machine() {
         m_node[3]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[4]));
         m_node[4]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[1]));
 
-        m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
+        add_to_epsilon(m_node[0]);
         m_terminal.push_back(m_node[2]);
     }
+    else if (m_regex == "{test}") {
+        m_node.resize(2);
+
+        m_node[0] = new node("s0");
+        m_node[1] = new node("s1", true);
+
+        m_node[0]->add_link(new node_ptr_direct(
+            new matcher_alphabet(), m_node[0]));
+        m_node[0]->add_link(new node_ptr_direct(
+            new matcher_alphabet(), m_node[1]));
+
+        add_to_epsilon(m_node[0]);
+        m_terminal.push_back(m_node[1]);
+    }
+
 
 
 }
 void compiled::delete_state_machine() {
     //동적 할당된 노드를 삭제한다.
     if (m_epsilon != nullptr) delete m_epsilon;
-    for (int i = 0; i < m_node.size(); i++)
-        if (m_node[i] != nullptr)
-            delete m_node[i]; 
+    clear_nodes();
 
 
 }
@@ -545,6 +608,20 @@ ranged_string compiled::state_machine_input(
         return ret;
     }
 }
+
+
+void compiled::clear_nodes() {
+    for (int i = 0; i < m_node.size(); i++)
+        if (m_node[i] != nullptr)
+            delete m_node[i];
+
+
+}
+void compiled::add_to_epsilon(node* target) {
+    m_epsilon->add_link(new node_ptr_direct(new matcher_true(), target));
+
+
+}
 void compiled::request_active(
     map<string, node*>& actives, node* to_active, unsigned state_istart) 
 {
@@ -554,6 +631,7 @@ void compiled::request_active(
         return;
     to_active->active(state_istart);
     actives[name] = to_active;
+
     
 }
 

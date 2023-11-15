@@ -420,3 +420,11 @@ regex: Tn(abTn)*
 		input: abTnab
 		range:
 			2 4
+
+
+#Test No. 11
+regex: {test}
+	case: #1
+		input: ababeii44032iiiaburi3o2ANFLDdufiaFODIUSoriEEEE38401euiaabaiirueiabbbbaaaa
+		range:
+			NULL
