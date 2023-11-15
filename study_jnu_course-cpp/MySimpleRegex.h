@@ -82,6 +82,7 @@ private:
     class matcher_word;     //알파벳+숫자+밑줄(_) 매치
     class matcher_space;    //모든 공백 문자 매치
     class matcher_dot;      //모든 문자 매치(개행 문자 제외)
+    class matcher_true;     //항상 매치
 
 
     //상태머신의 노드와 노드 포인터를 표현하는 클래스이다    
@@ -107,7 +108,7 @@ private:
     /*      Private fields      */
     /****************************/
     vector<node*> m_node;           //상태기계 노드 컨테이너 (원본 포인터)
-    vector<node*> m_get_epsilon;    //엡실론 신호를 받는 노드 리스트 (얕은 복사됨)
+    node* m_epsilon;                //엡실론 신호를 next에 주는 노드
     vector<node*> m_terminal;       //터미널 노드 리스트 (얕은 복사됨)
     string m_regex;                 //저장된 정규표현식
 
@@ -123,13 +124,13 @@ private:
         bool check_at_front_only = false);
     
 
-    void request_active_nexttime(    //active 시킬 노드를 active_list에 등록한다.
+    void request_active(    //active 시킬 노드를 active_list에 등록한다.
         map<string, node*>& actives, node* to_active, unsigned state_istart);
 
 
 public:
     //주어진 정규표현식으로 내부적으로 상태기계를 생성한다.
-    compiled(const string& m_regex = "") : m_regex(m_regex) {
+    compiled(const string& m_regex = "") : m_regex(m_regex), m_epsilon(nullptr) {
         create_state_machine();
     }
 

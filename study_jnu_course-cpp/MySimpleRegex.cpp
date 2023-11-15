@@ -64,7 +64,12 @@ public:
         return _ch != '\n'; //개행 문자가 아니면 모두 일치
     }
 };
-
+class compiled::matcher_true : public compiled::Imatchable {
+public:
+    virtual bool test(char _ch) override {
+        return true;
+    }
+};
 
 
 /*******************   node 및 파생 클래스   *******************/
@@ -87,9 +92,10 @@ public:
 
     /*********  조회 함수  *********/
     const string& name() const;
-    unsigned index_start() const; //is_accepted일 때 인식된 문자열의 첫 위치를 의미한다.  
-    bool is_accepted() const; //본 노드에서 accept 되었는지 확인한다.
-    const vector<node*>& reverse_ref() const; //리버스 참조목록을 반환한다.
+    unsigned index_start() const;   //is_accepted일 때 인식된 문자열의 첫 위치를 의미한다.  
+    bool is_accepted() const;       //본 노드에서 accept 되었는지 확인한다.
+    const vector<node_ptr*>& next() const;      //next 목록을 반환한다.
+    const vector<node*>& reverse_ref() const;   //리버스 참조목록을 반환한다.
 
     /*********  변경 함수  *********/
     void add_link(node_ptr* _next); //본 노드가 가리키는 노드를 추가한다.
@@ -209,6 +215,9 @@ unsigned compiled::node::index_start() const {
 bool compiled::node::is_accepted() const {
     return m_is_terminal && m_state_active;
 }
+const vector<compiled::node_ptr*>& compiled::node::next() const {
+    return m_next;
+}
 const vector<compiled::node*>& compiled::node::reverse_ref() const {
     return m_reverse_ref;
 }
@@ -255,6 +264,9 @@ void compiled::node_ptr::request_active_nexttime(vector<active_request_info>& ne
 /*******************   compiled 클래스 멤버함수   *******************/
 //TODO: 주어진 정규표현식으로 상태머신 생성하기 필요
 void compiled::create_state_machine() {
+    if (m_epsilon == nullptr)
+        m_epsilon = new node("epsilon");
+
     //mock implementation
     //문법을 해석해 아래 작업이 알아서 되어야함
     if (m_regex == "abc|ade") {
@@ -278,7 +290,7 @@ void compiled::create_state_machine() {
         m_node[5]->add_link(new node_ptr_direct(new matcher_single('e'), m_node[3]));
 
         // 엡실론 신호 받는 노드 설정
-        m_get_epsilon.push_back(m_node[0]);
+        m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
 
         // 터미널 노드 설정
         m_terminal.push_back(m_node[3]);
@@ -295,7 +307,7 @@ void compiled::create_state_machine() {
         m_node[1]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[2]));
         m_node[2]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[3]));
 
-        m_get_epsilon.push_back(m_node[0]);
+        m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
 
         m_terminal.push_back(m_node[3]);
     }
@@ -343,7 +355,7 @@ void compiled::create_state_machine() {
 
         m_node[10]->add_link(new node_ptr_direct(new matcher_single('Q'), m_node[11]));
 
-        m_get_epsilon.push_back(m_node[0]);
+        m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
         m_terminal.push_back(m_node[11]);
     }
     else if (m_regex == "ab+c") {
@@ -359,7 +371,7 @@ void compiled::create_state_machine() {
         m_node[1]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[2]));
         m_node[2]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[3]));
 
-        m_get_epsilon.push_back(m_node[0]);
+        m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
         m_terminal.push_back(m_node[3]);
     }
     else if (m_regex == "abc+") {
@@ -375,7 +387,7 @@ void compiled::create_state_machine() {
         m_node[2]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[2]));
         m_node[2]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[3]));
 
-        m_get_epsilon.push_back(m_node[0]);
+        m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
         m_terminal.push_back(m_node[3]);
     }
     else if (m_regex == "aB{3,6}c") {
@@ -392,7 +404,7 @@ void compiled::create_state_machine() {
         m_node[1]->add_link(new node_ptr_inner_counter(new matcher_single('B'), m_node[2], 3, 6));
         m_node[2]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[3]));
 
-        m_get_epsilon.push_back(m_node[0]);
+        m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
         m_terminal.push_back(m_node[3]);
     }
     else if (m_regex == "jkT{4,5}") {
@@ -408,7 +420,7 @@ void compiled::create_state_machine() {
         m_node[2]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[2]));
         m_node[2]->add_link(new node_ptr_inner_counter(new matcher_single('T'), m_node[3], 4, 5));
 
-        m_get_epsilon.push_back(m_node[0]);
+        m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
         m_terminal.push_back(m_node[3]);
     }
     else if (m_regex == "T{3,5}") {
@@ -420,7 +432,7 @@ void compiled::create_state_machine() {
         m_node[0]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[0]));
         m_node[0]->add_link(new node_ptr_inner_counter(new matcher_single('T'), m_node[1], 3, 5));
 
-        m_get_epsilon.push_back(m_node[0]);
+        m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
         m_terminal.push_back(m_node[1]);
     }
     else if (m_regex == "T+") {
@@ -432,7 +444,7 @@ void compiled::create_state_machine() {
         m_node[0]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[1]));
         m_node[0]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[0]));
 
-        m_get_epsilon.push_back(m_node[0]);
+        m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
         m_terminal.push_back(m_node[1]);
     }
     else if (m_regex == "Tn(abTn)*") {
@@ -451,16 +463,18 @@ void compiled::create_state_machine() {
         m_node[3]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[4]));
         m_node[4]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[1]));
 
-        m_get_epsilon.push_back(m_node[0]);
+        m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
         m_terminal.push_back(m_node[2]);
     }
 
 
 }
 void compiled::delete_state_machine() {
+    //동적 할당된 노드를 삭제한다.
+    if (m_epsilon != nullptr) delete m_epsilon;
     for (int i = 0; i < m_node.size(); i++)
         if (m_node[i] != nullptr)
-            delete m_node[i]; //동적 할당된 노드를 삭제한다.
+            delete m_node[i]; 
 
 
 }
@@ -478,10 +492,16 @@ ranged_string compiled::state_machine_input(
         //check_at_front_only면 문자열 시작이 패턴과 일치하는 경우만 확인한다.
         //즉 최초 1회만 엡실론 신호를 부여한다.
         if ( !(check_at_front_only && i > 0) ) {
-            for (node*& target : m_get_epsilon)
-                request_active_nexttime(actives, target, i);
+            for (node_ptr* e : m_epsilon->next()) 
+                e->request_active_nexttime(next_actives, i, '\0');
+            //코드 중복 발생
+            //다음 활성화될 노드 리스트를 받아오고 활성화한다.
+            while (!next_actives.empty()) {
+                active_request_info& info = next_actives.back();
+                request_active(actives, info.target, info.start_index);
+                next_actives.pop_back();
+            }
         }
-
         // give ch all nodes
         // nv[j]가 active 상태였다면 이 연산 후 nv[j]에서 나오는 화살표는
         // 조건을 만족할 시 가리키는 노드의 transited를 활성화한다.
@@ -492,10 +512,10 @@ ranged_string compiled::state_machine_input(
         }
         actives.clear();
 
-        //다음 활성화될 노드 리스트를 받아오고 활성화한다.
+        //다음 활성화될 노드 리스트를 받아오고 활성화한다. (코드 중복)
         while (!next_actives.empty()) {
             active_request_info& info = next_actives.back();
-            request_active_nexttime(actives, info.target, info.start_index);
+            request_active(actives, info.target, info.start_index);
             next_actives.pop_back();
         }
 
@@ -525,7 +545,7 @@ ranged_string compiled::state_machine_input(
         return ret;
     }
 }
-void compiled::request_active_nexttime(
+void compiled::request_active(
     map<string, node*>& actives, node* to_active, unsigned state_istart) 
 {
     const string& name = to_active->name();
