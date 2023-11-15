@@ -48,7 +48,7 @@ namespace CH10 {
 	public:
 		klass() { cout << "Constructor!" << endl; }
 		~klass() { cout << "Destructor!" << endl; }
-		void foo() { cout << "Foooo!" << endl; }
+		void my_destructor_for_smart_ptr() { cout << "Foooo!" << endl; }
 	};
 
 	template <class T>
@@ -59,14 +59,27 @@ namespace CH10 {
 		smartptr(T* p = 0) : ptr(p) {}
 		~smartptr() {
 			cout << "free the memory" << endl;
-			delete ptr;
+			//delete ptr;
 		}
+
+		//conversion constructor(형변환 생성자)
+		smartptr(long* p = 0) : ptr((int*)p) {}
+
+		//conversion operator(형변환 연산자)
+		operator int* () {
+			return ptr;
+		}
+
 		//dereference
 		T& operator*() { return *ptr; }
 
 		//for pointer of class or struct
 		T* operator->() { return ptr; }
 	};
+	void my_destructor_for_smart_ptr(int* p) {
+		cout << "delete p!" << endl;
+		delete p;
+	}
 
 	class member {
 	private:
@@ -113,7 +126,6 @@ namespace CH10 {
 		}
 	};
 
-
 	//TODO: 에러 나는 이유 찾기
 	class Point {
 	private:
@@ -136,6 +148,16 @@ namespace CH10 {
 			cout << "Copy Constructor " << name << ": " << x << " " << y << endl;
 		}
 	};
+
+	
+
+	void nptr_ex_func(int n) {
+		cout << "void nptr_ex_func(int) called" << endl;
+	}
+
+	void nptr_ex_func(char* p) {
+		cout << "void nptr_ex_func(char*) called" << endl;
+	}
 
 
 
@@ -271,7 +293,91 @@ namespace CH10 {
 			Point p2 = Point(30, 40, "p2");
 			Point p3 = p1; //생성자 호출 X (복사 생성자가 호출됨)
 		}
+		FN shared_ptr_ex() {
+			shared_ptr<int> p1(new int);
 
+			*p1 = 10;
+			cout << *p1 << endl;
+			cout << p1.use_count() << endl;
+			cout << endl;
+
+			shared_ptr<int> p2 = p1;
+			cout << *p2 << endl;
+			cout << p2.use_count() << endl;
+			cout << endl;
+
+			shared_ptr<int> p3(new int, my_destructor_for_smart_ptr); //assign the 파괴자
+			cout << p3.use_count() << endl;
+		}
+		FN unique_ptr_ex() {
+			unique_ptr<int> p1(new int);
+			*p1 = 10;
+
+			unique_ptr<int> p2 = std::move(p1);
+			cout << *p2 << endl;
+			//cout << *p1 << endl;
+		}
+		FN type_convert_ex() {
+			long i = 1234;
+			int j = i;
+
+			int* p = (int*)&i;
+			cout << *p << endl;
+
+			smartptr<int> p1(new int);
+			*p1 = 10;
+
+			//다른 객체 -> 대상객체 형변환
+			p1 = &i;
+			cout << *p1 << endl;
+
+			//대상객체 -> 다른 객체 형변환
+			int* ptr = p1;
+			cout << *ptr << endl;
+		}
+		FN type_casting_ex() {
+			//c++에서는 캐스팅을 위한 연산자가 4개나 있다
+			//생긴건 전부 템플릿처럼 생겼지만 "연산자"이다
+			//	static_cast<>		-> 상식적인 변환만 허용함
+			//	reinterpret_cast<>	-> C 스타일 캐스팅(메모리 공간 재해석)
+			//	const_cast<>		-> 객체의 상수성 제거
+			//	dynamic_cast<>		-> 동적으로 형변환 가능할 때 허용 //RTTI에서 다룸
+
+			double pi = 3.14;
+			int* ptr = (int*)(&pi); //이유가 없지만
+			cout << *ptr << endl; //작동한다.
+
+			//int* qtr = static_cast<int*>(&pi); 컴파일 타임 동작
+
+			//메모리 재해석(메모리 범위를 초과하지만 않는다면 프로그래머 마음!)
+			ptr = reinterpret_cast<int*>(&pi); 
+			cout << *ptr << endl;
+
+			//const를 벗겨낸다
+			const char str[] = "Hello world!";
+			const char* cstr = str;
+			char* c = const_cast<char*>(cstr);
+			c[0] = 'K';			
+			cout << str << endl;
+
+			const int CINT = 100;
+			const int* pint = &CINT;
+			int* hack = const_cast<int*>(pint);
+			*hack = -100; //수정이 안되네용? 왤까요?
+			cout << CINT << endl;
+		}
+		FN nullptr_ex() {
+			char str[] = { 'H', 'e', 'l', 'l', 'o', NULL };
+			int* ptr = NULL;
+			cout << ptr << "\n\n";
+
+			nptr_ex_func(0);
+			nptr_ex_func(NULL); //ambiguous
+			nptr_ex_func(nullptr);
+
+			//nullptr은 클래스에요! 포인터 형변환 호용하면서 다른것은 막은 상수 클래스
+			
+		}
 
 
 
@@ -280,4 +386,4 @@ namespace CH10 {
 
 }
 
-//int main() { CH10::RunExample::explicit_implicit_call(); }
+int main() { CH10::RunExample::type_casting_ex(); }
