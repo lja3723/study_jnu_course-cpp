@@ -124,46 +124,43 @@ private:
     };
 
 
+    //state machine 생성기
+    class state_machine_creator; 
+    //assignment1 전용 생성기
+    class state_machine_creator_for_assignment1; 
+    //general한 생성기
+    class state_machine_creator_for_general;
+
+
     /****************************/
     /*      Private fields      */
     /****************************/
-    interpret_mode m_interpret_mode;
     vector<node*> m_node;           //상태기계 노드 컨테이너 (원본 포인터)
     node* m_epsilon;                //엡실론 신호를 next에 주는 노드
     vector<node*> m_terminal;       //터미널 노드 리스트 (얕은 복사됨)
-    string m_regex;                 //저장된 정규표현식
+    const string m_regex;           //저장된 정규표현식
+    const interpret_mode m_mode;    //정규표현식 해석 방법
+                                    //(assignment1 or general)
 
 
     /****************************/
     /*    Private functions     */
-    /****************************/
-    void create_state_machine_for_assignment1();  //assignment1만을 위한 정규식 해석방법
-    void create_state_machine();    //상태기계 노드 컨테이너에 상태기계를 생성한다.    
-    void delete_state_machine();    //생성된 상태기계를 삭제한다.   
+    /****************************/ 
     ranged_string state_machine_input(      //상태기계에 문자열을 입력으로 넣어주면
         const string& src,                  //가장 처음으로 accept된 일치 정보를 출력한다.
         unsigned index_start = 0,           //매치된 구간이 없으면 invalid한 객체를 반환한다.
         bool check_at_front_only = false);
-    
-    void clear_nodes();      //노드 컨테이너를 초기화한다.
-    void add_to_epsilon(node* target); //epsilon을 받을 노드를 등록한다.
+         
     void request_active(    //active 시킬 노드를 active_list에 등록한다.
         map<string, node*>& actives, node* to_active, unsigned state_istart);
 
 
 public:
+    //주어진 정규표현식을 파싱해 내부적으로 상태기계를 생성한다.
+    compiled(const string& m_regex, interpret_mode mode);
 
-    //주어진 정규표현식으로 내부적으로 상태기계를 생성한다.
-    compiled(const string& m_regex, interpret_mode mode) : m_regex(m_regex), m_epsilon(nullptr) {
-        //해석 모드마다 다른 상태머신 생성됨
-        if (mode == general)
-            create_state_machine();
-        else if (mode == assignment1)
-            create_state_machine_for_assignment1();
-    }
-
-    //소멸자 (메모리 반환 필요)
-    ~compiled() { delete_state_machine(); }
+    //생성된 상태기계를 삭제한다. 메모리 반환 작업을 수행한다.
+    ~compiled();
 
     //source에서 start_idx부터 탐색을 시작해 가장 처음으로 발견된 일치 정보를 반환한다.
     ranged_string match(const string& source, unsigned index_start = 0) {

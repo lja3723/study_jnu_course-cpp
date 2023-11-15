@@ -29,7 +29,7 @@ namespace assignment1 {
         //Additional Settings
             //.less_details({ 1, 2 }) //set less details
             //.disable({ })      //desable some testcases
-            .set_regex_interpret_mode(MySimpleRegex::assignment1) // or
+            //.set_regex_interpret_mode(MySimpleRegex::assignment1) // or
             .set_regex_interpret_mode(MySimpleRegex::general)
             //.disable_all()
             //.enable({8})
