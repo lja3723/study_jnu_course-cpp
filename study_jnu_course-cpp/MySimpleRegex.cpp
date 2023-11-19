@@ -687,8 +687,6 @@ compiled::compiled(const string& m_regex)
     if (!creator.make(m_regex)) {
         cout << "정규표현식 문법이 잘못되었습니다. 비교가 제대로 수행되지 않을 수 있습니다." << endl;
     }
-
-
 }
 compiled::~compiled() {
     //동적 할당된 노드를 삭제한다.
