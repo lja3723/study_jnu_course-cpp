@@ -69,7 +69,6 @@ public:
     MyUnitTest& set_indent_level(int indent_level);
     MyUnitTest& set_summary_more_details();
     MyUnitTest& set_summary_less_details();
-    MyUnitTest& set_regex_interpret_mode(MySimpleRegex::interpret_mode mode);
 
     MyUnitTest& more_details(int test);
     MyUnitTest& more_details(initializer_list<int> tests_list);
@@ -110,7 +109,6 @@ private:
         bool enabled = true;    //0: test disabled, 1: test enabled
     }; 
 
-    MySimpleRegex::interpret_mode m_interpret_mode; //정규식 해석 모드(일반적, 과제)
     vector<Test> tests;         //테스트 목록
     int m_newline;              //개행이 필요할 때 기준 문자 수
     char m_underline_marker;    //밑줄 표시할 글자

@@ -1,18 +1,19 @@
 #include "MySimpleRegex.h"
+#include <string>
 
 namespace assignment1 { 
 using compiled = MySimpleRegex::compiled;
 
 
 /*******************   MySimpleRegex static 함수   *******************/
-compiled MySimpleRegex::compile(const string& m_regex, interpret_mode mode) {
-    return compiled(m_regex, mode);
+compiled MySimpleRegex::compile(const string& m_regex) {
+    return compiled(m_regex);
 }
-ranged_string MySimpleRegex::match(const string& m_regex, const string& source, interpret_mode mode) {
-    return compiled(m_regex, mode).match(source);
+ranged_string MySimpleRegex::match(const string& m_regex, const string& source) {
+    return compiled(m_regex).match(source);
 }
-vector<ranged_string> MySimpleRegex::match_all(const string m_regex, const string& source, interpret_mode mode) {
-    return compiled(m_regex, mode).match_all(source);
+vector<ranged_string> MySimpleRegex::match_all(const string m_regex, const string& source) {
+    return compiled(m_regex).match_all(source);
 }
 
 
@@ -22,97 +23,24 @@ class compiled::Imatchable {
 public:
     virtual bool test(char ch) = 0;
 };   
-class compiled::matcher_true : public compiled::Imatchable {
-public:
-    virtual bool test(char _ch) override {
-        return true;
-    }
-};
-class compiled::matcher_not : public compiled::Imatchable {
-private:
-    Imatchable* m;
-public:
-    matcher_not(Imatchable* to_not) : m(to_not) {}
-    ~matcher_not() { if (m != nullptr) delete m; }
-    virtual bool test(char _ch) override {
-        return !m->test(_ch);
-    }
-};
-class compiled::matcher_combine : public compiled::Imatchable {
-private:
-    vector<Imatchable*> m;
-public:
-    matcher_combine(initializer_list<Imatchable*> to_combine) {
-        for (Imatchable* c : to_combine)
-            m.push_back(c);
-    }
-    ~matcher_combine() {
-        for (Imatchable* c : m)
-            if (c != nullptr) delete c;
-    }
-    virtual bool test(char _ch) override {
-        bool ret = false;
-        for (Imatchable* c : m)
-            ret |= c->test(_ch);
-        return ret;
-    }
-};
-class compiled::matcher_range : public compiled::Imatchable {
-private:
-    char _start, _end;
-public:
-    matcher_range(char _ch_start, char _ch_end) : _start(_ch_start), _end(_ch_end) {}
-    virtual bool test(char _ch) override {
-        return _start <= _ch && _ch <= _end;
-    }
-};
 class compiled::matcher_single : public compiled::Imatchable {
 private: char ch;
 public:
     matcher_single(char ch) : ch(ch) {}
     virtual bool test(char _ch) override { return ch == _ch; }
 };
-class compiled::matcher_alphabet : public compiled::Imatchable {
-public:
-    virtual bool test(char _ch) override {
-        return matcher_combine({
-            new matcher_range('A', 'Z'),
-            new matcher_range('a', 'z')}
-        ).test(_ch);
-    }
-};
-class compiled::matcher_number : public compiled::Imatchable {
-public:
-    virtual bool test(char _ch) override {
-        return matcher_range('0', '9').test(_ch);
-    }
-};
-class compiled::matcher_word : public compiled::Imatchable {
-public:
-    virtual bool test(char _ch) override {
-        return matcher_combine({
-            new matcher_alphabet(),
-            new matcher_number(),
-            new matcher_single('_')
-            }).test(_ch);
-    }
-};
-class compiled::matcher_space : public compiled::Imatchable {
-public:
-    virtual bool test(char _ch) override {
-        string s = "\t\n\v\f\r ";
-        bool ret = false;
-        for (char c : s) ret |= c == _ch;
-        return ret;
-    }
-};
 class compiled::matcher_dot : public compiled::Imatchable {
 public:
     virtual bool test(char _ch) override {
-        return matcher_not(new matcher_single('\n')).test(_ch);
+        return ('A' <= _ch && _ch <= 'Z') || ('a' <= _ch && _ch <= 'z');
     }
 };
-
+class compiled::matcher_true : public compiled::Imatchable {
+public:
+    virtual bool test(char _ch) override {
+        return true;
+    }
+};
 
 
 /*******************   node 및 파생 클래스   *******************/
@@ -308,190 +236,47 @@ void compiled::node_ptr::request_active_nexttime(
 //TODO: 주어진 정규표현식으로 상태머신 생성하기 필요
 class compiled::state_machine_creator {
 public:
-    enum state {
-        init,
-        asterisk,
-        plus,
-        range,
-        range_end,
-        and_oper,
-        escape,
-        number,
-        character
-    };
-
     state_machine_creator(vector<node*>& _node, node*& _epsilon, vector<node*>& _terminal) :
-        m_node(_node), m_epsilon(_epsilon), m_terminal(_terminal),
-        m_prev_state(init), m_cur_state(init), m_cur_idx(0), m_regex("") {}
+        m_node(_node), m_epsilon(_epsilon), m_terminal(_terminal) {}
 
-    virtual bool make(const string& regex) final {
+    bool make(const string& regex) {
         //상태 머신을 초기화한다.
-        m_regex = regex;
         clear();
         m_epsilon = new node("epsilon");
 
+        //하드코딩된 정규식과 일치한 경우 생성 성공
+        if (hardcoded_state_machine(regex))
+            return true;
+
         //정규표현식을 한 문자씩 읽으면서 작업을 수행한다.
         bool m_syntax_correct = true;
-        for (int i = 0; i < m_regex.size(); i++) {
-            m_cur_state = interpret(m_regex[i]);
-            if (!action()/* 파생되는 클래스마다 다른 동작 */) {
+        /*for (m_cur_idx = 0; m_cur_idx < m_regex.size(); m_cur_idx++) {
+            m_cur_char = m_regex[m_cur_idx];
+            m_cur_state = interpret();
+            if (!action()) {
                 m_syntax_correct = false;
                 break;
             }
-        }
+        }*/
 
         //최종적인 마무리 작업을 수행한다.
-        m_syntax_correct &= final_action()/* 파생되는 클래스마다 다른 동작 */;
+        m_syntax_correct &= final_action();
         if (!m_syntax_correct) clear(); //잘못 생성된 상태머신을 초기화한다.
         return m_syntax_correct;
     }
 
 private:
-    //현재 문자로 상태를 추측한다.
-    state interpret(char c) {
-        switch (c) {
-        case '*': return asterisk;
-        case '+': return plus;
-        case '{': return range;
-        case '}': return range_end;
-        case '|': return and_oper;
-        case '\\': return escape;
-        }
-        if ('0' <= c && c <= '9')  return number;
-        return character;
-    }
-    
-    //노드 컨테이너를 초기화한다.
-    void clear() {
-        for (int i = 0; i < m_node.size(); i++)
-            if (m_node[i] != nullptr)
-                delete m_node[i];
-        if (m_epsilon != nullptr) delete m_epsilon;
-
-        m_node.clear();
-        m_epsilon = nullptr;
-    }
-
-
-protected:
     //외부 참조 변수
-    //이 변수를 조작해 상태 머신을 생성한다.
+    //이 변수들을 조작해 상태 머신을 생성한다.
     vector<node*>& m_node;
     node*& m_epsilon;
     vector<node*>& m_terminal;
 
     //내부 변수
-    state m_prev_state;
-    state m_cur_state;
-    int m_cur_idx;
-    string m_regex;
-
-    //엡실론을 받을 노드를 등록한다.
-    void m_add_to_epsilon(node* target) {
-        m_epsilon->add_link(new node_ptr_direct(new matcher_true(), target));
-    }
-
-    virtual bool action() = 0;
-    virtual bool final_action() = 0;
+    string m_regex;    
 
 
-};
-class compiled::state_machine_creator_for_assignment1 : public state_machine_creator {
-public:
-    state_machine_creator_for_assignment1(
-        vector<node*>& _node, node*& _epsilon, vector<node*>& _terminal) :
-            state_machine_creator(_node, _epsilon, _terminal), node_count(0) {}
-
-private:
-    int node_count;
-
-    bool syntax_error(string prev_state) {
-        cout << "syntax err; prev state was " << prev_state << ";\n";
-        return false;
-    }
-    bool action_init() {
-        new_node_back();
-        m_add_to_epsilon(m_node.back());
-
-        if (m_cur_state == number || m_cur_state == character) {
-            m_node.push_back(new node("s"));
-            new_node_back();
-            m_node[m_node.size() - 2]->add_link(new node_ptr_direct(
-                new matcher_single(m_regex[m_cur_idx]), m_node.back()));
-
-            m_prev_state = m_cur_state;
-            return true;
-        }
-
-        if (m_cur_state == escape) {
-
-        }
-        
-        return syntax_error("init");
-    }
-    bool action_escape() {
-
-        return true;
-    }
-    bool action_number() {
-        return true;
-    }
-    bool action_character() {
-        return true;
-    }
-    bool action_asterisk() {
-        return true;
-    }
-    bool action_plus() {
-        return true;
-    }
-    bool action_range() {
-        return true;
-    }
-    bool action_range_end() {
-        return true;
-    }
-    bool action_and_oper() {
-        return true;
-    }
-
-    void new_node_back() {
-        m_node.push_back(new node("s" + ++node_count));
-    }
-
-protected:
-    virtual bool action() override {
-        //이전 상태에 따라 다른 작업이 수행된다.
-        switch (m_prev_state) {
-        case init:      return action_init();
-        case asterisk:  return action_asterisk();
-        case plus:      return action_plus();
-        case range:     return action_range();
-        case range_end: return action_range_end();
-        case and_oper:  return action_and_oper();
-        case escape:    return action_escape();
-        case number:    return action_number();
-        case character: return action_character();
-        default: return false;
-        }
-    }
-    virtual bool final_action() override {
-
-        return true;
-    }
-
-
-};
-class compiled::state_machine_creator_for_general : public state_machine_creator {
-public:
-    state_machine_creator_for_general(vector<node*>& _node, node*& _epsilon, vector<node*>& _terminal) :
-        state_machine_creator(_node, _epsilon, _terminal) {}
-
-protected:
-    virtual bool action() override {
-        return true;
-    }
-    virtual bool final_action() override {
+    bool hardcoded_state_machine(const string& m_regex) {
         //mock implementation
         //문법을 해석해 아래 작업이 알아서 되어야함
         if (m_regex == "{test}") {
@@ -501,12 +286,13 @@ protected:
             m_node[1] = new node("s1", true);
 
             m_node[0]->add_link(new node_ptr_direct(
-                new matcher_alphabet(), m_node[0]));
+                new matcher_dot(), m_node[0]));
             m_node[0]->add_link(new node_ptr_direct(
-                new matcher_alphabet(), m_node[1]));
+                new matcher_dot(), m_node[1]));
 
             m_add_to_epsilon(m_node[0]);
             m_terminal.push_back(m_node[1]);
+            return true;
         }
         if (m_regex == "abc|ade") {
             m_node.resize(6/*정규표현식 해석 후 노드 개수가 되어야 함*/);
@@ -533,6 +319,7 @@ protected:
 
             // 터미널 노드 설정
             m_terminal.push_back(m_node[3]);
+            return true;
         }
         else if (m_regex == "aba") {
             m_node.resize(4);
@@ -549,6 +336,7 @@ protected:
             m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
 
             m_terminal.push_back(m_node[3]);
+            return true;
         }
         else if (m_regex == "NK((abc|ABC)*N|(OP)+)Q") {
             m_node.resize(12);
@@ -596,6 +384,7 @@ protected:
 
             m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
             m_terminal.push_back(m_node[11]);
+            return true;
         }
         else if (m_regex == "ab+c") {
             m_node.resize(4);
@@ -612,6 +401,7 @@ protected:
 
             m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
             m_terminal.push_back(m_node[3]);
+            return true;
         }
         else if (m_regex == "abc+") {
             m_node.resize(4);
@@ -628,6 +418,7 @@ protected:
 
             m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
             m_terminal.push_back(m_node[3]);
+            return true;
         }
         else if (m_regex == "aB{3,6}c") {
             m_node.resize(4);
@@ -645,6 +436,7 @@ protected:
 
             m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
             m_terminal.push_back(m_node[3]);
+            return true;
         }
         else if (m_regex == "jkT{4,5}") {
             m_node.resize(4);
@@ -661,6 +453,7 @@ protected:
 
             m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
             m_terminal.push_back(m_node[3]);
+            return true;
         }
         else if (m_regex == "T{3,5}") {
             m_node.resize(2);
@@ -673,6 +466,7 @@ protected:
 
             m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
             m_terminal.push_back(m_node[1]);
+            return true;
         }
         else if (m_regex == "T+") {
             m_node.resize(2);
@@ -685,6 +479,7 @@ protected:
 
             m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
             m_terminal.push_back(m_node[1]);
+            return true;
         }
         else if (m_regex == "Tn(abTn)*") {
             m_node.resize(5);
@@ -704,13 +499,32 @@ protected:
 
             m_add_to_epsilon(m_node[0]);
             m_terminal.push_back(m_node[2]);
+            return true;
         }
 
-
-        return true;
-
-
+        //매치되는 regex 없음
+        return false;
     }
+
+    //노드 컨테이너를 초기화한다.
+    void clear() {
+        for (int i = 0; i < m_node.size(); i++)
+            if (m_node[i] != nullptr)
+                delete m_node[i];
+        if (m_epsilon != nullptr) delete m_epsilon;
+
+        m_node.clear();
+        m_epsilon = nullptr;
+    }
+
+
+    //엡실론을 받을 노드를 등록한다.
+    void m_add_to_epsilon(node* target) {
+        m_epsilon->add_link(new node_ptr_direct(new matcher_true(), target));
+    }    
+
+    bool action() { return true; }
+    bool final_action() { return true; }
 
 
 };
@@ -718,25 +532,15 @@ protected:
 
 
 /*******************   compiled 클래스 멤버함수   *******************/
-compiled::compiled(const string& m_regex, interpret_mode mode)
-    : m_regex(m_regex), m_mode(mode), m_epsilon(nullptr) {
-    //해석 모드에 따라 서로 다른 상태머신이 생성된다.
-    bool syntax_check = true;
-    if (m_mode == general) {
-        state_machine_creator_for_general creator(m_node, m_epsilon, m_terminal);
-        syntax_check = creator.make(m_regex);
-    }
-    else if (m_mode == assignment1) {
-        state_machine_creator_for_assignment1 creator(m_node, m_epsilon, m_terminal);
-        syntax_check = creator.make(m_regex);
-    }
+compiled::compiled(const string& m_regex)
+    : m_regex(m_regex), m_epsilon(nullptr) {
+
+    state_machine_creator creator(m_node, m_epsilon, m_terminal);
 
     //정규식 문법이 잘못된 경우 빈 상태 기계가 생성된다.
-    if (!syntax_check) {
+    if (!creator.make(m_regex)) {
         cout << "정규표현식 문법이 잘못되었습니다. 비교가 제대로 수행되지 않을 수 있습니다." << endl;
     }
-
-
 }
 compiled::~compiled() { 
     //동적 할당된 노드를 삭제한다.

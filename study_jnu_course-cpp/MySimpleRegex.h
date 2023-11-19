@@ -36,34 +36,18 @@ private: MySimpleRegex();
     //이 클래스는 static 메서드만 있으므로 생성자를 private로 둔다.
 
 public:
-    //정규식 해석 모드 (일반적인 모드와 assignment1 전용 모드가 있음)]
-    enum interpret_mode {
-        general_interpret,
-        assignment1_interpret
-    };
-    static const interpret_mode general = general_interpret;
-    static const interpret_mode assignment1 = assignment1_interpret;
-
     class compiled; //진짜 기능을 하는 클래스
     
     //정규표현식을 컴파일한 객체 compiled를 반환한다.
-    static compiled compile(
-        const string& m_regex, 
-        interpret_mode mode = assignment1); 
+    static compiled compile( const string& m_regex); 
 
     //source에서 정규표현식과 가장 먼저 일치하는 범위를 구한다.
     //그런 범위가 없으면 invalid한 객체를 반환한다.
-    static ranged_string match(
-        const string& m_regex, 
-        const string& source, 
-        interpret_mode mode = assignment1);
+    static ranged_string match(const string& m_regex, const string& source);
 
     //source에서 정규표현식과 일치하는 모든 범위를 구한다
     //일치정보가 없을 경우 empty()한 vector가 반환된다.
-    static vector<ranged_string> match_all(
-        const string m_regex, 
-        const string& source, 
-        interpret_mode mode = assignment1);
+    static vector<ranged_string> match_all(const string m_regex, const string& source);
 };
 
 
@@ -93,16 +77,9 @@ private:
     //input char을 판별하기 위한 매치 클래스
     //상속으로 다형성을 구현한다.
     class Imatchable;       //매치 객체 인터페이스    
-    class matcher_true;     //항상 매치
-    class matcher_not;      //반대 조건 매치
-    class matcher_combine;  //결합 조건 매치
-    class matcher_range;    //범위 안 모든 문자 매치
     class matcher_single;   //단일 문자 매치    
-    class matcher_alphabet; //알파벳 매치
-    class matcher_number;   //숫자 매치
-    class matcher_word;     //알파벳+숫자+밑줄(_) 매치
-    class matcher_space;    //모든 공백 문자 매치
     class matcher_dot;      //모든 문자 매치(개행 문자 제외)
+    class matcher_true;     //무조건 매치
 
 
     //상태머신의 노드와 노드 포인터를 표현하는 클래스이다    
@@ -123,13 +100,8 @@ private:
         unsigned start_index;
     };
 
-
     //state machine 생성기
-    class state_machine_creator; 
-    //assignment1 전용 생성기
-    class state_machine_creator_for_assignment1; 
-    //general한 생성기
-    class state_machine_creator_for_general;
+    class state_machine_creator;
 
 
     /****************************/
@@ -139,8 +111,6 @@ private:
     node* m_epsilon;                //엡실론 신호를 next에 주는 노드
     vector<node*> m_terminal;       //터미널 노드 리스트 (얕은 복사됨)
     const string m_regex;           //저장된 정규표현식
-    const interpret_mode m_mode;    //정규표현식 해석 방법
-                                    //(assignment1 or general)
 
 
     /****************************/
@@ -157,7 +127,7 @@ private:
 
 public:
     //주어진 정규표현식을 파싱해 내부적으로 상태기계를 생성한다.
-    compiled(const string& m_regex, interpret_mode mode);
+    compiled(const string& m_regex);
 
     //생성된 상태기계를 삭제한다. 메모리 반환 작업을 수행한다.
     ~compiled();

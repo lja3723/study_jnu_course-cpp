@@ -29,13 +29,11 @@ namespace assignment1 {
         //Additional Settings
             //.less_details({ 1, 2 }) //set less details
             //.disable({ })      //desable some testcases
-            //.set_regex_interpret_mode(MySimpleRegex::assignment1) // or
-            .set_regex_interpret_mode(MySimpleRegex::general)
             //.disable_all()
             //.enable({8})
             .run(); //run unit test
 
-        cout << "최종 컴파일 시간: 15일(수) 오후 2:18" << endl;
+        cout << "최종 컴파일 시간: 19일(일) 오후 4:50" << endl;
 
         return 0;
     }
