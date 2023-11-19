@@ -96,9 +96,6 @@
     <ClCompile Include="ch00.cpp">
       <Filter>소스 파일\수업</Filter>
     </ClCompile>
-    <ClCompile Include="test_data_for_assignment1.txt">
-      <Filter>소스 파일\과제\assignment1</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MySimpleRegex.h">
@@ -109,7 +106,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="test_data_for_general.txt">
+    <Text Include="test_data.txt">
       <Filter>소스 파일\과제\assignment1</Filter>
     </Text>
   </ItemGroup>

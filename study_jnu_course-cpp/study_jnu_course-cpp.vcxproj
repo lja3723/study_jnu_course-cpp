@@ -151,14 +151,13 @@
     <ClCompile Include="cpp14_practice_class.cpp" />
     <ClCompile Include="cpp15_practice_class2.cpp" />
     <ClCompile Include="MyUnitTest.cpp" />
-    <ClCompile Include="test_data_for_assignment1.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MySimpleRegex.h" />
     <ClInclude Include="MyUnitTest.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="test_data_for_general.txt" />
+    <Text Include="test_data.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

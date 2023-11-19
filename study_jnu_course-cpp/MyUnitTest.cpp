@@ -8,7 +8,6 @@ namespace assignment1 {
 /*      실행 순서대로 배치되었음        */
 /*************************************/
 MyUnitTest::MyUnitTest(const char* test_filename) :
-    m_interpret_mode(MySimpleRegex::assignment1),
     m_newline(80),
     m_underline_marker('^'),
     m_no_syntax_error(true)
@@ -18,7 +17,7 @@ MyUnitTest::MyUnitTest(const char* test_filename) :
     file_open(test_filename);
 
     set_summary_more_details();
-    enable_all().more_details_all();
+    enable_all().more_details_all(); //default settings
 
 
 }
@@ -91,7 +90,7 @@ vector<bool> MyUnitTest::run_test(int t) {
 
     //정규식을 컴파일한다.
     MySimpleRegex::compiled cp 
-        = MySimpleRegex::compile(tests[t].regex, m_interpret_mode);
+        = MySimpleRegex::compile(tests[t].regex);
 
     //각 케이스 문자열마다 기대값(expect)과 실행값(result)이 같은지 비교한다.
     for (int i = 0; i < tests[t].test.size(); i++) {
@@ -139,12 +138,6 @@ MyUnitTest& MyUnitTest::set_summary_more_details() {
 MyUnitTest& MyUnitTest::set_summary_less_details() {
     details_summary_mode = false;
     return *this;
-}
-MyUnitTest& MyUnitTest::set_regex_interpret_mode(MySimpleRegex::interpret_mode mode) {
-    m_interpret_mode = mode;
-    return *this;
-
-
 }
 
 MyUnitTest& MyUnitTest::more_details(int test) { return more_details({ test }); }
@@ -263,7 +256,7 @@ void MyUnitTest::print_successed_test(vector<int>& successed_list, int test_numb
     }
 
     print_test_title("테스트 #", test_number, " 통과 (more detail mode enabled)");
-    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex, m_interpret_mode);
+    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex);
 
     for (int i = 0; i < tests[test_number].test.size(); i++) {
         vector<ranged_string> result = cp.match_all(tests[test_number].test[i]);
@@ -278,7 +271,7 @@ void MyUnitTest::print_failed_test(vector<int>& failed_list, vector<bool>& resul
     failed_list.push_back(test_number);
 
     //실패한 테스트를 재현하기 위해 정규식 재컴파일
-    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex, m_interpret_mode);
+    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex);
 
     bool title_printed = false;
     for (int i = 0; i < results.size(); i++) {
