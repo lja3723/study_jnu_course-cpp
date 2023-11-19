@@ -147,10 +147,12 @@ private:
         const string& src,                  //가장 처음으로 accept된 일치 정보를 출력한다.
         unsigned index_start = 0,           //매치된 구간이 없으면 invalid한 객체를 반환한다.
         bool check_at_front_only = false);
-         
-    void request_active(    //active 시킬 노드를 active_list에 등록한다.
-        map<string, node*>& actives, node* to_active, unsigned state_istart);
 
+    //다음 활성화될 노드 리스트(next_actives)를 참고하여 활성화될 노드들을 실제로 활성화한다.
+    void request_active(vector<active_request_info>& next_actives, map<string, node*>& actives);
+    
+    //터미널 노드 순회 후 accepted되었으면 found에 matched를 생성한다.
+    void check_terminal(map<int, ranged_string*>& found, const string& src, unsigned idx);
 };
 
 

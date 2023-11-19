@@ -32,9 +32,9 @@ public:
 
         opened_file.open(filename);
         if (!opened_file.is_open())
-            return m_is_file_open = false;
+            return (m_is_file_open = false);
 
-        return m_is_file_open = true;
+        return (m_is_file_open = true);
     }
 
 

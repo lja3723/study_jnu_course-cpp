@@ -421,10 +421,50 @@ regex: Tn(abTn)*
 		range:
 			2 4
 
-
 #Test No. 11
-regex: {test}
+regex: abcba
 	case: #1
-		input: ababeii44032iiiaburi3o2ANFLDdufiaFODIUSoriEEEE38401euiaabaiirueiabbbbaaaa
+		input: abcba
+		range:
+			0 5
+	case: #2
+		input: abcbaabcba
+		range:
+			0 5
+			5 10
+	case: #3
+		input: abcbaabcbatabcba
+		range:
+			0 5
+			5 10
+			11 16
+	case: #4
+		input: TTTabcbaabcbasstabcba
+		range:
+			3 8
+			8 13
+			16 21
+
+
+#Test No. 12
+regex: b*
+	case: #1
+		input: tA
+		range:
+			NULL
+	case: #2
+		input: tAA
+		range:
+			NULL
+	case: #3
+		input: tAAb
+		range:
+			NULL
+	case: #4
+		input: tAAbbbA
+		range:
+			NULL
+	case: #5
+		input: btbAAbbbAb
 		range:
 			NULL

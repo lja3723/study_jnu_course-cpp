@@ -56,7 +56,7 @@ private:
     bool m_is_terminal;         // 0: terminal, 1: non-terminal
 
     vector<node_ptr*> m_next;     // next link
-    vector<node*> m_reverse_ref;  //이 노드를 가리키는 역참조
+    vector<const node*> m_reverse_ref;  //이 노드를 가리키는 역참조
 
     void add_link_reverse_ref(node* ref); //역링크를 추가한다.
 
@@ -69,12 +69,13 @@ public:
     unsigned index_start() const;   //is_accepted일 때 인식된 문자열의 첫 위치를 의미한다.  
     bool is_accepted() const;       //본 노드에서 accept 되었는지 확인한다.
     const vector<node_ptr*>& next() const;      //next 목록을 반환한다.
-    const vector<node*>& reverse_ref() const;   //리버스 참조목록을 반환한다.
+    const vector<const node*>& reverse_ref() const;   //리버스 참조목록을 반환한다.
 
     /*********  변경 함수  *********/
     void add_link(node_ptr* _next); //본 노드가 가리키는 노드를 추가한다.
     void active(int state_istart); //노드를 활성화 상태로 만든다.
     void clear_flags(); //노드 상태와 관련된 값과 플래그들을 모두 클리어한다.
+    void set_terminal(bool is_terminal);
 
 
     //노드에 한 문자를 입력한다. 
@@ -106,8 +107,15 @@ protected:
 public:
     static const unsigned INF = ~0U; //2^32 - 1
 
-    node_ptr(Imatchable* ranged_string, node* pNode) : m_pNode(pNode), matcher(ranged_string) {}
-    ~node_ptr();
+    node_ptr(Imatchable* ranged_string, node* pNode) 
+        : m_pNode(pNode), matcher(ranged_string) {}
+    ~node_ptr() {
+        if (matcher != nullptr)
+            delete matcher; //동적 할당된 matcher를 반환한다.
+    }
+
+    //node*로의 명시적 형변환
+    explicit operator node*() { return m_pNode; }
 
     //현재 포인터를 새로운 연결을 가진 포인터로 복사한다.
     virtual node_ptr* copy(node* new_pNode) = 0;
@@ -132,8 +140,8 @@ public:
         return m_pNode->is_accepted();
     }
 
-    //주어진 파라미터가 노드 포인터가 가리키는 노드와 같은지 확인한다.
-    bool is_ref_same(const node* pNode) const {
+    //노드 포인터가 가리키는 노드와 파라미터 노드가 같은지 확인한다.
+    bool is_ref_equal(const node* pNode) const {
         return m_pNode == pNode;
     }
 
@@ -148,6 +156,7 @@ protected:
 
 public:
     node_ptr_direct(Imatchable* matcher, node* pNode) : node_ptr(matcher, pNode) {}
+    
     virtual node_ptr_direct* copy(node* new_pNode) override {
         return new node_ptr_direct(matcher->copy(), new_pNode);
     }
@@ -221,7 +230,7 @@ bool compiled::node::is_accepted() const {
 const vector<compiled::node_ptr*>& compiled::node::next() const {
     return m_next;
 }
-const vector<compiled::node*>& compiled::node::reverse_ref() const {
+const vector<const compiled::node*>& compiled::node::reverse_ref() const {
     return m_reverse_ref;
 }
 
@@ -242,6 +251,9 @@ void compiled::node::clear_flags() {
 
     for (node_ptr* p : m_next) p->clear_flag();
 }
+void compiled::node::set_terminal(bool is_terminal) {
+    m_is_terminal = is_terminal;
+}
 void compiled::node::input(vector<active_request_info>& next_active, const char ch) {
     if (!m_state_active) return;
 
@@ -249,11 +261,6 @@ void compiled::node::input(vector<active_request_info>& next_active, const char 
         m_next[i]->request_active_nexttime(next_active, m_state_istart, ch);
 
     m_state_active = false; // deactivate this node after matching
-}
-
-compiled::node_ptr::~node_ptr() { 
-    if (matcher != nullptr) 
-        delete matcher; //동적 할당된 matcher를 반환한다.
 }
 
 
@@ -275,9 +282,10 @@ public:
         //사전 처리
         bool syntax_valid = true;
         add_node_back();
+        add_to_epsilon(m_node.back());
 
         //정규표현식을 한 문자씩 읽으면서 작업을 수행한다.
-        for (int i = 0; i < regex.size(); i++) {
+        for (unsigned i = 0; i < regex.size(); i++) {
             //asterisk 문법과 일치하면 상태 머신 연결작업 수행 후 i를 증가시킨다.
             if (check_asterisk(syntax_valid, i)) continue;
             //일치하지 않으면서 문법도 틀리면 종료한다.
@@ -296,7 +304,14 @@ public:
             if (!syntax_valid) break;
         }
 
-        if (!syntax_valid) clear(); //잘못 생성된 상태머신을 초기화한다.
+        //잘못 생성된 상태머신을 초기화한다.
+        if (!syntax_valid) {
+            clear();
+        }
+        else {
+            m_node.back()->set_terminal(true);
+            add_to_terminal(m_node.back());
+        }
         return syntax_valid;
     }
 
@@ -311,26 +326,9 @@ private:
     int node_cnt;
     string regex;
 
-
-
     bool is_hard_coded(const string& m_regex) {
         //mock implementation
         //문법을 해석해 아래 작업이 알아서 되어야함
-        if (m_regex == "{test}") {
-            m_node.resize(2);
-
-            m_node[0] = new node("s0");
-            m_node[1] = new node("s1", true);
-
-            m_node[0]->add_link(new node_ptr_direct(
-                new matcher_dot(), m_node[0]));
-            m_node[0]->add_link(new node_ptr_direct(
-                new matcher_dot(), m_node[1]));
-
-            add_to_epsilon(m_node[0]);
-            add_to_terminal(m_node[1]);
-            return true;
-        }
         if (m_regex == "abc|ade") {
             m_node.resize(6/*정규표현식 해석 후 노드 개수가 되어야 함*/);
 
@@ -355,23 +353,6 @@ private:
             m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
 
             // 터미널 노드 설정
-            add_to_terminal(m_node[3]);
-            return true;
-        }
-        else if (m_regex == "aba") {
-            m_node.resize(4);
-
-            m_node[0] = new node("s0");
-            m_node[1] = new node("s1");
-            m_node[2] = new node("s2");
-            m_node[3] = new node("s3", true);
-
-            m_node[0]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[1]));
-            m_node[1]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[2]));
-            m_node[2]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[3]));
-
-            m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
-
             add_to_terminal(m_node[3]);
             return true;
         }
@@ -421,101 +402,6 @@ private:
 
             m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
             add_to_terminal(m_node[11]);
-            return true;
-        }
-        else if (m_regex == "ab+c") {
-            m_node.resize(4);
-
-            m_node[0] = new node("s0");
-            m_node[1] = new node("s1");
-            m_node[2] = new node("s2");
-            m_node[3] = new node("s3", true);
-
-            m_node[0]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[1]));
-            m_node[1]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[1]));
-            m_node[1]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[2]));
-            m_node[2]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[3]));
-
-            m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
-            add_to_terminal(m_node[3]);
-            return true;
-        }
-        else if (m_regex == "abc+") {
-            m_node.resize(4);
-
-            m_node[0] = new node("s0");
-            m_node[1] = new node("s1");
-            m_node[2] = new node("s2");
-            m_node[3] = new node("s3", true);
-
-            m_node[0]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[1]));
-            m_node[1]->add_link(new node_ptr_direct(new matcher_single('b'), m_node[2]));
-            m_node[2]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[2]));
-            m_node[2]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[3]));
-
-            m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
-            add_to_terminal(m_node[3]);
-            return true;
-        }
-        else if (m_regex == "aB{3,6}c") {
-            m_node.resize(4);
-
-            m_node[0] = new node("s0");
-            m_node[1] = new node("s1");
-            m_node[2] = new node("s2");
-            m_node[3] = new node("s3", true);
-
-            m_node[0]->add_link(new node_ptr_direct(new matcher_single('a'), m_node[1]));
-            m_node[1]->add_link(new node_ptr_direct(new matcher_single('B'), m_node[1]));
-            //새로운 노드포인터!!
-            m_node[1]->add_link(new node_ptr_inner_counter(new matcher_single('B'), m_node[2], 3, 6));
-            m_node[2]->add_link(new node_ptr_direct(new matcher_single('c'), m_node[3]));
-
-            m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
-            add_to_terminal(m_node[3]);
-            return true;
-        }
-        else if (m_regex == "jkT{4,5}") {
-            m_node.resize(4);
-
-            m_node[0] = new node("s0");
-            m_node[1] = new node("s1");
-            m_node[2] = new node("s2");
-            m_node[3] = new node("s3", true);
-
-            m_node[0]->add_link(new node_ptr_direct(new matcher_single('j'), m_node[1]));
-            m_node[1]->add_link(new node_ptr_direct(new matcher_single('k'), m_node[2]));
-            m_node[2]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[2]));
-            m_node[2]->add_link(new node_ptr_inner_counter(new matcher_single('T'), m_node[3], 4, 5));
-
-            m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
-            add_to_terminal(m_node[3]);
-            return true;
-        }
-        else if (m_regex == "T{3,5}") {
-            m_node.resize(2);
-
-            m_node[0] = new node("s0");
-            m_node[1] = new node("s1", true);
-
-            m_node[0]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[0]));
-            m_node[0]->add_link(new node_ptr_inner_counter(new matcher_single('T'), m_node[1], 3, 5));
-
-            m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
-            add_to_terminal(m_node[1]);
-            return true;
-        }
-        else if (m_regex == "T+") {
-            m_node.resize(2);
-
-            m_node[0] = new node("s0");
-            m_node[1] = new node("s1", true);
-
-            m_node[0]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[1]));
-            m_node[0]->add_link(new node_ptr_direct(new matcher_single('T'), m_node[0]));
-
-            m_epsilon->add_link(new node_ptr_direct(new matcher_true(), m_node[0]));
-            add_to_terminal(m_node[1]);
             return true;
         }
         else if (m_regex == "Tn(abTn)*") {
@@ -568,12 +454,12 @@ private:
 
     //새 노드를 뒤에 추가한다.
     void add_node_back() {
-        m_node.push_back(new node("s" + node_cnt++));
+        m_node.push_back(new node("s" + to_string(node_cnt++)));
     }
 
     //정규식에서 지원하는 '단일 알파벳' 또는 . 인지 확인한다.
     bool is_char(char ch) {
-        return ('A' <= ch && ch <= 'Z') || ('a' <= ch && ch <= 'z') || '.';
+        return ('A' <= ch && ch <= 'Z') || ('a' <= ch && ch <= 'z') || ch == '.';
     }
 
     //문자와 맞는 matcher를 반환한다.
@@ -586,7 +472,7 @@ private:
     }
 
     // * 연산자 여부 체크한다.
-    bool check_asterisk(bool& syntax, int& idx) {
+    bool check_asterisk(bool& syntax, unsigned& idx) {
         //범위 & 연산 대상인지 확인
         if (!(idx + 1 < regex.size()) || regex[idx + 1] != '*')
             return false;
@@ -605,49 +491,200 @@ private:
         }
 
         //tail 참조 얻고 뒷부분 노드 추가
-        int tail_idx = m_node.size() - 1;
         node* tail = m_node.back();
         add_node_back();
 
         //다음 노드 가리키는 링크 추가
-        m_node[tail_idx]->add_link(new node_ptr_direct(
-            matcher, m_node.back()));
+        tail->add_link(new node_ptr_direct(matcher, m_node.back()));
 
         //이전 노드에서 다음 노드로 바로 가는 링크 추가
-        for (node* rev : tail->reverse_ref()) {
+        for (const node* rev : tail->reverse_ref()) {
             for (node_ptr* nxt : rev->next()) {
-                if (nxt->is_ref_same(tail)) {
-                    //copy() 이용해서 다음 노드로 가는 포인터 추가
+                if (nxt->is_ref_equal(tail)) {
+                    node* p = const_cast<node*>(rev);
+                    p->add_link(nxt->copy(m_node.back()));
                 }
             }
         }
 
         //자기 자신 가리키는 노드 추가        
-        m_node[tail_idx]->add_link(new node_ptr_direct(
-            matcher, m_node[tail_idx]));
+        tail->add_link(new node_ptr_direct(matcher->copy(), tail));
 
+        idx++;
         return true;
     }
 
     // + 연산자 여부 체크한다.
-    bool check_plus(bool& syntax, int& idx) {
+    bool check_plus(bool& syntax, unsigned& idx) {
+        //범위 & 연산 대상인지 확인
+        if (!(idx + 1 < regex.size()) || regex[idx + 1] != '+')
+            return false;
+
+        //연산 가능 여부 확인
+        if (!is_char(regex[idx])) {
+            syntax = false;
+            return false;
+        }
+
+        //matcher 얻기
+        Imatchable* matcher = get_matcher(regex[idx]);
+        if (matcher == nullptr) {
+            syntax = false;
+            return false;
+        }
+
+        //tail 참조 얻고 뒷부분 노드 추가
+        node* tail = m_node.back();
+        add_node_back();
+
+        //다음 노드 가리키는 링크 추가
+        tail->add_link(new node_ptr_direct(matcher, m_node.back()));
+
+        //자기 자신 가리키는 노드 추가        
+        tail->add_link(new node_ptr_direct(matcher->copy(), tail));
+
+        idx++;
         return true;
     }
 
     // {} 연산자 여부 체크한다.
-    bool check_range(bool& syntax, int& idx) {
+    bool check_range(bool& syntax, unsigned& idx) {
+        //연산 적용 가능한지 체크
+        if (!is_char(regex[idx])) {
+            syntax = false;
+            return false;
+        }
+
+        //범위 표현식인지 체크
+        if (!(idx + 1 < regex.size()) || regex[idx + 1] != '{')
+            return false;
+
+        //범위식 파싱하기
+        int range_end = -1;
+        int split = -1;
+        for (int i = idx + 2; i < regex.size(); i++) {
+            if (regex[i] == '}') {
+                range_end = i;
+                break;
+            }
+            else if (regex[i] == ',') {
+                if (split != -1) {
+                    syntax = false;
+                    return false;
+                }
+                split = i;
+            }
+            else if (!('0' <= regex[i] && regex[i] <= '9')) {
+                syntax = false;
+                return false;
+            }
+        }
+
+        if (range_end == -1 || split == -1) {
+            syntax = false;
+            return false;
+        }
+
+        //범위를 계산한다.
+        unsigned istart = stoi(regex.substr(idx + 2, split - idx - 2));
+        unsigned iend = stoi(regex.substr(split + 1, range_end - split - 1));
+        if (istart > iend) {
+            syntax = false;
+            return false;
+        }
+        
+        //matcher 얻기
+        Imatchable* matcher = get_matcher(regex[idx]);
+        if (matcher == nullptr) {
+            syntax = false;
+            return false;
+        }
+
+        //tail 참조 얻고 뒷부분 노드 추가
+        node* tail = m_node.back();
+        add_node_back();
+
+        //다음 노드 가리키는 링크 추가
+        tail->add_link(new node_ptr_inner_counter(matcher, m_node.back(), istart, iend));
+
+        //TODO: k{0,3} 같은 케이스를 고려한 코드인데 잘 동작할지 모르겠음
+        //이전 노드에서 다음 노드로 바로 가는 링크 추가
+        if (istart == 0) {
+            for (const node* rev : tail->reverse_ref()) {
+                for (node_ptr* nxt : rev->next()) {
+                    if (nxt->is_ref_equal(tail)) {
+                        node* p = const_cast<node*>(rev);
+                        p->add_link(nxt->copy(m_node.back()));
+                    }
+                }
+            }
+        }
+
+        //자기 자신 가리키는 노드 추가        
+        tail->add_link(new node_ptr_direct(matcher->copy(), tail));
+
+        idx = range_end;
         return true;
     }
 
     // | 연산자 여부 체크한다.
-    bool check_and(bool& syntax, int& idx) {
+    bool check_and(bool& syntax, unsigned& idx) {
+        //범위 & 연산 대상인지 확인
+        if (!(idx + 1 < regex.size()) || regex[idx + 1] != '|')
+            return false;
+
+        // | 연산자로 끝나는 경우
+        if (idx + 2 >= regex.size()) {
+            syntax = false;
+            return false;
+        }
+
+        //연산 가능 여부 확인
+        if (!is_char(regex[idx]) || !is_char(regex[idx + 2])) {
+            syntax = false;
+            return false;
+        }
+
+        //matcher 얻기
+        Imatchable* matcher1 = get_matcher(regex[idx]);
+        Imatchable* matcher2 = get_matcher(regex[idx + 2]);
+        if (matcher1 == nullptr || matcher2 == nullptr) {
+            syntax = false;
+            return false;
+        }
+
+        //tail 참조 얻고 노드 추가
+        node* tail = m_node.back();
+        add_node_back();
+
+        tail->add_link(new node_ptr_direct(matcher1, m_node.back()));
+        tail->add_link(new node_ptr_direct(matcher2, m_node.back())); 
+        
+        idx += 2;
         return true;
     }
 
     //일반 문자로 이루어졌는지 체크한다.
-    bool check_char(bool& syntax, int& idx) {
+    bool check_char(bool& syntax, unsigned& idx) {
+        if (!is_char(regex[idx])) {
+            syntax = false;
+            return false;
+        }
+
+        Imatchable* matcher = get_matcher(regex[idx]);
+        if (matcher == nullptr) {
+            syntax = false;
+            return false;
+        }
+
+        node* tail = m_node.back();
+        add_node_back();
+        tail->add_link(new node_ptr_direct(matcher, m_node.back()));
+
         return true;
     }
+
+
 };
 
 
@@ -699,57 +736,39 @@ compiled::~compiled() {
 
 }
 
+//TODO: T* 와 같은 정규식에서 "aa" 입력하면 (0,0], (1,1], (2,2] 같은 결과 나오게 수정
 ranged_string compiled::state_machine_input(const string& src, unsigned index_start, bool check_at_front_only)
 {
-    map<int, ranged_string*> found;
-    map<string, node*> actives;
-    vector<active_request_info> next_actives;
+    map<int, ranged_string*> found; //찾은 ranged_string 리스트
+    map<string, node*> actives; //현재 활성화된 노드 리스트
+    vector<active_request_info> next_actives; //다음번에 활성화될 노드 리스트
 
     for (unsigned i = index_start; i < src.length(); i++) {
         //엡실론 신호를 매 주기기마다 부여함
         //check_at_front_only면 문자열 시작이 패턴과 일치하는 경우만 확인한다.
         //즉 최초 1회만 엡실론 신호를 부여한다.
         if (!(check_at_front_only && i > 0)) {
-            for (node_ptr* e : m_epsilon->next())
-                e->request_active_nexttime(next_actives, i, '\0');
-            //코드 중복 발생
-            //다음 활성화될 노드 리스트를 받아오고 활성화한다.
-            while (!next_actives.empty()) {
-                active_request_info& info = next_actives.back();
-                request_active(actives, info.target, info.start_index);
-                next_actives.pop_back();
-            }
+            for (node_ptr* nxt : m_epsilon->next())
+                nxt->request_active_nexttime(next_actives, i, '\0');
+
+            //next_actives를 참고하여 활성화될 노드들을 실제로 활성화한다.
+            request_active(next_actives, actives);
+
+            //check_terminal(found, src, i);
         }
 
-
-        // give ch all nodes
-        // nv[j]가 active 상태였다면 이 연산 후 nv[j]에서 나오는 화살표는
-        // 조건을 만족할 시 가리키는 노드의 transited를 활성화한다.
-        auto it = actives.begin();
-        for (; it != actives.end(); it++) {
-            node* target = it->second;
-            target->input(next_actives, src[i]);
-        }
+        // active 상태의 노드에서 나오는 모든 포인터에 문자를 입력한다.
+        for (auto it = actives.begin(); it != actives.end(); it++)
+            it->second->input(next_actives, src[i]);
         actives.clear();
 
-        //다음 활성화될 노드 리스트를 받아오고 활성화한다. (코드 중복)
-        while (!next_actives.empty()) {
-            active_request_info& info = next_actives.back();
-            request_active(actives, info.target, info.start_index);
-            next_actives.pop_back();
-        }
+        //next_actives를 참고하여 활성화될 노드들을 실제로 활성화한다.
+        request_active(next_actives, actives);
 
-        //터미널 노드 순회 후 accepted되었으면 matched를 생성한다.
-        for (node_ptr* terminal : m_terminal->next()) {
-            if (terminal->is_accepted()) {
-                unsigned istart = terminal->index_start();
-                if (found.find(istart) != found.end()) delete found[istart];
-                found[istart] = new ranged_string(src, istart, i + 1, true);
-            }
-        }
+        //터미널 노드 순회 후 accepted되었으면 found에 matched를 생성한다.
+        check_terminal(found, src, i);
     }
 
-    ///*debug*/cout << endl;
     //src를 모두 input한 뒤 모든 노드의 플래그 초기화
     for (node* target : m_node) target->clear_flags();
 
@@ -758,23 +777,43 @@ ranged_string compiled::state_machine_input(const string& src, unsigned index_st
         return ranged_string::invalid();
     else {
         ranged_string ret = *found.begin()->second;
-        for (auto& p : found)
-            delete p.second;
+        for (auto& p : found) delete p.second;
 
         return ret;
     }
-}
-void compiled::request_active(map<string, node*>& actives, node* to_active, unsigned state_istart)
-{
-    const string& name = to_active->name();
-    if (actives.find(name) != actives.end() &&
-        actives[name]->index_start() < state_istart)
-        return;
-    to_active->active(state_istart);
-    actives[name] = to_active;
 
 
 }
+void compiled::request_active(vector<active_request_info>& next_actives, map<string, node*>& actives) {
+    while (!next_actives.empty()) {
+        node* to_active = next_actives.back().target;
+        unsigned state_istart = next_actives.back().start_index;
+        const string& name = to_active->name();
+
+        if (actives.find(name) == actives.end() ||
+            actives[name]->index_start() >= state_istart) 
+        {
+            to_active->active(state_istart);
+            actives[name] = to_active;
+        }
+
+        next_actives.pop_back();
+    }
+
+
+}
+void compiled::check_terminal(map<int, ranged_string*>& found, const string& src, unsigned idx) {
+    for (node_ptr* terminal : m_terminal->next()) {
+        if (terminal->is_accepted()) {
+            unsigned istart = terminal->index_start();
+            if (found.find(istart) != found.end()) delete found[istart];
+            found[istart] = new ranged_string(src, istart, idx + 1, true);
+        }
+    }
+
+
+}
+
 
 
 } //end of MySimpleRegex & compiled member functions

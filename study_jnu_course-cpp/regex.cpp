@@ -28,12 +28,12 @@ namespace assignment1 {
             
         //Additional Settings
             //.less_details({ 1, 2 }) //set less details
-            //.disable({ })      //desable some testcases
+            //.disable({ 11 })      //desable some testcases
             //.disable_all()
-            //.enable({8})
+            //.enable({1})
             .run(); //run unit test
 
-        cout << "최종 컴파일 시간: 19일(일) 오후 4:50" << endl;
+        cout << "최종 컴파일 시간: 20일(월) 오전 2:09" << endl;
 
         return 0;
     }
