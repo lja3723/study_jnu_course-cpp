@@ -74,10 +74,14 @@ void MyUnitTest::run_tests() {
         bool test_successed = true;
         for (bool result : results) test_successed &= result;
 
-        if (test_successed)
-            print_successed_test(successed_list, t);
-        else
-            print_failed_test(failed_list, results, t);
+        if (test_successed) {
+            successed_list.push_back(t);
+            print_successed_test(t);
+        }
+        else {
+            failed_list.push_back(t);
+            print_failed_test(t, results);
+        }
     }
 
     //테스트 종합 결과 출력
@@ -248,8 +252,7 @@ void MyUnitTest::print_match_underline(const vector<ranged_string>& result) {
 
 
 }
-void MyUnitTest::print_successed_test(vector<int>& successed_list, int test_number) {
-    successed_list.push_back(test_number);
+void MyUnitTest::print_successed_test(int test_number) {
     if (!tests[test_number].details) {
         cout << "테스트 #" << test_number << " 통과" << endl;
         return;
@@ -267,9 +270,7 @@ void MyUnitTest::print_successed_test(vector<int>& successed_list, int test_numb
 
 
 }
-void MyUnitTest::print_failed_test(vector<int>& failed_list, vector<bool>& results, int test_number) {
-    failed_list.push_back(test_number);
-
+void MyUnitTest::print_failed_test(int test_number, vector<bool>& results) {
     //실패한 테스트를 재현하기 위해 정규식 재컴파일
     MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex);
 

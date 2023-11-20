@@ -93,13 +93,14 @@ private:
     void print_test_title(string label_left, int test_number, string label_right);
     void print_match_range(string title, vector<ranged_string>& match_result, int test_case, int elem);
     void print_match_underline(const vector<ranged_string>& result);
-    void print_successed_test(vector<int>& successed_list, int test_number);
-    void print_failed_test(vector<int>& failed_list, vector<bool>& results, int test_number);
+    void print_successed_test(int test_number);
+    void print_failed_test(int test_number, vector<bool>& results);
     void print_tests_summary(set<int>& disabled, vector<int>& successed_list, vector<int>& failed_list);
 
 
     /**********   private fields   **********/
     class TestDataFileReader;   //테스트데이터 파일 리더
+
     struct Test {               //단위 테스트
         int number = 0;         //test case number
         string regex;           //regex of test

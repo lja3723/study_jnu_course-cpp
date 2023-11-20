@@ -490,3 +490,31 @@ regex: b*
 			8 8
 			9 10
 			10 10
+
+
+#Test No. 13
+regex: sA*B*t
+	case: #1
+		input: st
+		range:
+			NULL
+	case: #1
+		input: sAt
+		range:
+			NULL
+	case: #2
+		input: sAAt
+		range:
+			NULL
+	case: #3
+		input: sBt
+		range:
+			NULL
+	case: #4
+		input: sAABBBt
+		range:
+			NULL
+	case: #5
+		input: stbsAAbbbtsAb
+		range:
+			NULL

@@ -30,10 +30,10 @@ namespace assignment1 {
             //.less_details({ 1, 2 }) //set less details
             //.disable({ 11 })      //desable some testcases
             //.disable_all()
-            //.enable({12})
+            //.enable({13})
             .run(); //run unit test
 
-        cout << "최종 컴파일 시간: 20일(월) 오전 9:49" << endl;
+        cout << "최종 컴파일 시간: 20일(월) 오후 4:56" << endl;
 
         return 0;
     }
