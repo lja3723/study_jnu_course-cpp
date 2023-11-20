@@ -132,6 +132,7 @@
     <ClCompile Include="ch11.cpp" />
     <ClCompile Include="DataReader.h" />
     <ClCompile Include="MySimpleRegex.cpp" />
+    <ClCompile Include="MySimpleRegex_node.cpp" />
     <ClCompile Include="regex.cpp" />
     <ClCompile Include="ch04.cpp" />
     <ClCompile Include="ch05.cpp" />
@@ -159,6 +160,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="test_data.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MySimpleRegex_node.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

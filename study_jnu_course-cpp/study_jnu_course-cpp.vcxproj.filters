@@ -99,6 +99,9 @@
     <ClCompile Include="ch11.cpp">
       <Filter>소스 파일\수업</Filter>
     </ClCompile>
+    <ClCompile Include="MySimpleRegex_node.cpp">
+      <Filter>소스 파일\과제\assignment1</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MySimpleRegex.h">
@@ -112,5 +115,10 @@
     <Text Include="test_data.txt">
       <Filter>소스 파일\과제\assignment1</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MySimpleRegex_node.h">
+      <Filter>소스 파일\과제\assignment1</Filter>
+    </None>
   </ItemGroup>
 </Project>

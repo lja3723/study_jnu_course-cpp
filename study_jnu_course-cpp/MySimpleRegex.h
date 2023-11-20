@@ -12,13 +12,13 @@ using namespace std;
 struct ranged_string {
     const string ref;           //참조 문자열
     const bool is_valid;        //객체 유효성
-    const unsigned start, end;  //참조 문자열에서의 범위
+    const size_t start, end;  //참조 문자열에서의 범위
 
-    ranged_string(const string& ref, const unsigned start, const unsigned end, const bool is_valid) :
+    ranged_string(const string& ref, const size_t start, const size_t end, const bool is_valid) :
         ref(ref), start(start), end(end), is_valid(is_valid) {}
 
     //범위
-    pair<unsigned, unsigned> span() const { return pair<unsigned, unsigned>(start, end); }
+    pair<size_t, size_t> span() const { return pair<size_t, size_t>(start, end); }
 
     //범위에 속하는 문자열 반환
     string group() const { return ref.substr(start, size_t(end - start)); }
@@ -39,7 +39,7 @@ public:
     class compiled; //진짜 기능을 하는 클래스
     
     //정규표현식을 컴파일한 객체 compiled를 반환한다.
-    static compiled compile( const string& m_regex); 
+    static compiled compile( const string& m_regex);
 
     //source에서 정규표현식과 가장 먼저 일치하는 범위를 구한다.
     //그런 범위가 없으면 invalid한 객체를 반환한다.
@@ -64,9 +64,6 @@ class MySimpleRegex::compiled:
 다양한 노드 포인터를 포현하기 위한 노드 포인터 클래스 및 파생 클래스를 정의한다.
 
 */
-
-//TODO: 엡실론을 주는 주체를 리스트에서 한 특별한 노드로 변경하기
-// T* 같은 케이스 생각해보기
 class MySimpleRegex::compiled {
 public:
     //주어진 정규표현식을 파싱해 내부적으로 상태기계를 생성한다.
@@ -76,24 +73,11 @@ public:
     ~compiled();
 
     //source에서 start_idx부터 탐색을 시작해 가장 처음으로 발견된 일치 정보를 반환한다.
-    ranged_string match(const string& source, unsigned index_start = 0) {
-        return state_machine_input(source, index_start, false);
-    }
+    ranged_string match(const string& source, size_t index_start = 0);
 
     //source에서 발견되는 모든 일치 정보를 반환한다.
     //아무 구간도 매치되지 않으면 empty() 한 vector가 반환된다.
-    vector<ranged_string> match_all(const string& source) {
-        vector<ranged_string> ret;
-        unsigned found_idx = 0;
-        while (found_idx <= source.size()) {
-            ranged_string ans = match(source, found_idx);
-            if (!ans.is_valid) break;
-            found_idx = ans.end;
-            if (ans.start == ans.end) found_idx++;
-            ret.push_back(ans);
-        }
-        return ret;
-    }
+    vector<ranged_string> match_all(const string& source);
 
 
 
@@ -102,8 +86,15 @@ private:
     /*      Inner Classes       */
     /****************************/
 
+    //state machine 생성기 클래스
+    //regex를 입력하면 그것과 일치하는 상태 머신을 생성한다.
+    //정의: MySimpleRegex.h
+    class state_machine_creator;
+
+
     //input char을 판별하기 위한 매치 클래스
     //상속으로 다형성을 구현한다.
+    //정의: MySimpleRegex.h
     class Imatchable;       //매치 객체 인터페이스    
     class matcher_single;   //단일 문자 매치    
     class matcher_dot;      //모든 문자 매치(개행 문자 제외)
@@ -115,6 +106,7 @@ private:
     //활성화 신호를 바로 전달하는 node_ptr_direct 포인터,
     //내부에 카운터가 있어 카운트가 일정 이상이 되면 활성화 신호를 전달하는
     //node_ptr_cnt_inner 포인터가 존재한다.
+    //정의: MySimpleRegex_node.h
     class node;         //상태머신의 노드
     class node_ptr;         
     class node_ptr_direct;  
@@ -125,11 +117,8 @@ private:
     //활성화 상태와 같이 전이되는 상태인 start_index 정보를 담는다.
     struct active_request_info {
         node* target;
-        unsigned start_index;
+        size_t start_index;
     };
-
-    //state machine 생성기
-    class state_machine_creator;
 
 
     /****************************/
@@ -146,23 +135,64 @@ private:
     /****************************/ 
     ranged_string state_machine_input(      //상태기계에 문자열을 입력으로 넣어주면
         const string& src,                  //가장 처음으로 accept된 일치 정보를 출력한다.
-        unsigned index_start = 0,           //매치된 구간이 없으면 invalid한 객체를 반환한다.
+        size_t index_start = 0,           //매치된 구간이 없으면 invalid한 객체를 반환한다.
         bool check_at_front_only = false);
 
     //엡실론 신호를 노드에 부여한다.
     void give_epsilon(
-        vector<active_request_info>& next_actives,
-        map<string, node*>& actives,
-        unsigned idx,
-        bool check_at_front_only);
+        vector<active_request_info>& next_actives, //다음 활성화될 노드 리스트
+        map<string, node*>& actives,    //활성화된 노드 리스트
+        size_t state_istart,          //해당 노드의 첫 활성화 신호 시 인덱스값
+        bool check_at_front_only);      //첫 부분부터 정확히 일치 여부 확인
 
     //다음 활성화될 노드 리스트(next_actives)를 참고하여 활성화될 노드들을 실제로 활성화한다.
-    void active_transition(vector<active_request_info>& next_actives, map<string, node*>& actives);
+    void active_transition(
+        vector<active_request_info>& next_actives,  
+        map<string, node*>& actives);
     
     //터미널 노드 순회 후 accepted되었으면 found에 matched를 생성한다.
-    void check_terminal(map<int, ranged_string*>& found, const string& src, unsigned idx);
+    void check_terminal_active(
+        map<size_t, ranged_string*>& found, 
+        const string& src, 
+        size_t idx);
 };
 
+
+
+/***********   문자 matcher 및 파생 클래스   ***********/
+using compiled = MySimpleRegex::compiled;
+class compiled::Imatchable {
+public:
+    virtual bool test(char ch) = 0;
+    virtual Imatchable* copy() = 0; //자기 자신 동적 복사
+};
+class compiled::matcher_single : public compiled::Imatchable {
+private: char ch;
+public:
+    matcher_single(char ch) : ch(ch) {}
+    virtual bool test(char _ch) override { return ch == _ch; }
+    virtual matcher_single* copy() override {
+        return new matcher_single(ch);
+    }
+};
+class compiled::matcher_dot : public compiled::Imatchable {
+public:
+    virtual bool test(char _ch) override {
+        return ('A' <= _ch && _ch <= 'Z') || ('a' <= _ch && _ch <= 'z');
+    }
+    virtual matcher_dot* copy() override {
+        return new matcher_dot();
+    }
+};
+class compiled::matcher_true : public compiled::Imatchable {
+public:
+    virtual bool test(char _ch) override {
+        return true;
+    }
+    virtual matcher_true* copy() override {
+        return new matcher_true();
+    }
+};
 
 
 } //end of namespace assignment1

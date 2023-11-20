@@ -300,7 +300,7 @@ void MyUnitTest::print_tests_summary(set<int>& disabled, vector<int>& successed_
     cout << "\n\n";
     if (details_summary_mode) {
         string lines = "=========================";
-        unsigned tests_size = unsigned(tests.size() - 1);
+        size_t tests_size = tests.size() - 1;
         cout << lines << "  [테스트 종합 결과]  " << lines << endl;
         cout << "총 테스트케이스 수:\t" << tests_size << " 개\n";
         if (!disabled.empty())
