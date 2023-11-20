@@ -265,7 +265,6 @@ void compiled::node::input(vector<active_request_info>& next_active, const char 
 
 
 /******   state machine creator 클래스   ******/
-//TODO: 주어진 정규표현식으로 상태머신 생성하기 필요
 class compiled::state_machine_creator {
 public:
     state_machine_creator(vector<node*>& _node, node*& _epsilon, node*& _terminal) :
@@ -304,11 +303,9 @@ public:
             if (!syntax_valid) break;
         }
 
-        //잘못 생성된 상태머신을 초기화한다.
-        if (!syntax_valid) {
-            clear();
-        }
-        else {
+        if (!syntax_valid) clear(); //잘못 생성된 상태머신을 초기화한다.       
+        else { 
+            //상태머신을 마무리짓는다.
             m_node.back()->set_terminal(true);
             add_to_terminal(m_node.back());
         }
@@ -328,7 +325,7 @@ private:
 
     bool is_hard_coded(const string& m_regex) {
         //mock implementation
-        //문법을 해석해 아래 작업이 알아서 되어야함
+        //test state-machine of regex
         if (m_regex == "abc|ade") {
             m_node.resize(6/*정규표현식 해석 후 노드 개수가 되어야 함*/);
 
@@ -736,26 +733,23 @@ compiled::~compiled() {
 
 }
 
-//TODO: T* 와 같은 정규식에서 "aa" 입력하면 (0,0], (1,1], (2,2] 같은 결과 나오게 수정
-ranged_string compiled::state_machine_input(const string& src, unsigned index_start, bool check_at_front_only)
+
+
+ranged_string compiled::state_machine_input(
+    const string& src, 
+    unsigned index_start, 
+    bool check_at_front_only)
 {
     map<int, ranged_string*> found; //찾은 ranged_string 리스트
     map<string, node*> actives; //현재 활성화된 노드 리스트
     vector<active_request_info> next_actives; //다음번에 활성화될 노드 리스트
 
     for (unsigned i = index_start; i < src.length(); i++) {
-        //엡실론 신호를 매 주기기마다 부여함
-        //check_at_front_only면 문자열 시작이 패턴과 일치하는 경우만 확인한다.
-        //즉 최초 1회만 엡실론 신호를 부여한다.
-        if (!(check_at_front_only && i > 0)) {
-            for (node_ptr* nxt : m_epsilon->next())
-                nxt->request_active_nexttime(next_actives, i, '\0');
+        //엡실론 신호를 부여한다.
+        give_epsilon(next_actives, actives, i, check_at_front_only);
 
-            //next_actives를 참고하여 활성화될 노드들을 실제로 활성화한다.
-            request_active(next_actives, actives);
-
-            //check_terminal(found, src, i);
-        }
+        //터미널 노드 순회 후 accepted되었으면 found에 matched를 생성한다.
+        check_terminal(found, src, i);
 
         // active 상태의 노드에서 나오는 모든 포인터에 문자를 입력한다.
         for (auto it = actives.begin(); it != actives.end(); it++)
@@ -763,15 +757,17 @@ ranged_string compiled::state_machine_input(const string& src, unsigned index_st
         actives.clear();
 
         //next_actives를 참고하여 활성화될 노드들을 실제로 활성화한다.
-        request_active(next_actives, actives);
-
-        //터미널 노드 순회 후 accepted되었으면 found에 matched를 생성한다.
-        check_terminal(found, src, i);
+        active_transition(next_actives, actives);
     }
 
-    //src를 모두 input한 뒤 모든 노드의 플래그 초기화
-    for (node* target : m_node) target->clear_flags();
+    //엡실론 신호를 마지막으로 부여해 본다.
+    give_epsilon(next_actives, actives, src.length(), check_at_front_only);
 
+    //문자열 마지막에 활성화되었는지 확인한다.
+    check_terminal(found, src, src.length());
+
+    //모든 작업이 마무리 된 후, 모든 노드의 플래그 초기화
+    for (node* target : m_node) target->clear_flags();
 
     if (found.empty()) //일치하는 패턴 없음
         return ranged_string::invalid();
@@ -781,10 +777,34 @@ ranged_string compiled::state_machine_input(const string& src, unsigned index_st
 
         return ret;
     }
-
-
 }
-void compiled::request_active(vector<active_request_info>& next_actives, map<string, node*>& actives) {
+
+
+
+void compiled::give_epsilon(
+    vector<active_request_info>& next_actives, 
+    map<string, node*>& actives, 
+    unsigned idx, 
+    bool check_at_front_only) 
+{
+    //check_at_front_only == false이면 엡실론 신호를 매 주기마다 부여한다.
+    //check_at_front_only == true이면 문자열 시작 부분이 패턴과 일치하는 경우만 확인한다.
+    // -> 즉 최초 1회만 엡실론 신호를 부여한다.
+    if (!(check_at_front_only && idx > 0)) {
+        for (node_ptr* nxt : m_epsilon->next())
+            nxt->request_active_nexttime(next_actives, idx, '\0');
+
+        //next_actives를 참고하여 활성화될 노드들을 실제로 활성화한다.
+        active_transition(next_actives, actives);
+    }
+}
+
+
+
+void compiled::active_transition(
+    vector<active_request_info>& next_actives, 
+    map<string, node*>& actives) 
+{
     while (!next_actives.empty()) {
         node* to_active = next_actives.back().target;
         unsigned state_istart = next_actives.back().start_index;
@@ -799,19 +819,22 @@ void compiled::request_active(vector<active_request_info>& next_actives, map<str
 
         next_actives.pop_back();
     }
-
-
 }
-void compiled::check_terminal(map<int, ranged_string*>& found, const string& src, unsigned idx) {
+
+
+
+void compiled::check_terminal(
+    map<int, ranged_string*>& found, 
+    const string& src, 
+    unsigned idx) 
+{
     for (node_ptr* terminal : m_terminal->next()) {
         if (terminal->is_accepted()) {
             unsigned istart = terminal->index_start();
             if (found.find(istart) != found.end()) delete found[istart];
-            found[istart] = new ranged_string(src, istart, idx + 1, true);
+            found[istart] = new ranged_string(src, istart, idx, true);
         }
     }
-
-
 }
 
 

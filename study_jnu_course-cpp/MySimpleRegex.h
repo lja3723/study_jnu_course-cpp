@@ -85,11 +85,12 @@ public:
     vector<ranged_string> match_all(const string& source) {
         vector<ranged_string> ret;
         unsigned found_idx = 0;
-        while (found_idx < source.size()) {
+        while (found_idx <= source.size()) {
             ranged_string ans = match(source, found_idx);
             if (!ans.is_valid) break;
+            found_idx = ans.end;
+            if (ans.start == ans.end) found_idx++;
             ret.push_back(ans);
-            found_idx = ret.back().end;
         }
         return ret;
     }
@@ -148,8 +149,15 @@ private:
         unsigned index_start = 0,           //매치된 구간이 없으면 invalid한 객체를 반환한다.
         bool check_at_front_only = false);
 
+    //엡실론 신호를 노드에 부여한다.
+    void give_epsilon(
+        vector<active_request_info>& next_actives,
+        map<string, node*>& actives,
+        unsigned idx,
+        bool check_at_front_only);
+
     //다음 활성화될 노드 리스트(next_actives)를 참고하여 활성화될 노드들을 실제로 활성화한다.
-    void request_active(vector<active_request_info>& next_actives, map<string, node*>& actives);
+    void active_transition(vector<active_request_info>& next_actives, map<string, node*>& actives);
     
     //터미널 노드 순회 후 accepted되었으면 found에 matched를 생성한다.
     void check_terminal(map<int, ranged_string*>& found, const string& src, unsigned idx);
