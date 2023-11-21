@@ -25,6 +25,7 @@ namespace assignment1 {
             //.enable_all()
             //.more_details_all()
             .less_details_all()
+            .more_details({16})
             
         //Additional Settings
             //.less_details({ 1, 2 }) //set less details
@@ -35,6 +36,11 @@ namespace assignment1 {
 
         cout << "최종 컴파일 시간: 21일(화) 오후 6:07" << endl;
 
+
+        return 0;
+    }
+
+    void test() {
         cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
         string test_str = "wersAABBBtfdAdifuBBtitaAtBBABTts";
         cout << test_str << endl;
@@ -42,7 +48,6 @@ namespace assignment1 {
             auto result = MySimpleRegex::match("A*B*", test_str, i);
             cout << result << endl;
         }
-        return 0;
     }
 }
 

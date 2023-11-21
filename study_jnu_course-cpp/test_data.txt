@@ -600,3 +600,31 @@ regex: A*B*
 			10 10
 			11 13
 			13 13
+
+
+#Test No. 16
+regex: abT|Kcd
+	case: #1
+		input: abcd
+		range:
+			NULL
+	case: #2
+		input: abT
+		range:
+			NULL
+	case: #3
+		input: Kcd
+		range:
+			NULL
+	case: #4
+		input: abTcd
+		range:
+			NULL
+	case: #5
+		input: abKcd
+		range:
+			NULL
+	case: #6
+		input: stbsAABBBtsAB
+		range:
+			NULL
