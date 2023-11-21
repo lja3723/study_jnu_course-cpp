@@ -35,6 +35,13 @@ namespace assignment1 {
 
         cout << "최종 컴파일 시간: 21일(화) 오후 6:07" << endl;
 
+        cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
+        string test_str = "wersAABBBtfdAdifuBBtitaAtBBABTts";
+        cout << test_str << endl;
+        for (int i = 0; i <= test_str.size() + 1; i++) {
+            auto result = MySimpleRegex::match("A*B*", test_str, i);
+            cout << result << endl;
+        }
         return 0;
     }
 }

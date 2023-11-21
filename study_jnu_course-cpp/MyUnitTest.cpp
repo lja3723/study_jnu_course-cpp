@@ -219,7 +219,7 @@ void MyUnitTest::print_match_range(string title, vector<ranged_string>& match_re
     print_match_underline(match_result);
     for (const ranged_string& mt : match_result) {
         cout << m_indent << m_indent;
-        cout << "-> range [" << mt.start << "," << mt.end << ") " << "\"" << mt.group() << "\"\n";
+        cout << "-> " << mt << endl;
     }
     cout << endl;
 

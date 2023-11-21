@@ -25,6 +25,9 @@ struct ranged_string {
 
     //유효하지 않은 ranged_string 객체를 반환한다.
     static const ranged_string invalid() { return ranged_string(string(), 0, 0, false); }
+
+    //cout 출력 연산자 오버로딩
+    friend ostream& operator<<(ostream&, const ranged_string&);
 };
 
 
@@ -43,7 +46,7 @@ public:
 
     //source에서 정규표현식과 가장 먼저 일치하는 범위를 구한다.
     //그런 범위가 없으면 invalid한 객체를 반환한다.
-    static ranged_string match(const string& m_regex, const string& source);
+    static ranged_string match(const string& m_regex, const string& source, size_t index_start = 0);
 
     //source에서 정규표현식과 일치하는 모든 범위를 구한다
     //일치정보가 없을 경우 empty()한 vector가 반환된다.

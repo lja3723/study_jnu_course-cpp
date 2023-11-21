@@ -10,6 +10,14 @@
 namespace assignment1 {
 
 
+/******   cout 출력 연산자 오버로딩   ******/
+ostream& operator<<(ostream& os, const ranged_string& rs) {
+    cout << "range [" << rs.start << "," << rs.end << ") " << "\"" << rs.group() << "\"";
+    return os;
+}
+
+
+
 /******   state machine 생성기 클래스   ******/
 class compiled::state_machine_creator {
 public:
@@ -463,8 +471,8 @@ compiled MySimpleRegex::compile(const string& m_regex) {
 
 
 }
-ranged_string MySimpleRegex::match(const string& m_regex, const string& source) {
-    return compiled(m_regex).match(source);
+ranged_string MySimpleRegex::match(const string& m_regex, const string& source, size_t index_start) {
+    return compiled(m_regex).match(source, index_start);
 
 
 }
