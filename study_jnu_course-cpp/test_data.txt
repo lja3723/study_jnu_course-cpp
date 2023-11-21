@@ -628,3 +628,32 @@ regex: abT|Kcd
 		input: stbsAABBBtsAB
 		range:
 			NULL
+
+
+#Test No. 17
+regex: Z|Ya*.*A|B
+	case: #1
+		input: ZaA
+		range:
+			NULL
+	case: #2
+		input: ZaB
+		range:
+			NULL
+	case: #3
+		input: YaA
+		range:
+			NULL
+	case: #4
+		input: YaB
+		range:
+			NULL
+
+	case: #5
+		input: ZaaGJananANANananANfkzoviufspqDBzz
+		range:
+			NULL
+	case: #6
+		input: ntZaaGaaaosidufasovbhsidldJDfAttt
+		range:
+			NULL

@@ -23,18 +23,18 @@ namespace assignment1 {
         //Basic Settings (default setting)
             //.set_summary_more_details()
             //.enable_all()
-            //.more_details_all()
-            .less_details_all()
-            .more_details({16})
+            .more_details_all()
+            //.less_details_all()
+            //.more_details({16})
             
         //Additional Settings
             //.less_details({ 1, 2 }) //set less details
-            //.disable({ 13 })      //desable some testcases
+            .disable({ 13 })      //desable some testcases
             //.disable_all()
-            //.enable({13})
+            .enable({17})
             .run(); //run unit test
 
-        cout << "최종 컴파일 시간: 21일(화) 오후 6:07" << endl;
+        cout << "최종 컴파일 시간: 22일(수) 오전 12:34" << endl;
 
 
         return 0;
