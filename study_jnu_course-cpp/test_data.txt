@@ -391,6 +391,7 @@ regex: T+
 		range:
 			null
 
+
 #Test No. 10
 regex: Tn(abTn)*
 	case: #1
@@ -420,6 +421,7 @@ regex: Tn(abTn)*
 		input: abTnab
 		range:
 			2 4
+
 
 #Test No. 11
 regex: abcba
@@ -498,24 +500,103 @@ regex: A*B*t
 		input: st
 		range:
 			1 2
-	case: #1
+	case: #2
 		input: sAt
 		range:
 			1 3
-	case: #2
+	case: #3
 		input: sAAt
 		range:
 			1 4
-	case: #3
+	case: #4
 		input: sBt
 		range:
 			1 3
-	case: #4
+	case: #5
 		input: sAABBBt
 		range:
 			1 7
-	case: #5
+	case: #6
 		input: stbsAABBBtsAB
 		range:
 			1 2
 			4 10
+
+
+#Test No. 14
+regex: sA*B*t
+	case: #1
+		input: st
+		range:
+			0 2
+	case: #2
+		input: sAt
+		range:
+			0 3
+	case: #3
+		input: sAAt
+		range:
+			0 4
+	case: #4
+		input: sBt
+		range:
+			0 3
+	case: #5
+		input: sAABBBt
+		range:
+			0 7
+	case: #6
+		input: stbsAABBBtsAB
+		range:
+			0 2
+			3 10
+
+
+#Test No. 15
+regex: A*B*
+	case: #1
+		input: st
+		range:
+			0 0
+			1 1
+			2 2
+	case: #2
+		input: sAt
+		range:
+			0 0
+			1 2
+			2 2
+			3 3
+	case: #3
+		input: sAAt
+		range:
+			0 0
+			1 3
+			3 3
+			4 4
+	case: #4
+		input: sBt
+		range:
+			0 0
+			1 2
+			2 2
+			3 3
+	case: #5
+		input: sAABBBt
+		range:
+			0 0
+			1 6
+			6 6
+			7 7
+	case: #6
+		input: stbsAABBBtsAB
+		range:
+			0 0
+			1 1
+			2 2
+			3 3
+			4 9
+			9 9
+			10 10
+			11 13
+			13 13
