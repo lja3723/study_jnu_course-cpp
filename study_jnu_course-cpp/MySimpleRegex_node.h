@@ -20,9 +20,7 @@ private:
     bool m_is_terminal;         // 0: terminal, 1: non-terminal
 
     vector<node_ptr*> m_next;     // next link
-    vector<const node*> m_reverse_ref;  //이 노드를 가리키는 역참조
-
-    void add_link_reverse_ref(node* ref); //역링크를 추가한다.
+    vector<node_ptr*> m_reverse_ref;  //이 노드를 가리키는 노드 포인터 리스트(얕은 복사됨)
 
 public:
     node(string name, bool isTerminal = false);
@@ -33,7 +31,7 @@ public:
     size_t index_start() const;   //is_accepted일 때 인식된 문자열의 첫 위치를 의미한다.  
     bool is_accepted() const;       //본 노드에서 accept 되었는지 확인한다.
     const vector<node_ptr*>& next() const;      //next 목록을 반환한다.
-    const vector<const node*>& reverse_ref() const;   //리버스 참조목록을 반환한다.
+    const vector<node_ptr*>& reverse_ref() const;   //리버스 참조목록을 반환한다.
 
     /*********  변경 함수  *********/
     void add_link(node_ptr* _next); //본 노드가 가리키는 노드를 추가한다.
@@ -53,17 +51,13 @@ public:
 class compiled::node_ptr {
     friend class node;
 protected:
-    node* m_pNode;
+    node* m_origin; //타겟을 하는 주체 노드
+    node* m_target; //타겟 당하는 피 노드
     Imatchable* matcher;
 
     //각 포인터가 수행할 전이 동작을 수행한다. 오버라이딩 필요
     virtual void transition_action(
         vector<active_request_info>& next_active, size_t state_istart) = 0;
-
-    //연결된 노드의 역참조를 주어진 노드로 연결한다
-    virtual void link_reverse_ref(node* ref) final {
-        m_pNode->add_link_reverse_ref(ref);
-    }
 
     //포인터와 관련된 플래그를 클리어한다. 필요한 경우만 오버라이드한다.
     virtual void clear_flag() {}
@@ -72,15 +66,15 @@ protected:
 public:
     static const size_t INF = ~0ULL; //2^32 - 1
 
-    node_ptr(Imatchable* ranged_string, node* pNode) 
-        : m_pNode(pNode), matcher(ranged_string) {}
+    node_ptr(node* pOrigin, Imatchable* ranged_string, node* pNode) 
+        : m_origin(pOrigin), m_target(pNode), matcher(ranged_string) {}
     ~node_ptr() {
         if (matcher != nullptr)
             delete matcher; //동적 할당된 matcher를 반환한다.
     }
 
     //node*로의 명시적 형변환
-    explicit operator node*() { return m_pNode; }
+    explicit operator node*() { return m_target; }
 
     //현재 포인터를 새로운 연결을 가진 포인터로 복사한다.
     virtual node_ptr* copy(node* new_pNode) = 0;
@@ -95,19 +89,24 @@ public:
             transition_action(next_active, state_istart);
     }
 
+    //타겟을 하는 주체 노드를 가져온다.
+    const node* origin() const {
+        return m_origin;
+    }
+
     //is_accepted일 때 인식된 문자열의 첫 위치를 의미한다.
     size_t index_start() const {
-        return m_pNode->index_start();
+        return m_target->index_start();
     }
 
     //본 노드에서 accept 되었는지 확인한다.
     bool is_accepted() const {
-        return m_pNode->is_accepted();
+        return m_target->is_accepted();
     }
 
     //노드 포인터가 가리키는 노드와 파라미터 노드가 같은지 확인한다.
     bool is_ref_equal(const node* pNode) const {
-        return m_pNode == pNode;
+        return m_target == pNode;
     }
 };
 
@@ -116,14 +115,15 @@ public:
 class compiled::node_ptr_direct : public node_ptr {
 protected:
     virtual void transition_action(vector<active_request_info>& next_active, size_t state_istart) override {
-        next_active.push_back({ m_pNode, state_istart });
+        next_active.push_back({ m_target, state_istart });
     }
 
 public:
-    node_ptr_direct(Imatchable* matcher, node* pNode) : node_ptr(matcher, pNode) {}
+    node_ptr_direct(node* pOrigin, Imatchable* matcher, node* pNode) 
+        : node_ptr(pOrigin, matcher, pNode) {}
     
     virtual node_ptr_direct* copy(node* new_pNode) override {
-        return new node_ptr_direct(matcher->copy(), new_pNode);
+        return new node_ptr_direct(m_origin, matcher->copy(), new_pNode);
     }
 };
 
@@ -149,7 +149,7 @@ protected:
 
         //범위에 들었을 경우만 state를 전달한다
         if (lower_bound <= counter && counter <= upper_bound)
-            next_active.push_back({ m_pNode, state_istart });
+            next_active.push_back({ m_target, state_istart });
     }
 
     virtual void clear_flag() override {
@@ -159,13 +159,17 @@ protected:
 
 
 public:
-    node_ptr_inner_counter(Imatchable* matcher, node* pNode, size_t low_bound = 0, size_t up_bound = node_ptr::INF) :
-        node_ptr(matcher, pNode), lower_bound(low_bound), upper_bound(up_bound) {
+    node_ptr_inner_counter(
+        node* pOrigin, Imatchable* matcher, node* pNode, 
+        size_t low_bound = 0, size_t up_bound = node_ptr::INF) 
+        : node_ptr(pOrigin, matcher, pNode), 
+        lower_bound(low_bound), upper_bound(up_bound) 
+    {
         clear_flag();
     }    
     virtual node_ptr_inner_counter* copy(node* new_pNode) override {
         return new node_ptr_inner_counter(
-            matcher->copy(), new_pNode, lower_bound, upper_bound);
+            m_origin, matcher->copy(), new_pNode, lower_bound, upper_bound);
     }
 };
 

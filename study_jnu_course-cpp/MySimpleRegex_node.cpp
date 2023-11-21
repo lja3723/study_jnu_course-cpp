@@ -42,7 +42,7 @@ const vector<compiled::node_ptr*>& compiled::node::next() const {
 
 
 }
-const vector<const compiled::node*>& compiled::node::reverse_ref() const {
+const vector<compiled::node_ptr*>& compiled::node::reverse_ref() const {
     return m_reverse_ref;
 
 
@@ -53,12 +53,7 @@ const vector<const compiled::node*>& compiled::node::reverse_ref() const {
 /**************  변경 함수  **************/
 void compiled::node::add_link(node_ptr* _next) {
     m_next.push_back(_next);
-    _next->link_reverse_ref(this);
-
-
-}
-void compiled::node::add_link_reverse_ref(node* ref) {
-    m_reverse_ref.push_back(ref);
+    _next->m_target->m_reverse_ref.push_back(_next);
 
 
 }
