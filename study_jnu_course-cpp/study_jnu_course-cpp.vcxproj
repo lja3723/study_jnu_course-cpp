@@ -130,6 +130,10 @@
     <ClCompile Include="ch00.cpp" />
     <ClCompile Include="ch10.cpp" />
     <ClCompile Include="ch11.cpp" />
+    <ClCompile Include="cpp00.cpp" />
+    <ClCompile Include="cpp16_practice_list.cpp" />
+    <ClCompile Include="cpp17_practice_free_with_timer.cpp" />
+    <ClCompile Include="cpp18_practice_stl.cpp" />
     <ClCompile Include="DataReader.h" />
     <ClCompile Include="MySimpleRegex.cpp" />
     <ClCompile Include="MySimpleRegex_node.cpp" />
