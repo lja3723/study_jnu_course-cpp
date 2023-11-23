@@ -23,7 +23,7 @@ MyUnitTest::MyUnitTest(const char* test_filename) :
 }
 void MyUnitTest::clear_tests() {
     tests.clear();
-    tests.push_back({ 0, "", vector<string>(), vector<vector<ranged_string>>() });
+    tests.push_back({ 0, "", vector<string>(), vector<ranges>() });
 
 
 }
@@ -63,24 +63,26 @@ void MyUnitTest::run_tests() {
     vector<int> failed_list;
 
     //각 테스트 게이스에 대해 테스트 수행
-    for (int t = 1; t < tests.size(); t++) {
+    for (int i = 1; i < tests.size(); i++) {
+        Test& test = tests[i];
+
         //disabled된 테스트 스킵
-        if (disabled.find(t) != disabled.end()) continue;
+        if (disabled.find(test.number) != disabled.end()) continue;
 
         //테스트 수행
-        vector<bool> results = run_test(tests[t].number);
+        vector<bool> results = run_test(test);
 
         //테스트 성공여부 계산
         bool test_successed = true;
         for (bool result : results) test_successed &= result;
 
         if (test_successed) {
-            successed_list.push_back(t);
-            print_successed_test(t);
+            successed_list.push_back(test.number);
+            print_successed_test(test);
         }
         else {
-            failed_list.push_back(t);
-            print_failed_test(t, results);
+            failed_list.push_back(test.number);
+            print_failed_test(test, results);
         }
     }
 
@@ -89,24 +91,24 @@ void MyUnitTest::run_tests() {
 
 
 }
-vector<bool> MyUnitTest::run_test(int t) {
+vector<bool> MyUnitTest::run_test(const Test& t) {
     vector<bool> ret;
 
     //정규식을 컴파일한다.
     MySimpleRegex::compiled cp 
-        = MySimpleRegex::compile(tests[t].regex);
+        = MySimpleRegex::compile(t.regex);
 
     //각 케이스 문자열마다 기대값(expect)과 실행값(result)이 같은지 비교한다.
-    for (int i = 0; i < tests[t].test.size(); i++) {
-        vector<ranged_string> result = cp.match_all(tests[t].test[i]);
-        ret.push_back(assertEqual(tests[t].expect[i], result));
+    for (int i = 0; i < t.test.size(); i++) {
+        ranges result = cp.match_all(t.test[i]);
+        ret.push_back(assertEqual(t.expect[i], result));
     }
 
     return ret;
 
 
 }
-bool MyUnitTest::assertEqual(vector<ranged_string>& expect, vector<ranged_string>& result) {
+bool MyUnitTest::assertEqual(const ranges& expect, const ranges& result) {
     if (expect.size() != result.size()) return false;
 
     for (int i = 0; i < expect.size(); i++) {
@@ -203,16 +205,16 @@ void MyUnitTest::print_run_title() {
 
 
 }
-void MyUnitTest::print_test_title(string label_left, int test_number, string label_right) {
+void MyUnitTest::print_test_title(string label_left, const Test& t, string label_right) {
     cout << "\n\n\n";
-    cout << label_left << test_number << " \"" << tests[test_number].regex << "\"" << label_right << endl;
+    cout << label_left << t.number << " \"" << t.regex << "\"" << label_right << endl;
 
 
 }
-void MyUnitTest::print_match_range(string title, vector<ranged_string>& match_result, int test_case, int elem) {
+void MyUnitTest::print_match_range(string title, const ranges& match_result, const Test& t, int elem) {
     cout << m_indent << title << endl;
     if (match_result.empty()) {
-        cout << m_indent << tests[test_case].test[elem] << " -> 일치구간 없음" << "\n\n";
+        cout << m_indent << t.test[elem] << " -> 일치구간 없음" << "\n\n";
         return;
     }
 
@@ -225,7 +227,7 @@ void MyUnitTest::print_match_range(string title, vector<ranged_string>& match_re
 
 
 }
-void MyUnitTest::print_match_underline(const vector<ranged_string>& result) {
+void MyUnitTest::print_match_underline(const ranges& result) {
     //매치된 영역에 밑줄 표시; 입력 문자열이 길면 newline마다 개행됨
     if (result.empty()) return;
 
@@ -252,46 +254,46 @@ void MyUnitTest::print_match_underline(const vector<ranged_string>& result) {
 
 
 }
-void MyUnitTest::print_successed_test(int test_number) {
-    if (!tests[test_number].details) {
-        cout << "테스트 #" << test_number << " 통과" << endl;
+void MyUnitTest::print_successed_test(const Test& t) {
+    if (!t.details) {
+        cout << "테스트 #" << t.number << " 통과" << endl;
         return;
     }
 
-    print_test_title("테스트 #", test_number, " 통과 (more detail mode enabled)");
-    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex);
+    print_test_title("테스트 #", t, " 통과 (more detail mode enabled)");
+    MySimpleRegex::compiled cp = MySimpleRegex::compile(t.regex);
 
-    for (int i = 0; i < tests[test_number].test.size(); i++) {
-        vector<ranged_string> result = cp.match_all(tests[test_number].test[i]);
+    for (int i = 0; i < t.test.size(); i++) {
+        ranges result = cp.match_all(t.test[i]);
         cout << "case #" << (i + 1) << endl;
-        print_match_range("< 실행결과 >", result, test_number, i);
+        print_match_range("< 실행결과 >", result, t, i);
     }
     cout << "\n\n";
 
 
 }
-void MyUnitTest::print_failed_test(int test_number, vector<bool>& results) {
+void MyUnitTest::print_failed_test(const Test& t, vector<bool>& results) {
     //실패한 테스트를 재현하기 위해 정규식 재컴파일
-    MySimpleRegex::compiled cp = MySimpleRegex::compile(tests[test_number].regex);
+    MySimpleRegex::compiled cp = MySimpleRegex::compile(t.regex);
 
     bool title_printed = false;
     for (int i = 0; i < results.size(); i++) {
-        if (!tests[test_number].details && results[i] == true) continue;
-        vector<ranged_string> result = cp.match_all(tests[test_number].test[i]);
+        if (!t.details && results[i] == true) continue;
+        ranges result = cp.match_all(t.test[i]);
 
         //실패한 테스트 제목 출력 (최초 1회만)
         if (!title_printed) {
             title_printed = true;
             string label_right = "실패";
             label_right += tests[i].details ? " (more detail mode enabled)" : "";
-            print_test_title("<!>>>>>>> 테스트 #", test_number, label_right);
+            print_test_title("<!>>>>>>> 테스트 #", t, label_right);
         }
 
         //실패한 케이스 출력
         cout << "case #" << (i + 1) << (results[i] ? " (통과)" : " (실패)") << endl;
         if (!results[i])
-            print_match_range("< 기대결과 >", tests[test_number].expect[i], test_number, i);
-        print_match_range("< 실행결과 >", result, test_number, i);
+            print_match_range("< 기대결과 >", t.expect[i], t, i);
+        print_match_range("< 실행결과 >", result, t, i);
     }
     cout << "\n\n";
 

@@ -470,4 +470,4 @@ namespace CH11 {
 
 }
 
-int main() { CH11::RunExample::my_vector_ex(); }
+//int main() { CH11::RunExample::my_vector_ex(); }
