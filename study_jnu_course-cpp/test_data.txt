@@ -4,60 +4,98 @@
 //모든 구문은 대소문자 구별 X
 
 #Test No. 1
-regex: abc|ade
+regex: abc|ade	//테스트할 정규표현식
 test_cases:	//있어도 되고 없어도 됨
-	case: #1
-		input: abc
+
+
+	case: #1            
+		input: abc //정규표현식 "abc|ade"의 인식 대상 문자열
 		output:	//range: 도 가능
-			0	3
-	case: #2 <= 주석이니까 없어도 OK
+			0	3	//range start, range end
+
+
+	case: #2 <= #2는 주석이니까 없어도 OK
 		input: ade
-		range:
-			0 3
+		range: 0 3 ## 범위를 한 줄에 작성 가능
+
+
 	case:
-		input: aaaaabbbbabcaaaaaadeaaaaabc
+		input: 
+			aaaaabbbbabcaaaaaadeaaaaabc //별도의 줄로 작성 가능
 		output:
 			9 12
 			17		20 //탭으로 구분 가능
-			24 27
+			24 			
+				27 //start, end가 한줄에 안적혀 있어도 가능
+			//4		#숫자가 홀수개면 안됨
+
 	case:
 		input:		abbbbbbbbdddddddfdfdfdfdf
 		output:
-			NULL
+			NULL //일치 구간이 없는 경우 NULL로 표기(대소문자 미구별)
+
+
 	case: #5 <= 그런데 있는게 보기 편하죠
-		input: zzosiduabcfdsfdafdadere
+		input: "  zzos  idu abcfdsfda f dadere" //띄어쓰기는 큰따옴표로 감싸면 가능
 		range:
-			7 10
-			18 21
+			12 15
+			25 28
 	case: #6
-		input: aosisudababaifudiaddadeidufodi
+		input: ''' //여러 줄로 입력 가능(개행은 무시됨)
+			Lorem ipsum dolor sit amet, cabcectetur adipiscing elit, sed do eiabcod
+			tempor incidabcunt ut laadee et dolore madea aliqua. 
+			Nisl tincidunt eget nullam non. Quis hendrerit dolor magna eget est lorem ipsum dolor sit.
+			Volutpat odio facabcsis mauris sit amet adesa.
+
+			Commodo oade aenean sed adipiscing diam dabcc adipiscing trabcique. 
+			Mi eget mauris pabcadea et
+		'''
+		//끝날 때 표시해야됨
+
 		range:
-			20 23
-			//4 39
+			29 32
+			66 69
+			84 87
+			96 99
+			112 115
+			233 236
+			256 259
+			273 276
+			305 308
+			323 326
+			348 351
+			351 354
+
 	case: #7
-		input: asdhfaisdhoidofuhajekadadeaabcclaksdhfvnasjmaflsdmlfvaadcuhsvkdfhaksjdlakfjdfasdcaksdhflashdljhkakl;abclalwadeehmrua3kwinldawmeij
-		range:
-			23 26
-			27 30
-			100 103
-			107 110
+		input: '''
+			asdhfaisd hoido
+			fuhajekadadeaabc claks
+			dhfvnasjmaf lsdmlfvaadcuhsvkdfhaks
+			jdlakfjdfasdcaksdhf lashdl
+			jhk akl; abclalwadee hmrua3kwinl
+			dawmeij
+			'''
+		range: //엉망진창으로 써도 개수만 짝수면 OK
+			25 28	29 		
+				32			
+		110		 113 			117 
+ 120
 
 
-#Test No. 2 <= 요거도 마찬가지
+#Test No. 2 <= 요거도 마찬가지로 주석이라 안써도 OK (but 있는게 보기 편하니까 적음)
 regex: aba
 //test_cases:
 	case:
-		input: aba
-		output:
+		input: 
+			aba
+		output: 
 			0 3
 	case:
-		input: bab
-		output:
-			NULL
+		input:		bab
+		output:		NULL //한 줄 표기 가능
 	case:
 		input: baba
-		output:
-			1 4
+		output: 1 4
 	case:
 		input: ababababababababababab
 		output:
@@ -69,43 +107,40 @@ regex: aba
 
 
 #Test No. 3
+regex: Regex|Syntax|Invalid|wow|gg*+*+
+	invalid_syntax	//regex 문법이 잘못된 경우를 테스트하려면 이렇게 regex 다음에 invalid_syntax로 표기함
+
+
+
+#Test No. 4
 regex: NK((abc|ABC)*N|(OP)+)Q
 	case: #1
 		input: NKNQ
-		range:
-			0 4
+		range: 0 4
 	case: #2
 		input: NKOPQ
-		range:
-			0 5
+		range: 0 5
 	case: #3
 		input: NK
-		range:
-			null
+		range: null
 	case: #4
 		input: OPQ
-		range:
-			null
+		range: nULl
 	case: #5
 		input: NKabcabcabcNQ
-		range:
-			0 13
+		range: 0 13
 	case: #6
 		input: oosoiduuufufffii
-		range:
-			null
+		range: null
 	case: #7
 		input: NKABCABCNQ
-		range:
-			0 10
+		range: 0 10
 	case: #8
 		input: NKabcABCabcABCABCabcABCNQ
-		range:
-			0 25
+		range: 0 25
 	case: #9
 		input: NKOPOPOPOPQ
-		range:
-			0 11
+		range: 0 11
 	case: #10
 		input: sofieNKNQofisNOPQkfuNKOPOPQlzNKABCNQksofuNKabcNQtttat
 		range:
@@ -115,84 +150,70 @@ regex: NK((abc|ABC)*N|(OP)+)Q
 			41 48
 
 
-#Test No. 4
+#Test No. 5
 regex: ab+c
 	case: #1
 		input: a
-		range:
-			null
+		range: null
 	case: #2
 		input: ac
-		range:
-			null
+		range: null
 	case: #3
 		input: abc
-		range:
-			0 3
+		range: 0 3
 	case: #4
 		input: abbc
-		range:
-			0 4
+		range: 0 4
 	case: #5
 		input: abbbbbb
-		range:
-			NULL
+		range: NULL
 	case: #6
 		input: abbbc
-		range:
-			0 5
+		range: 0 5
 	case: #7
 		input: abbbbbc
-		range:
-			0 7
+		range: 0 7
 	case: #8
-		input: abbbbababcccccabbbbcabbbbabacacabccccab
+		input: 
+			abbbbababcccccabbbbcabbbbabacacabccccab
 		range:
 			7 10
 			14 20
 			31 34
 
 
-#Test No. 5
+#Test No. 6
 regex: abc+
 	case: #1
 		input: a
-		range:
-			NULL
+		range: NULL
 	case: #2
 		input: aaa
-		range:
-			NULL
+		range: NULL
 	case: #3
 		input: aaaabb
-		range:
-			NULL
+		range: NULL
 	case: #4
 		input: aabbcc
-		range:
-			NULL
+		range: NULL
 	case: #5
 		input: ab
-		range:
-			NULL
+		range: NULL
 	case: #6
 		input: abc
-		range:
-			0 3
+		range: 0 3
 	case: #7
 		input: abcc
-		range:
-			0 4
+		range: 0 4
 	case: #8
 		input: abccc
-		range:
-			0 5
+		range: 0 5
 	case: #9
 		input: abcccccc
-		range:
-			0 8
+		range: 0 8
 	case: #10
-		input: kkkabcccccccciabccccccabccccckkkcccccabccccccccccco
+		input: 
+			kkkabcccccccciabccccccabccccckkkcccccabccccccccccco
 		range:
 			3 13
 			14 22
@@ -200,66 +221,53 @@ regex: abc+
 			37 50			
 
 
-#Test No. 6
+#Test No. 7
 regex: aB{3,6}c
 	case: #1
 		input: ac
-		range:
-			null
+		range: null
 	case: #2
 		input: aBc
-		range:
-			null
+		range: null
 	case: #3
 		input: aBBc
-		range:
-			null
+		range: null
 	case: #4
 		input: aBBBc
-		range:
-			0 5
+		range: 0 5
 	case: #5
 		input: aBBBBc
-		range:
-			0 6
+		range: 0 6
 	case: #6
 		input: aBBBBBc
-		range:
-			0 7
+		range: 0 7
 	case: #7
 		input: gaBBBBBBc
-		range:
-			1 9
+		range: 1 9
 	case: #8
 		input: ggaBBBBBBBc
-		range:
-			null
+		range: null
 	case: #9
 		input: aBBBBBBBBc
-		range:
-			null
+		range: null
 	case: #10
 		input: aBBBBBBBBBc
-		range:
-			null
+		range: null
 	case: #11
 		input: aBBBBBBBBBBcg
-		range:
-			null
+		range: null
 	case: #12
 		input: aBBBBBBBBBBBcgg
-		range:
-			null
+		range: null
 	case: #13
 		input: aBBBBBBBBBBBBc
-		range:
-			null
+		range: null
 	case: #14
 		input: aBBBBBBBBBBBBBc
-		range:
-			null
+		range: null
 	case: #15
-		input: kaBBBcfaBBBBckkaBBckaBBBBBBcUUUaBBBBcOOOaBcTTTTaBBBBBcTTTTT
+		input: 
+			kaBBBcfaBBBBckkaBBckaBBBBBBcUUUaBBBBcOOOaBcTTTTaBBBBBcTTTTT
 		range:
 			1 6
 			7 13
@@ -268,60 +276,48 @@ regex: aB{3,6}c
 			47 54			
 
 
-#Test No. 7
+#Test No. 8
 regex: jkT{4,5}
 	case: #1
 		input: jkTT
-		range:
-			null
+		range: null
 	case: #2
 		input: jkTTT
-		range:
-			null
+		range: null
 	case: #3
 		input: jkTTTT
-		range:
-			0 6
+		range: 0 6
 	case: #4
 		input: jkTTTTT
-		range:
-			0 7
+		range: 0 7
 	case: #5
 		input: jkTTTTTT
-		range:
-			0 7
+		range: 0 7
 	case: #6
 		input: jkTTTTTTT
-		range:
-			0 7
+		range: 0 7
 
 
-#Test No. 8
+#Test No. 9
 regex: T{3,5}
 	case: #1
 		input: TT
-		range:
-			null
+		range: null
 	case: #2
 		input: TTT
-		range:
-			0 3
+		range: 0 3
 	case: #3
 		input: TTTT
-		range:
-			0 4
+		range: 0 4
 	case: #4
 		input: TTTTT
-		range:
-			0 5
+		range: 0 5
 	case: #5
 		input: TTTTTT
-		range:
-			0 5
+		range: 0 5
 	case: #6
 		input: TTTTTTT
-		range:
-			0 5
+		range: 0 5
 	case: #7
 		input: TTTTTTTT
 		range:
@@ -352,64 +348,51 @@ regex: T{3,5}
 			23 28
 
 
-#Test No. 9
+#Test No. 10
 regex: T+
 	case: #1
 		input: T
-		range:
-			0 1
+		range: 0 1
 	case: #2
 		input: TT
-		range:
-			0 2
+		range: 0 2
 	case: #3
 		input: TTT
-		range:
-			0 3
+		range: 0 3
 	case: #4
 		input: kkTTTT
-		range:
-			2 6
+		range: 2 6
 	case: #5
 		input: TTTTT
-		range:
-			0 5
+		range: 0 5
 	case: #6
 		input: kkkkTTTTTT
-		range:
-			4 10
+		range: 4 10
 	case: #7
 		input: TTTTTTT
-		range:
-			0 7
+		range: 0 7
 	case: #8
 		input: kkkkTTTTTTz
-		range:
-			4 10
+		range: 4 10
 	case: #9
 		input: k
-		range:
-			null
+		range: null
 
 
-#Test No. 10
+#Test No. 11
 regex: Tn(abTn)*
 	case: #1
 		input: Tn
-		range:
-			0 2
+		range: 0 2
 	case: #2
 		input: TnabTn
-		range:
-			0 6
+		range: 0 6
 	case: #3
 		input: TnabTnabTn
-		range:
-			0 10
+		range: 0 10
 	case: #4
 		input: TnabTnabTnabTn
-		range:
-			0 14
+		range: 0 14
 	case: #5
 		input: TnsidabTnabTnsdabTnabiiTniabT
 		range:
@@ -419,16 +402,14 @@ regex: Tn(abTn)*
 			23 25
 	case: #6
 		input: abTnab
-		range:
-			2 4
+		range: 2 4
 
 
-#Test No. 11
+#Test No. 12
 regex: abcba
 	case: #1
 		input: abcba
-		range:
-			0 5
+		range: 0 5
 	case: #2
 		input: abcbaabcba
 		range:
@@ -448,7 +429,7 @@ regex: abcba
 			16 21
 
 
-#Test No. 12
+#Test No. 13
 regex: b*
 	case: #1
 		input: tA
@@ -494,28 +475,23 @@ regex: b*
 			10 10
 
 
-#Test No. 13
+#Test No. 14
 regex: A*B*t
 	case: #1
 		input: st
-		range:
-			1 2
+		range: 1 2
 	case: #2
 		input: sAt
-		range:
-			1 3
+		range: 1 3
 	case: #3
 		input: sAAt
-		range:
-			1 4
+		range: 1 4
 	case: #4
 		input: sBt
-		range:
-			1 3
+		range: 1 3
 	case: #5
 		input: sAABBBt
-		range:
-			1 7
+		range: 1 7
 	case: #6
 		input: stbsAABBBtsAB
 		range:
@@ -523,36 +499,32 @@ regex: A*B*t
 			4 10
 
 
-#Test No. 14
+#Test No. 15
 regex: sA*B*t
 	case: #1
 		input: st
-		range:
-			0 2
+		range: 0 2
 	case: #2
 		input: sAt
-		range:
-			0 3
+		range: 0 3
 	case: #3
 		input: sAAt
-		range:
-			0 4
+		range: 0 4
 	case: #4
 		input: sBt
-		range:
-			0 3
+		output: 0 3
 	case: #5
 		input: sAABBBt
 		range:
 			0 7
 	case: #6
 		input: stbsAABBBtsAB
-		range:
+		output:
 			0 2
 			3 10
+			
 
-
-#Test No. 15
+#Test No. 16
 regex: A*B*
 	case: #1
 		input: st
@@ -602,58 +574,116 @@ regex: A*B*
 			13 13
 
 
-#Test No. 16
+#Test No. 17
 regex: abT|Kcd
 	case: #1
 		input: abcd
-		range:
-			NULL
+		range: NULL
 	case: #2
 		input: abT
-		range:
-			NULL
+		range: NULL
 	case: #3
 		input: Kcd
-		range:
-			NULL
+		range: NULL
 	case: #4
 		input: abTcd
-		range:
-			NULL
+		range: 0 5
 	case: #5
 		input: abKcd
-		range:
-			NULL
+		range: 0 5
 	case: #6
-		input: stbsAABBBtsAB
+		input: stbabTsAAKcdTcdBdaabTcdBabKcdBtsKcdAB
 		range:
-			NULL
+			18 23
+			24 29
 
 
-#Test No. 17
+#Test No. 18
 regex: Z|Ya*.*A|B
 	case: #1
 		input: ZaA
-		range:
-			NULL
+		range: 0 3
 	case: #2
-		input: ZaB
-		range:
-			NULL
+		input: ZB
+		range: 0 2
 	case: #3
-		input: YaA
-		range:
-			NULL
+		input: ttttYaA
+		range: 4 7
 	case: #4
 		input: YaB
-		range:
-			NULL
+		range: 0 3
+	case: #5
+		input: zzYB
+		range: 2 4
+	case: #6
+		input: ZaaGJananANANananANfkzoviufspqDBzz
+		range: 0 32
+	case: #7
+		input: ZaaGaaaosidufasovbhsidldJDfAZBYAZkAoYBtYiizAtt
+		range: 0 44		
+
+
+#Test No. 19
+regex: t*z+A|B+x
+	INVALID_SYNTAX
+	
+
+#Test No. 20
+regex: ab|cr*d+e.*z
+	case: #1
+		input: ZaA
+		range: NULL
+	case: #2
+		input: ZaB
+		range: NULL
+	case: #3
+		input: YaA
+		range: NULL
+	case: #4
+		input: YaB
+		range: NULL
 
 	case: #5
 		input: ZaaGJananANANananANfkzoviufspqDBzz
-		range:
-			NULL
+		range: NULL
 	case: #6
 		input: ntZaaGaaaosidufasovbhsidldJDfAttt
-		range:
-			NULL
+		range: NULL
+
+
+#Test No. 21
+regex: A|B{3,6}
+	invalid_syntax
+
+
+#Test No. 22
+regex: A|B+
+	invalid_syntax
+
+
+	
+#Test No. 23
+regex: A*|B
+	invalid_syntax
+
+
+#Test No. 24
+regex: .|B.{3,4}
+	case: #1
+		input: w
+		output: NULL
+	case: #2
+		input: wzzz
+		output: 0 4
+	case: #3
+		input: Btifuasoi
+		output: 0 5		5 9
+	case: #4
+		input: BBBBddd
+		output: 0 5
+	case: #5
+		input: BIissoaddddsaswww
+		output: 
+			0 5
+			5 10
+			10 15

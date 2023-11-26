@@ -23,9 +23,9 @@ namespace assignment1 {
         //Basic Settings (default setting)
             //.set_summary_more_details()
             //.enable_all()
-            .more_details_all()
-            //.less_details_all()
-            //.more_details({16})
+            //.more_details_all()
+            .less_details_all()
+            //.more_details({19})
             
         //Additional Settings
             //.less_details({ 1, 2 }) //set less details
@@ -34,7 +34,7 @@ namespace assignment1 {
             //.enable({17})
             .run(); //run unit test
 
-        cout << "최종 컴파일 시간: 23일(목) 오후 11:41" << endl;
+        cout << "최종 컴파일 시간: 26일(일) 오후 3:04" << endl;
 
 
         return 0;

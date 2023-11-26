@@ -472,12 +472,14 @@ compiled MySimpleRegex::compile(const string& m_regex) {
 
 }
 ranged_string MySimpleRegex::match(const string& m_regex, const string& source, size_t index_start) {
-    return compiled(m_regex).match(source, index_start);
+    compiled cp = compile(m_regex);
+    return cp.match(source, index_start);
 
 
 }
 vector<ranged_string> MySimpleRegex::match_all(const string m_regex, const string& source) {
-    return compiled(m_regex).match_all(source);
+    compiled cp = compile(m_regex);
+    return cp.match_all(source);
 
 
 }
@@ -490,10 +492,8 @@ compiled::compiled(const string& m_regex)
     : m_epsilon(nullptr), m_terminal(nullptr), m_regex(m_regex) {
     state_machine_creator creator(m_node, m_epsilon, m_terminal);
 
-    //정규식 문법이 잘못된 경우 빈 상태 기계가 생성된다.
-    if (!creator.make(m_regex)) {
-        cout << "정규표현식 문법이 잘못되었습니다. 비교가 제대로 수행되지 않을 수 있습니다." << endl;
-    }
+    //정규식 문법이 잘못된 경우 빈 상태 기계가 생성되고, is_valid가 false가 된다.
+    m_is_valid = creator.make(m_regex);
 
 
 }
@@ -504,6 +504,11 @@ compiled::~compiled() {
             delete m_node[i];
     if (m_epsilon != nullptr) delete m_epsilon;
     if (m_terminal != nullptr) delete m_terminal;
+
+
+}
+bool compiled::is_valid() {
+    return m_is_valid;
 
 
 }

@@ -42,7 +42,8 @@ public:
     class compiled; //진짜 기능을 하는 클래스
     
     //정규표현식을 컴파일한 객체 compiled를 반환한다.
-    static compiled compile( const string& m_regex);
+    //정규식이 바르지 않은 경우 is_valid가 false가 된다.
+    static compiled compile(const string& m_regex);
 
     //source에서 정규표현식과 가장 먼저 일치하는 범위를 구한다.
     //그런 범위가 없으면 invalid한 객체를 반환한다.
@@ -74,6 +75,9 @@ public:
 
     //생성된 상태기계를 삭제한다. 메모리 반환 작업을 수행한다.
     ~compiled();
+
+    //입력된 정규표현식이 문법적으로 바른지 확인한다.
+    bool is_valid();
 
     //source에서 start_idx부터 탐색을 시작해 가장 처음으로 발견된 일치 정보를 반환한다.
     ranged_string match(const string& source, size_t index_start = 0);
@@ -131,6 +135,8 @@ private:
     node* m_epsilon;        //엡실론 신호를 next에 주는 노드
     node* m_terminal;       //터미널 노드 리스트 (얕은 복사됨)
     const string m_regex;   //저장된 정규표현식
+    bool m_is_valid;        //정규표현식이 바른 지 여부
+
 
 
     /****************************/

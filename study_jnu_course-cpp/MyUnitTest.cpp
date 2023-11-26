@@ -23,7 +23,8 @@ MyUnitTest::MyUnitTest(const char* test_filename) :
 }
 void MyUnitTest::clear_tests() {
     tests.clear();
-    tests.push_back({ 0, "", vector<string>(), vector<ranges>() });
+    //dummy test (인덱스를 1부터 사용할 것임)
+    tests.push_back({ 0, "", 0, vector<string>(), vector<ranges>() });
 
 
 }
@@ -70,6 +71,9 @@ void MyUnitTest::run_tests() {
         if (disabled.find(test.number) != disabled.end()) continue;
 
         //테스트 수행
+        //results.size() == 1인 경우 regex 문법이 유효하지 않다는 의미
+            //results[0] == true : 유효하지 않는 테스트 통과
+            //results[1] == false : 유효해야 하지만 유효하지 않음
         vector<bool> results = run_test(test);
 
         //테스트 성공여부 계산
@@ -95,11 +99,13 @@ vector<bool> MyUnitTest::run_test(const Test& t) {
     vector<bool> ret;
 
     //정규식을 컴파일한다.
-    MySimpleRegex::compiled cp 
-        = MySimpleRegex::compile(t.regex);
+    MySimpleRegex::compiled cp = MySimpleRegex::compile(t.regex);
+
+    //정규식 문법 유효성 테스트
+    ret.push_back(t.syntax_valid == cp.is_valid());
 
     //각 케이스 문자열마다 기대값(expect)과 실행값(result)이 같은지 비교한다.
-    for (int i = 0; i < t.test.size(); i++) {
+    for (int i = 0; cp.is_valid() && i < t.test.size(); i++) {
         ranges result = cp.match_all(t.test[i]);
         ret.push_back(assertEqual(t.expect[i], result));
     }
@@ -263,37 +269,63 @@ void MyUnitTest::print_successed_test(const Test& t) {
     print_test_title("테스트 #", t, " 통과 (more detail mode enabled)");
     MySimpleRegex::compiled cp = MySimpleRegex::compile(t.regex);
 
-    for (int i = 0; i < t.test.size(); i++) {
-        ranges result = cp.match_all(t.test[i]);
-        cout << "case #" << (i + 1) << endl;
-        print_match_range("< 실행결과 >", result, t, i);
+    if (cp.is_valid()) {
+        for (int i = 0; i < t.test.size(); i++) {
+            ranges result = cp.match_all(t.test[i]);
+            cout << "case #" << (i + 1) << endl;
+            print_match_range("< 실행결과 >", result, t, i);
+        }
+    }
+    else {
+        cout << m_indent << "< 실행결과 >" << endl;
+        cout << m_indent << m_indent << "-> 정규표현식 문법이 유효하지 않음(기대결과와 일치)" << endl;
     }
     cout << "\n\n";
 
 
 }
 void MyUnitTest::print_failed_test(const Test& t, vector<bool>& results) {
+    //실패한 테스트 제목
+    print_test_title("<!>>>>>>> 테스트 #", t, string(" 실패") 
+        + (t.details ? " (more detail mode enabled)" : ""));
+
     //실패한 테스트를 재현하기 위해 정규식 재컴파일
     MySimpleRegex::compiled cp = MySimpleRegex::compile(t.regex);
 
-    bool title_printed = false;
-    for (int i = 0; i < results.size(); i++) {
-        if (!t.details && results[i] == true) continue;
-        ranges result = cp.match_all(t.test[i]);
+    //정규식 문법이 올바른 경우 - 테스트케이스가 틀림
+    if (results[0] == true) {
+        for (int i = 0; i < results.size() - 1; i++) {
+            if (!t.details && results[i + 1] == true) continue;
+            ranges result = cp.match_all(t.test[i]);
 
-        //실패한 테스트 제목 출력 (최초 1회만)
-        if (!title_printed) {
-            title_printed = true;
-            string label_right = "실패";
-            label_right += tests[i].details ? " (more detail mode enabled)" : "";
-            print_test_title("<!>>>>>>> 테스트 #", t, label_right);
+            //실패한 케이스 출력
+            cout << "case #" << (i + 1) << (results[i + 1] ? " (통과)" : " (실패)") << endl;
+            if (!results[i + 1])
+                print_match_range("< 기대결과 >", t.expect[i], t, i);
+            print_match_range("< 실행결과 >", result, t, i);
         }
+    }
 
-        //실패한 케이스 출력
-        cout << "case #" << (i + 1) << (results[i] ? " (통과)" : " (실패)") << endl;
-        if (!results[i])
+    //정규표현식 문법이 틀렸지만 맞았다고 나온 경우
+    else if (cp.is_valid()) {
+        cout << m_indent << "< 기대결과 >" << endl;
+        cout << m_indent << m_indent << "-> 정규표현식 문법이 유효하지 않음" << endl;
+        cout << m_indent << "< 실행결과 >" << endl;
+        cout << m_indent << m_indent << "-> 정규표현식 문법이 유효함" << endl;
+    }
+
+    //정규표현식 문법이 맞지만 틀렸다고 나온 경우
+    else {
+        cout << m_indent << "< 기대결과 >" << endl;
+        cout << m_indent << m_indent << "-> 정규표현식 문법이 유효함" << endl;
+        cout << m_indent << "< 실행결과 >" << endl;
+        cout << m_indent << m_indent << "-> 정규표현식 문법이 유효하지 않음" << endl << endl;
+
+        cout << m_indent << "아래와 같은 실행결과가 기대되었음" << endl << endl;
+        for (int i = 0; i < t.test.size(); i++) {
+            cout << "case #" << (i + 1) << endl;
             print_match_range("< 기대결과 >", t.expect[i], t, i);
-        print_match_range("< 실행결과 >", result, t, i);
+        }
     }
     cout << "\n\n";
 

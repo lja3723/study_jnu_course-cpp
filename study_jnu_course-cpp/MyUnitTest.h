@@ -39,6 +39,8 @@ class MyUnitTest {
     struct Test {               //단위 테스트
         int number;             //test case number
         string regex;           //regex of test
+        bool syntax_valid;      //0: regex syntax invalid, 1: valid
+                                //0인 경우 test, expect size() == 0
         vector<string> test;    //input strings for regex
         vector<ranges> expect; //expect results
         bool details = false;   //0: less detail, 1: more detail
@@ -136,30 +138,37 @@ private:
         regex,      //regex:
         get_cases,  //test_cases:
         get_case,   //case:
+        invalid_regex_syntax, //invalid
         input,      //input:
         output,     //output: or range:
-        range,      //number of range
-        unknown
+        number,      //number of range
+        other
     } prev_state, line_means;
+
+    Test cur_test;
+    int cur_test_num;
+    vector<ranged_string> cur_expect;
+    size_t cur_range_start;
+
+    bool is_range_null;
+    bool is_file_end;
+    bool is_file_end_unexpected;
+    bool is_accepted_regex;
+    bool is_accepted_input;
+    bool is_accepted_range_start;
 
     const string syntax_regex;
     const string syntax_regex_ex;
     const string syntax_get_cases;
     const string syntax_get_case;
+    const string syntax_invalid_regex_syntax;
     const string syntax_input;
     const string syntax_input_ex;
     const string syntax_output1;
     const string syntax_output2;
     const string syntax_range;
     const string syntax_range_null;
-
-    Test cur_test;
-    int cur_test_num;
-    vector<ranged_string> cur_expect;
-
-    bool is_range_null;
-    bool is_file_end;
-    bool is_file_end_unexpected;
+    const string syntax_file_end;
 
 
 
@@ -171,24 +180,46 @@ private:
             return true;
         }
 
-        if (line_means == regex)
-            return action_state_regex(container);
+        if (line_means == regex) {
+            prev_state = regex;
+            return true;
+        }
 
         return error_syntax({ syntax_regex_ex });
+
+
     }
-    bool prev_state_regex(Data& container) {
+    bool prev_state_regex(Data& container) { 
         if (is_file_end)
             return error_unexpected_file_end();
 
+        if (!is_accepted_regex) {
+            if (line_means == other || line_means == number)
+                return DEBUG_action_state_regex(container);
+            
+            if (line_means != number)
+                return error_argument_missing({ syntax_regex_ex });
+        }
+
+        is_accepted_regex = false;
         if (line_means == get_cases || line_means == get_case) {
             prev_state = line_means;
             return true;
         }
 
+        if (line_means == invalid_regex_syntax) {
+            cur_test.syntax_valid = false;
+            prev_state = invalid_regex_syntax;
+            return true;
+        }
+
         return error_syntax({
             syntax_get_cases,
-            syntax_get_case
+            syntax_get_case,
+            syntax_invalid_regex_syntax
             });
+
+
     }
     bool prev_state_get_cases(Data& container) {
         if (is_file_end)
@@ -200,146 +231,219 @@ private:
         }
 
         return error_syntax({ syntax_get_case });
+
+
     }
     bool prev_state_get_case(Data& container) {
         if (is_file_end)
             return error_unexpected_file_end();
 
         if (line_means == input) {
-            if (m_tokens.size() == 1)
-                return error_argument_missing({ syntax_input_ex });
-
-            cur_test.test.push_back(m_tokens[1]);
             prev_state = input;
             return true;
         }
 
         return error_syntax({ syntax_input_ex });
+
+
+    }
+    bool prev_state_invalid_regex_syntax(Data& container) {
+        if (is_file_end) {
+            container.push_back(cur_test);
+            return true;
+        }
+
+        if (line_means == regex)
+        {
+            prev_state = regex;
+            return true;
+        }
+
+        return error_syntax({ 
+            syntax_regex,
+            syntax_file_end
+            });
+
+
     }
     bool prev_state_input(Data& container) {
         if (is_file_end)
             return error_unexpected_file_end();
 
+        if (!is_accepted_input) {
+            if (line_means == other || line_means == number) {
+                cur_test.test.push_back(m_token);
+                is_accepted_input = true;
+                prev_state = input;
+                return true;
+            }
+
+            if (line_means == output)
+                return error_argument_missing({ syntax_input_ex });
+        }
+        
+        is_accepted_input = false;
         if (line_means == output) {
             prev_state = output;
             return true;
         }
 
         return error_syntax({ syntax_output1, syntax_output2 });
+
+
     }
     bool prev_state_output(Data& container) {
         if (is_file_end)
             return error_unexpected_file_end();
 
-        if (line_means == unknown && lowercase(m_tokens[0]) == "null") {
+        //NULL range인 경우
+        if (line_means == other && lowercase(m_token) == "null") {
             is_range_null = true;
 
             cur_test.expect.push_back(vector<ranged_string>());
-            prev_state = range;
+            prev_state = number;
 
             return true;
         }
 
-        if (line_means == range)
-            return action_state_range({ syntax_range, syntax_range_null });
+        if (line_means == number)
+            return DEBUG_action_state_number({ syntax_range, syntax_range_null });
 
         return error_syntax({ syntax_range, syntax_range_null });
+
+
     }
-    bool prev_state_range(Data& container) {
+    bool prev_state_number(Data& container) {
         if (is_file_end) {
-            push_and_clear_cur_expect(container);
+            if (is_accepted_range_start)
+                return error_syntax({ syntax_range });
+
+            push_and_clear_cur_expect();
             container.push_back(cur_test);
             return true;
         }
 
-        if (line_means == range) {
+        if (line_means == number) {
             if (is_range_null)
                 return error_syntax({
                     syntax_regex_ex,
                     syntax_get_case
                     });
 
-            is_range_null = false;
-            return action_state_range({ syntax_range });
+            //is_range_null = false;
+            return DEBUG_action_state_number({ syntax_range });
         }
 
         if (line_means == get_case) {
+            if (is_accepted_range_start)
+                return error_argument_missing({ syntax_range });
+
             if (!is_range_null)
-                push_and_clear_cur_expect(container);
+                push_and_clear_cur_expect();
 
             is_range_null = false;
             prev_state = get_case;
             return true;
         }
 
-        if (line_means == regex)
-            return action_state_regex(container);
+        if (line_means == regex) {
+            if (is_accepted_range_start)
+                return error_argument_missing({ syntax_range });
+
+            prev_state = regex;
+            return true;
+        }
 
 
         return error_syntax({
             syntax_regex_ex,
             syntax_get_case,
-            syntax_range
+            syntax_range,
+            syntax_file_end
             });
+
+
     }
-    void push_and_clear_cur_expect(Data& container) {
+
+    void push_and_clear_cur_expect() {
         cur_test.expect.push_back(cur_expect);
         cur_expect.clear();
-    }
-    bool action_state_regex(Data& container) {
-        if (m_tokens.size() <= 1)
-            return error_argument_missing({ syntax_regex_ex });
 
+
+    }
+    bool DEBUG_action_state_regex(Data& container) {
         if (cur_test_num > 0) {
-            push_and_clear_cur_expect(container);
+            if (prev_state != invalid_regex_syntax)
+                push_and_clear_cur_expect();
             container.push_back(cur_test);
         }
+
         init_cur_test(++cur_test_num);
-        cur_test.regex = m_tokens[1];
+        cur_test.regex = m_token;
 
         is_range_null = false;
+        is_accepted_regex = true;
         prev_state = regex;
         return true;
+
+
     }
-    bool action_state_range(const vector<string>& expects) {
-        if (m_tokens.size() == 1)
-            return error_argument_missing(expects);
+    bool DEBUG_action_state_number(const vector<string>& expects) {
+        if (!is_accepted_range_start) {
+            cur_range_start = stoi(m_token);
+            is_accepted_range_start = true;
+            return true;
+        }
 
-        if (!is_digit(m_tokens[1]))
-            return error_invalid_digit(expects);
+        string& test_str = cur_test.test.back();
+        size_t start = cur_range_start;
+        size_t end = stoi(m_token);      
 
-        cur_expect.push_back(ranged_string(
-            cur_test.test.back(),
-            stoi(m_tokens[0]), stoi(m_tokens[1]),
-            true));
+        //out_of_range
+        if (start < 0 || end < 0 || test_str.size() <= start || test_str.size() < end) {
+            if (!(test_str.size() == start && start == end)) {
+                showline();
+                cout << "잘못된 숫자 범위입니다." << endl;
+                cout << "범위는 0 이상 " << test_str.size() << " 이하여야 합니다." << endl;
+                return false;
+            }
+        }
 
-        prev_state = range;
+        cur_expect.push_back(ranged_string(test_str, start, end, true));
+        is_accepted_range_start = false;
+        prev_state = number;
         return true;
+
+
     }
 
     /****************  유틸 함수  ****************/
-    _state interpret(const string& str) {
-        if (lowercase(str) == syntax_regex) return regex;
-        if (lowercase(str) == syntax_get_cases) return get_cases;
-        if (lowercase(str) == syntax_get_case) return get_case;
-        if (lowercase(str) == syntax_input) return input;
-        if (lowercase(str) == syntax_output1) return output;
-        if (lowercase(str) == syntax_output2) return output;
-        if (is_digit(str)) return range;
-        return unknown;
+    _state interpret() {
+        if (lowercase(m_token) == syntax_regex) return regex;
+        if (lowercase(m_token) == syntax_get_cases) return get_cases;
+        if (lowercase(m_token) == syntax_get_case) return get_case;
+        if (lowercase(m_token) == syntax_invalid_regex_syntax) return invalid_regex_syntax;
+        if (lowercase(m_token) == syntax_input) return input;
+        if (lowercase(m_token) == syntax_output1) return output;
+        if (lowercase(m_token) == syntax_output2) return output;
+        if (is_digit(m_token)) return number;
+        return other;
+
+
     }
     string lowercase(const string& str) {
         string ret = str;
         for (char& c : ret) if ('A' <= c && c <= 'Z') c += 'a' - 'A';
         return ret;
+
+
     }
     bool is_digit(const string& s) {
         bool ret = true;
         for (char c : s) ret &= ('0' <= c && c <= '9');
         return ret;
-    }
-    void showline() {
-        cout << "[error] line " << m_cur_line << " of \"" << get_filename() << "\": ";
+
+
     }
     void show_expected_syntax(const vector<string>& expects) {
         if (expects.empty()) return;
@@ -350,14 +454,19 @@ private:
 
         for (int i = 1; i < expects.size(); i++)
             cout << indent << "or  " << expects[i] << endl;
+
+
     }
     void init_cur_test(int test_num) {
         cur_test.number = test_num;
-        cur_test.regex.clear();
+        cur_test.regex = "";
+        cur_test.syntax_valid = true;
         cur_test.test.clear();
         cur_test.expect.clear();
         cur_test.details = false;
         cur_test.enabled = true;
+
+
     }
 
     /****************  오류 함수  ****************/
@@ -367,50 +476,52 @@ private:
             cout << "예기치 못하게 파일이 종료되었습니다." << endl;
         }
         return false;
+
+
     }
     bool error_argument_missing(const vector<string>& expects) {
         showline();
         cout << "주어진 인자가 기대값보다 적습니다." << endl;
         show_expected_syntax(expects);
         return false;
-    }
-    bool error_invalid_digit(const vector<string>& expects) {
-        showline();
-        cout << "잘못된 숫자 양식입니다." << endl;
-        show_expected_syntax(expects);
-        return false;
+
+
     }
     bool error_syntax(const vector<string>& expects) {
         showline();
         cout << "잘못된 구문입니다." << endl;
         show_expected_syntax(expects);
         return false;
+
+
     }
 
 
 
 protected:
-    virtual bool single_line_action(Data& container) override {
+    virtual bool token_action(Data& container) override {
         is_file_end = false;
         return action(container);
     }
     virtual bool end_file_action(Data& container) override {
         is_file_end = true;
-        line_means = unknown;
+        line_means = other;
         return action(container);
     }
     bool action(Data& container) {
         if (!is_file_end)
-            line_means = interpret(m_tokens[0]);
+            line_means = interpret();
 
         switch (prev_state) {
         case init:      return prev_state_init(container);
         case regex:     return prev_state_regex(container);
         case get_cases: return prev_state_get_cases(container);
         case get_case:  return prev_state_get_case(container);
+        case invalid_regex_syntax: 
+                        return prev_state_invalid_regex_syntax(container);
         case input:     return prev_state_input(container);
         case output:    return prev_state_output(container);
-        case range:     return prev_state_range(container);
+        case number:     return prev_state_number(container);
         }
 
         cout << "TestDataFileReader error: unknown state occured" << endl;
@@ -421,18 +532,22 @@ protected:
 public:
     TestDataFileReader() :
         prev_state(init), line_means(init),
-        cur_test_num(0), is_range_null(false),
+        cur_test_num(0), cur_range_start(0), is_range_null(false),
         is_file_end(false), is_file_end_unexpected(false),
+        is_accepted_regex(false), is_accepted_input(false),
+        is_accepted_range_start(false),
         syntax_regex("regex:"),
         syntax_regex_ex(syntax_regex + " {regex for test}"),
         syntax_get_cases("test_cases:"),
         syntax_get_case("case:"),
+        syntax_invalid_regex_syntax("invalid_syntax"),
         syntax_input("input:"),
         syntax_input_ex(syntax_input + " {your test string}"),
         syntax_output1("output:"),
         syntax_output2("range:"),
         syntax_range("{range_start_number} {range_end_number}"),
-        syntax_range_null("NULL\t(no range expected)") {
+        syntax_range_null("NULL\t(no range expected)"),
+        syntax_file_end("End of File") {
         init_cur_test(0);
     }
 };
