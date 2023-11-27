@@ -74,4 +74,4 @@ namespace CH12 {
 
 }
 
-int main() { CH12::RunExample::func2(); }
+//int main() { CH12::RunExample::func2(); }

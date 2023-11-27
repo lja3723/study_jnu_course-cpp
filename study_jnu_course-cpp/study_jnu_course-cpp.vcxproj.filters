@@ -117,6 +117,12 @@
     <ClCompile Include="ch12.cpp">
       <Filter>소스 파일\수업</Filter>
     </ClCompile>
+    <ClCompile Include="cpp19_practice_vector_remove-duplicates.cpp">
+      <Filter>소스 파일\과제</Filter>
+    </ClCompile>
+    <ClCompile Include="cpp20_practice_inheritance_queue.cpp">
+      <Filter>소스 파일\과제</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MySimpleRegex.h">
