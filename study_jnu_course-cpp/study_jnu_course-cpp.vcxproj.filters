@@ -114,6 +114,9 @@
     <ClCompile Include="cpp18_practice_stl.cpp">
       <Filter>소스 파일\과제</Filter>
     </ClCompile>
+    <ClCompile Include="ch12.cpp">
+      <Filter>소스 파일\수업</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MySimpleRegex.h">

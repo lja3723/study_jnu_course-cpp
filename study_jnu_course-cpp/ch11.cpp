@@ -145,7 +145,19 @@ namespace CH11 {
 	}
 
 	template<typename T> class VECTOR_iterator {
+		T* current;
+	public:
+		VECTOR_iterator(T* p = 0) : current(p) {}
 
+		T& operator*() { return *current; }
+		bool operator==(const VECTOR_iterator& v) {
+			return current == v.current;
+		}
+		bool operator!=(const VECTOR_iterator& v) {
+			return current != v.current;
+		}
+		VECTOR_iterator& operator++() { ++current; return *this; };
+		VECTOR_iterator& operator++(int) { current++; return *this; }
 	};
 
 	template <class T>
@@ -170,7 +182,7 @@ namespace CH11 {
 				mSize = s;
 
 				T* tmp = new T[mCapacity];
-				memcpy(tmp, mPtr, mCapacity);
+				memcpy(tmp, mPtr, sizeof(T) * mSize);
 				delete[] mPtr;
 				mPtr = tmp;
 			}
@@ -181,7 +193,7 @@ namespace CH11 {
 				resize(mSize + 1);
 
 			*(mPtr + mIndex++) = val;
-			mPtr[mIndex++] = val;
+			//mPtr[mIndex++] = val;
 		}
 		T& operator[](int idx) { return mPtr[idx]; }
 
@@ -448,6 +460,23 @@ namespace CH11 {
 
 
 		}
+		FN vector_ex2() {
+			vector<int> v;
+
+			//capacity는 아래처럼 변화함
+			//1 2 3 4 9 13 19 28 ....
+
+			v.push_back(1);
+			v.push_back(1);
+			v.push_back(1);
+			v.push_back(1);
+			v.push_back(1);
+
+			cout << v.size() << endl;
+			cout << v.capacity() << endl;
+
+
+		}		
 		FN my_vector_ex() {
 			VECTOR<int> v;
 
@@ -462,7 +491,23 @@ namespace CH11 {
 			cout << v[0] << endl;
 			cout << v[1] << endl;
 		}
+		FN my_vector_ex2() {
+			VECTOR<int> v;
 
+			v.push_back(30);
+			v.push_back(20);
+			v.push_back(10);
+
+			for (auto i : v) cout << i << " ";			
+			cout << endl;
+			v._sort();
+			int k = 0;
+			for (auto it = v.begin(); it != v.end(); ++it) {
+				cout << "k:" << k++ << "; ";
+				cout << *it << endl;
+			}
+
+		}
 
 
 	};
@@ -470,4 +515,4 @@ namespace CH11 {
 
 }
 
-//int main() { CH11::RunExample::my_vector_ex(); }
+//int main() { CH11::RunExample::my_vector_ex2(); }
