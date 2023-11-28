@@ -24,7 +24,7 @@ private:
 
 public:
     node(string name, bool isTerminal = false);
-    ~node();
+    virtual ~node();
 
     /*********  조회 함수  *********/
     const string& name() const;
@@ -68,7 +68,7 @@ public:
 
     node_ptr(node* pOrigin, Imatchable* ranged_string, node* pNode) 
         : m_origin(pOrigin), m_target(pNode), matcher(ranged_string) {}
-    ~node_ptr() {
+    virtual ~node_ptr() {
         if (matcher != nullptr)
             delete matcher; //동적 할당된 matcher를 반환한다.
     }
@@ -160,8 +160,7 @@ protected:
 
 public:
     node_ptr_inner_counter(
-        node* pOrigin, Imatchable* matcher, node* pNode, 
-        size_t low_bound = 0, size_t up_bound = node_ptr::INF) 
+        node* pOrigin, Imatchable* matcher, node* pNode, size_t low_bound = 0, size_t up_bound = node_ptr::INF) 
         : node_ptr(pOrigin, matcher, pNode), 
         lower_bound(low_bound), upper_bound(up_bound) 
     {

@@ -33,4 +33,4 @@ namespace cpp20 {
 	}
 }
 
-int main() { cpp20::main(); }
+//int main() { cpp20::main(); }

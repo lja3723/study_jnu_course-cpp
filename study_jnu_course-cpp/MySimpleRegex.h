@@ -74,7 +74,7 @@ public:
     compiled(const string& m_regex);
 
     //생성된 상태기계를 삭제한다. 메모리 반환 작업을 수행한다.
-    ~compiled();
+    virtual ~compiled();
 
     //입력된 정규표현식이 문법적으로 바른지 확인한다.
     bool is_valid();
@@ -174,6 +174,8 @@ class compiled::Imatchable {
 public:
     virtual bool test(char ch) = 0;
     virtual Imatchable* copy() = 0; //자기 자신 동적 복사
+
+
 };
 class compiled::matcher_single : public compiled::Imatchable {
 private: char ch;
@@ -183,24 +185,32 @@ public:
     virtual matcher_single* copy() override {
         return new matcher_single(ch);
     }
+
+
 };
 class compiled::matcher_dot : public compiled::Imatchable {
 public:
     virtual bool test(char _ch) override {
         return ('A' <= _ch && _ch <= 'Z') || ('a' <= _ch && _ch <= 'z');
     }
+
     virtual matcher_dot* copy() override {
         return new matcher_dot();
     }
+
+
 };
 class compiled::matcher_true : public compiled::Imatchable {
 public:
     virtual bool test(char _ch) override {
         return true;
     }
+
     virtual matcher_true* copy() override {
         return new matcher_true();
     }
+
+
 };
 
 

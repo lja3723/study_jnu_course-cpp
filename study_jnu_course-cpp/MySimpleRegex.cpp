@@ -106,10 +106,8 @@ private:
             // set links
             m_node[0]->add_link(new node_ptr_direct(m_node[0], new matcher_single('a'), m_node[1]));
             m_node[0]->add_link(new node_ptr_direct(m_node[0], new matcher_single('a'), m_node[4]));
-
             m_node[1]->add_link(new node_ptr_direct(m_node[1], new matcher_single('b'), m_node[2]));
             m_node[2]->add_link(new node_ptr_direct(m_node[2], new matcher_single('c'), m_node[3]));
-
             m_node[4]->add_link(new node_ptr_direct(m_node[4], new matcher_single('d'), m_node[5]));
             m_node[5]->add_link(new node_ptr_direct(m_node[5], new matcher_single('e'), m_node[3]));
 
@@ -137,31 +135,21 @@ private:
             m_node[11] = new node("s11", true);
 
             m_node[0]->add_link(new node_ptr_direct(m_node[0], new matcher_single('N'), m_node[1]));
-
             m_node[1]->add_link(new node_ptr_direct(m_node[1], new matcher_single('K'), m_node[5]));
             m_node[1]->add_link(new node_ptr_direct(m_node[1], new matcher_single('K'), m_node[2]));
             m_node[1]->add_link(new node_ptr_direct(m_node[1], new matcher_single('K'), m_node[8]));
-
             m_node[2]->add_link(new node_ptr_direct(m_node[2], new matcher_single('a'), m_node[3]));
             m_node[2]->add_link(new node_ptr_direct(m_node[2], new matcher_single('A'), m_node[6]));
-
             m_node[3]->add_link(new node_ptr_direct(m_node[3], new matcher_single('b'), m_node[4]));
-
             m_node[4]->add_link(new node_ptr_direct(m_node[4], new matcher_single('c'), m_node[2]));
             m_node[4]->add_link(new node_ptr_direct(m_node[4], new matcher_single('c'), m_node[5]));
-
             m_node[5]->add_link(new node_ptr_direct(m_node[5], new matcher_single('N'), m_node[10]));
-
             m_node[6]->add_link(new node_ptr_direct(m_node[6], new matcher_single('B'), m_node[7]));
-
             m_node[7]->add_link(new node_ptr_direct(m_node[7], new matcher_single('C'), m_node[2]));
             m_node[7]->add_link(new node_ptr_direct(m_node[7], new matcher_single('C'), m_node[5]));
-
             m_node[8]->add_link(new node_ptr_direct(m_node[8], new matcher_single('O'), m_node[9]));
-
             m_node[9]->add_link(new node_ptr_direct(m_node[9], new matcher_single('P'), m_node[8]));
             m_node[9]->add_link(new node_ptr_direct(m_node[9], new matcher_single('P'), m_node[10]));
-
             m_node[10]->add_link(new node_ptr_direct(m_node[10], new matcher_single('Q'), m_node[11]));
 
             add_to_epsilon(m_node[0]);
@@ -176,7 +164,6 @@ private:
             m_node[2] = new node("s2", true);
             m_node[3] = new node("s3");
             m_node[4] = new node("s4");
-
 
             m_node[0]->add_link(new node_ptr_direct(m_node[0], new matcher_single('T'), m_node[1]));
             m_node[1]->add_link(new node_ptr_direct(m_node[1], new matcher_single('n'), m_node[2]));
