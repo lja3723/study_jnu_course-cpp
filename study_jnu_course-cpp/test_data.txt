@@ -625,7 +625,15 @@ regex: Z|Ya*.*A|B
 
 #Test No. 19
 regex: t*z+A|B+x
-	INVALID_SYNTAX
+	case: #1
+		input: tzAx
+		output: 0 4
+	case: #2
+		input: zzzBBBBx
+		output: 0 8
+	case: #3
+		input: zzzAAx
+		output: NULL
 	
 
 #Test No. 20
@@ -653,18 +661,57 @@ regex: ab|cr*d+e.*z
 
 #Test No. 21
 regex: A|B{3,6}
-	invalid_syntax
+	case: #1
+		input: AAAAA
+		output: NULL
+	case: #2
+		input: BBBBB
+		output: 0 5
+	case: #3
+		input: BBAABBBBABBBA
+		output: 
+			0 2
+			2 3
+			3 4
+			4 8
+			8 9
+			9 12
+			12 13
 
 
 #Test No. 22
 regex: A|B+
-	invalid_syntax
+	case: #1
+		input: AAA
+		output: 
+			0 1
+			1 2
+			2 3
+	case: #2
+		input: BBBBABB
+		output:
+			0 4
+			4 5
+			5 7
 
 
 	
 #Test No. 23
 regex: A*|B
-	invalid_syntax
+	case: #1
+		input: T
+		output: 
+			0 0
+			1 1
+	case: #2
+		input: BBB
+		output:
+			0 1
+			1 1
+			1 2
+			2 2
+			2 3
+			3 3
 
 
 #Test No. 24

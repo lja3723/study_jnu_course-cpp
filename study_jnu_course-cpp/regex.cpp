@@ -34,7 +34,7 @@ namespace assignment1 {
             //.enable({17})
             .run(); //run unit test
 
-        cout << "최종 컴파일 시간: 26일(일) 오후 3:04" << endl;
+        cout << "최종 컴파일 시간: 04일(월) 오전 12:32" << endl;
 
 
         return 0;
@@ -51,4 +51,4 @@ namespace assignment1 {
     }
 }
 
-//int main() { assignment1::main(); }
+int main() { assignment1::main(); }

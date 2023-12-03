@@ -362,4 +362,4 @@ namespace CH12_2 {
 	};
 }
 
-int main() { CH12_2::RunExample::virtual_destructor_ex2(); }
+//int main() { CH12_2::RunExample::virtual_destructor_ex2(); }
