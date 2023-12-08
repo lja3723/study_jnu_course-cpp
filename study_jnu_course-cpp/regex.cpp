@@ -25,16 +25,16 @@ namespace assignment1 {
             //.enable_all()
             //.more_details_all()
             .less_details_all()
-            //.more_details({19})
+            //.more_details({21, 22, 23})
             
         //Additional Settings
             //.less_details({ 1, 2 }) //set less details
-            //.disable({ 13 })      //desable some testcases
+            //.disable({ 20 })      //desable some testcases
             //.disable_all()
-            //.enable({17})
+            //.enable({52})
             .run(); //run unit test
 
-        cout << "최종 컴파일 시간: 04일(월) 오전 12:32" << endl;
+        cout << "최종 컴파일 시간: " << __TIMESTAMP__ << endl;
 
 
         return 0;
@@ -49,6 +49,21 @@ namespace assignment1 {
             cout << result << endl;
         }
     }
+
+    void test1() {
+        vector<int> v = { 3, 6, 4, 3, 0, 7, 0, 1, 2 };
+
+        cout << "size: " << v.size() << endl;
+        for (auto& k : v) cout << k << " ";
+        cout << endl;
+
+        v.erase(remove_if(v.begin(), v.end(), [](int& e) { return e == 110; }), v.end());
+
+        cout << "size: " << v.size() << endl;
+        for (auto& k : v) cout << k << " ";
+        cout << endl;
+    }
+
 }
 
 int main() { assignment1::main(); }

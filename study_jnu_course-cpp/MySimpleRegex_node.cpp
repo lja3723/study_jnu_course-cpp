@@ -1,5 +1,6 @@
 #include "MySimpleRegex_node.h"
 #include <string>
+#include <algorithm>
 
 namespace assignment1 {
 
@@ -52,8 +53,39 @@ const vector<compiled::node_ptr*>& compiled::node::reverse_ref() const {
 
 /**************  변경 함수  **************/
 void compiled::node::add_link(node_ptr* _next) {
+    if (_next == nullptr) return;
+
+    //_next가 이미 등록되어 있으면 등록 X
+    if (m_next.end() != find_if(m_next.begin(), m_next.end(),
+        [_next](node_ptr* elem) { return elem->equals(_next); } )) {
+        delete _next;
+        return;
+    }
+
     m_next.push_back(_next);
     _next->m_target->m_reverse_ref.push_back(_next);
+
+
+}
+void compiled::node::delete_link(node* _target, char _ch) {
+    _target->m_reverse_ref.erase(remove_if(
+        _target->m_reverse_ref.begin(), _target->m_reverse_ref.end(),
+        [this, _ch](node_ptr* to_delete) {
+            bool pred = to_delete->origin() == this;
+            if (_ch != '\0') pred &= to_delete->test(_ch);
+            return pred;
+        }),
+        _target->m_reverse_ref.end());
+
+    m_next.erase(remove_if(
+        m_next.begin(), m_next.end(),
+        [_target, _ch](node_ptr* to_delete) { 
+            bool pred = to_delete->is_ref_equal(_target);
+            if (_ch != '\0') pred &= to_delete->test(_ch);
+            if (pred) delete to_delete;
+            return pred; 
+        }),
+        m_next.end());
 
 
 }

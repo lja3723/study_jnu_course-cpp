@@ -172,16 +172,28 @@ private:
 using compiled = MySimpleRegex::compiled;
 class compiled::Imatchable {
 public:
+    virtual bool operator==(const Imatchable* rhs) = 0;
     virtual bool test(char ch) = 0;
     virtual Imatchable* copy() = 0; //자기 자신 동적 복사
-
 
 };
 class compiled::matcher_single : public compiled::Imatchable {
 private: char ch;
 public:
     matcher_single(char ch) : ch(ch) {}
-    virtual bool test(char _ch) override { return ch == _ch; }
+
+    virtual bool operator==(const Imatchable* rhs) override {
+        if (this == rhs) return true;
+        if (typeid(rhs) != typeid(matcher_single)) return false;
+        const matcher_single* ms = dynamic_cast<const matcher_single*>(rhs);
+        if (ms->ch != ch) return false;
+        return true;
+    }
+    
+    virtual bool test(char _ch) override { 
+        return ch == _ch; 
+    }
+    
     virtual matcher_single* copy() override {
         return new matcher_single(ch);
     }
@@ -190,6 +202,11 @@ public:
 };
 class compiled::matcher_dot : public compiled::Imatchable {
 public:
+    virtual bool operator==(const Imatchable* rhs) override {
+        if (this == rhs) return true;
+        return typeid(rhs) == typeid(matcher_dot);
+    }
+
     virtual bool test(char _ch) override {
         return ('A' <= _ch && _ch <= 'Z') || ('a' <= _ch && _ch <= 'z');
     }
@@ -202,6 +219,11 @@ public:
 };
 class compiled::matcher_true : public compiled::Imatchable {
 public:
+    virtual bool operator==(const Imatchable* rhs) override {
+        if (this == rhs) return true;
+        return typeid(rhs) == typeid(matcher_true);
+    }
+
     virtual bool test(char _ch) override {
         return true;
     }

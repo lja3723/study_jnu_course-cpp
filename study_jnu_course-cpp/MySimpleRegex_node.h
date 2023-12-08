@@ -35,6 +35,7 @@ public:
 
     /*********  변경 함수  *********/
     void add_link(node_ptr* _next); //본 노드가 가리키는 노드를 추가한다.
+    void delete_link(node* _target, char _ch = '\0'); //타겟을 가리키는 링크를 삭제한다.
     void active(size_t state_istart); //노드를 활성화 상태로 만든다.
     void clear_flags(); //노드 상태와 관련된 값과 플래그들을 모두 클리어한다.
     void set_terminal(bool is_terminal);
@@ -87,6 +88,25 @@ public:
     { 
         if (matcher->test(ch)) //요구되는 문자와 일치되는 경우에만 전이 행동을 취한다.
             transition_action(next_active, state_istart);
+    }
+
+
+
+    /*********  조회 함수  *********/
+public:
+    bool equals(const node_ptr* rhs) {
+        if (this == rhs) return true;
+
+        bool pred = m_origin == rhs->m_origin;
+        pred &= m_target == rhs->m_target;
+        pred &= matcher  == rhs->matcher;
+
+        return pred;
+    }
+
+    //matcher에 문자를 넣은 결과를 반환한다.
+    bool test(char _ch) const {
+        return matcher->test(_ch);
     }
 
     //타겟을 하는 주체 노드를 가져온다.

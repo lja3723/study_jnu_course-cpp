@@ -20,6 +20,12 @@ ostream& operator<<(ostream& os, const ranged_string& rs) {
 
 /******   state machine 생성기 클래스   ******/
 class compiled::state_machine_creator {
+    enum state_and {  //| 연산자 처리 위한 열거형
+        not_proc, //|를 안 만남
+        before_proc, //|를 만난 직후
+        after_proc //| 오른쪽 피연산자 처리된 직후
+    };
+
 public:
     state_machine_creator(vector<node*>& _node, node*& _epsilon, node*& _terminal) :
         m_node(_node), 
@@ -41,28 +47,41 @@ public:
 
         //사전 처리
         bool syntax_valid = true;
+        state_and state = not_proc;
         add_node_back();
         add_to_epsilon(m_node.back());
 
         //정규표현식을 한 문자씩 읽으면서 작업을 수행한다.
         for (size_t i = 0; i < regex.size(); i++) {
-            //asterisk 문법과 일치하면 상태 머신 연결작업 수행 후 i를 증가시킨다.
-            if (check_asterisk(syntax_valid, i)) continue;
+
+            //(K* 체크) asterisk 문법과 일치하면 상태 머신 연결작업 수행 후 i를 증가시킨다.
+            if (check_asterisk(syntax_valid, state, i)) continue;
             //일치하지 않으면서 문법도 틀리면 종료한다.
             if (!syntax_valid) break;
 
-            if (check_plus(syntax_valid, i)) continue;
+            //K+ 체크
+            if (check_plus(syntax_valid, state, i)) continue;
             if (!syntax_valid) break;
 
-            if (check_range(syntax_valid, i)) continue;
+            //K{m,n} 체크
+            if (check_range(syntax_valid, state, i)) continue;
             if (!syntax_valid) break;
 
-            if (check_and(syntax_valid, i)) continue;
+            //K 체크
+            if (check_char(syntax_valid, state, i)) continue;
             if (!syntax_valid) break;
 
-            if (check_char(syntax_valid, i)) continue;
+            //| 체크
+            if (check_and(syntax_valid, state, i)) continue;
             if (!syntax_valid) break;
+
+            syntax_valid = false;
+            break;
         }
+
+        //and 연산으로 끝났음
+        if (state == before_proc)
+            syntax_valid = false;
 
         if (!syntax_valid) clear(); //잘못 생성된 상태머신을 초기화한다.       
         else {
@@ -211,6 +230,15 @@ private:
 
 
     }
+    //to_pass 노드를 가리켰던 모든 노드가 target도 가리키게 링크를 추가한다.
+    void add_passing_link(node* to_pass, node* target) {
+        for (node_ptr* rev_ptr : to_pass->reverse_ref()) {
+            node* rev = const_cast<node*>(rev_ptr->origin());
+            //자기자신 참조가 아닌 경우에만 연결하기
+            if (!rev_ptr->is_ref_equal(rev_ptr->origin()))
+                rev->add_link(rev_ptr->copy(target));
+        }
+    }
     //노드 컨테이너를 초기화한다.
     void clear() {
         for (int i = 0; i < m_node.size(); i++)
@@ -234,10 +262,23 @@ private:
 
 
     }
+    //상황에 맞는 tail을 반환한다.
+    node* get_tail(state_and& state) {
+        //tail 참조 얻고 뒷부분 노드 추가
+        if (state == not_proc)
+            add_node_back();
+        else if (state == before_proc)
+            state = after_proc;
+        else {
+            add_node_back();
+            state = not_proc;
+        }
 
+        return m_node[m_node.size() - 2];
+    }
 
     // * 연산자 여부 체크한다.
-    bool check_asterisk(bool& syntax, size_t& idx) {
+    bool check_asterisk(bool& syntax, state_and& state, size_t& idx) {
         //범위 & 연산 대상인지 확인
         if (!(idx + 1 < regex.size()) || regex[idx + 1] != '*')
             return false;
@@ -255,21 +296,17 @@ private:
             return false;
         }
 
-        //tail 참조 얻고 뒷부분 노드 추가
-        node* tail = m_node.back();
-        add_node_back();
+        //tail 얻기
+        node* tail = get_tail(state);
 
         //다음 노드 가리키는 링크 추가
         tail->add_link(new node_ptr_direct(tail, matcher, m_node.back()));
 
-        //이전 노드에서 다음 노드로 바로 가는 링크 추가
-        for (node_ptr* rev_ptr : tail->reverse_ref()) {
-            node* rev = const_cast<node*>(rev_ptr->origin());
-            rev->add_link(rev_ptr->copy(m_node.back()));
-        }
-
         //자기 자신 가리키는 노드 추가        
         tail->add_link(new node_ptr_direct(tail, matcher->copy(), tail));
+
+        //이전 노드에서 다음 노드로 바로 가는 링크 추가
+        add_passing_link(tail, m_node.back());
 
         idx++;
         return true;
@@ -277,7 +314,7 @@ private:
 
     }
     // + 연산자 여부 체크한다.
-    bool check_plus(bool& syntax, size_t& idx) {
+    bool check_plus(bool& syntax, state_and& state, size_t& idx) {
         //범위 & 연산 대상인지 확인
         if (!(idx + 1 < regex.size()) || regex[idx + 1] != '+')
             return false;
@@ -295,9 +332,8 @@ private:
             return false;
         }
 
-        //tail 참조 얻고 뒷부분 노드 추가
-        node* tail = m_node.back();
-        add_node_back();
+        //tail 얻기
+        node* tail = get_tail(state);
 
         //다음 노드 가리키는 링크 추가
         tail->add_link(new node_ptr_direct(tail, matcher, m_node.back()));
@@ -311,16 +347,16 @@ private:
 
     }
     // {} 연산자 여부 체크한다.
-    bool check_range(bool& syntax, size_t& idx) {
+    bool check_range(bool& syntax, state_and& state, size_t& idx) {
+        //범위 표현식인지 체크
+        if (!(idx + 1 < regex.size()) || regex[idx + 1] != '{')
+            return false;
+
         //연산 적용 가능한지 체크
         if (!is_char(regex[idx])) {
             syntax = false;
             return false;
         }
-
-        //범위 표현식인지 체크
-        if (!(idx + 1 < regex.size()) || regex[idx + 1] != '{')
-            return false;
 
         //범위식 파싱하기
         size_t range_end = -1;
@@ -343,7 +379,18 @@ private:
             }
         }
 
-        if (range_end == -1 || split == -1) {
+        //첫번째 범위와 두번째 범위의 문자열 길이 계산
+        size_t arg1_size = split - idx - 2;
+        size_t arg2_size = range_end - split - 1;
+
+        //4가지 조건 중 하나라도 참이면 문법 에러임
+        bool pred = false;
+        pred |= range_end == -1;
+        pred |= split == -1;
+        pred |= arg1_size == 0;
+        pred |= arg2_size == 0;
+
+        if (pred) {
             syntax = false;
             return false;
         }
@@ -363,74 +410,29 @@ private:
             return false;
         }
 
-        //tail 참조 얻고 뒷부분 노드 추가
-        node* tail = m_node.back();
-        add_node_back();
+        //tail 얻기
+        node* tail = get_tail(state);
 
         //다음 노드 가리키는 링크 추가
         tail->add_link(new node_ptr_inner_counter(tail, matcher, m_node.back(), istart, iend));
 
-        //TODO: k{0,3} 같은 케이스를 고려한 코드인데 잘 동작할지 모르겠음
-        //이전 노드에서 다음 노드로 바로 가는 링크 추가
-        if (istart == 0) {
-            for (node_ptr* rev_ptr : tail->reverse_ref()) {
-                node* rev = const_cast<node*>(rev_ptr->origin());
-                rev->add_link(rev_ptr->copy(m_node.back()));
-            }
-        }
 
         //자기 자신 가리키는 노드 추가        
         tail->add_link(new node_ptr_direct(tail, matcher->copy(), tail));
+
+        //k{0,3} 같은 케이스를 고려한다.
+        //이전 노드에서 다음 노드로 바로 가는 링크 추가
+        if (istart == 0) add_passing_link(tail, m_node.back());
 
         idx = range_end;
         return true;
 
 
     }
-    // | 연산자 여부 체크한다.
-    bool check_and(bool& syntax, size_t& idx) {
-        //범위 & 연산 대상인지 확인
-        if (!(idx + 1 < regex.size()) || regex[idx + 1] != '|')
-            return false;
-
-        // | 연산자로 끝나는 경우
-        if (idx + 2 >= regex.size()) {
-            syntax = false;
-            return false;
-        }
-
-        //연산 가능 여부 확인
-        if (!is_char(regex[idx]) || !is_char(regex[idx + 2])) {
-            syntax = false;
-            return false;
-        }
-
-        //matcher 얻기
-        Imatchable* matcher1 = get_matcher(regex[idx]);
-        Imatchable* matcher2 = get_matcher(regex[idx + 2]);
-        if (matcher1 == nullptr || matcher2 == nullptr) {
-            syntax = false;
-            return false;
-        }
-
-        //tail 참조 얻고 노드 추가
-        node* tail = m_node.back();
-        add_node_back();
-
-        tail->add_link(new node_ptr_direct(tail, matcher1, m_node.back()));
-        tail->add_link(new node_ptr_direct(tail, matcher2, m_node.back()));
-
-        idx += 2;
-        return true;
-
-
-    }
     //일반 문자로 이루어졌는지 체크한다.
-    bool check_char(bool& syntax, size_t& idx) {
-        if (!is_char(regex[idx])) {
-            syntax = false;
+    bool check_char(bool& syntax, state_and& state, size_t& idx) {
+        if (!is_char(regex[idx]))
             return false;
-        }
 
         Imatchable* matcher = get_matcher(regex[idx]);
         if (matcher == nullptr) {
@@ -438,15 +440,47 @@ private:
             return false;
         }
 
-        node* tail = m_node.back();
-        add_node_back();
+        node* tail = get_tail(state);
         tail->add_link(new node_ptr_direct(tail, matcher, m_node.back()));
 
         return true;
 
 
     }
+    // | 연산자 여부 체크한다.
+    bool check_and(bool& syntax, state_and& state, size_t& idx) {
+        //범위 & 연산 대상인지 확인
+        if (regex[idx] != '|')
+            return false;
 
+        // a||b 나 a|b|c 같은 경우 거르기
+        if (state != not_proc) {
+            syntax = false;
+            return false;
+        }
+
+        // |b 같은 경우 거르기
+        if (m_node.size() < 2) {
+            syntax = false;
+            return false;
+        }
+
+        //새 노드를 맨 뒷 원소 바로 앞에 추가한다.
+        add_node_back();
+        node* tmp = m_node[m_node.size() - 2];
+        m_node[m_node.size() - 2] = m_node[m_node.size() - 1];
+        m_node[m_node.size() - 1] = tmp;
+
+        //기존 맨 뒤의 바로 앞 원소를 가리키던 연결을 새로 추가된 노드에도 연결해준다.
+        add_passing_link(m_node[m_node.size() - 3], m_node[m_node.size() - 2]);
+
+        state = before_proc;
+        return true;
+
+
+    }
+
+    
 
 }; // end of class: state_machine_creator
 
@@ -594,8 +628,8 @@ void compiled::active_transition(
 
         next_actives.pop_back();
     }
-
-
+ 
+   
 }
 void compiled::check_terminal_active(
     map<size_t, ranged_string*>& found, const string& src, size_t idx) 
