@@ -24,14 +24,13 @@ namespace assignment1 {
             //.set_summary_more_details()
             //.enable_all()
             //.more_details_all()
-            .less_details_all()
-            //.more_details({21, 22, 23})
             
         //Additional Settings
             //.less_details({ 1, 2 }) //set less details
             //.disable({ 20 })      //desable some testcases
             //.disable_all()
-            //.enable({52})
+            //.enable({66, 67})
+            .less_details_all()
             .run(); //run unit test
 
         cout << "최종 컴파일 시간: " << __TIMESTAMP__ << endl;
@@ -40,30 +39,6 @@ namespace assignment1 {
         return 0;
     }
 
-    void test() {
-        cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
-        string test_str = "wersAABBBtfdAdifuBBtitaAtBBABTts";
-        cout << test_str << endl;
-        for (int i = 0; i <= test_str.size() + 1; i++) {
-            auto result = MySimpleRegex::match("A*B*", test_str, i);
-            cout << result << endl;
-        }
-    }
-
-    void test1() {
-        vector<int> v = { 3, 6, 4, 3, 0, 7, 0, 1, 2 };
-
-        cout << "size: " << v.size() << endl;
-        for (auto& k : v) cout << k << " ";
-        cout << endl;
-
-        v.erase(remove_if(v.begin(), v.end(), [](int& e) { return e == 110; }), v.end());
-
-        cout << "size: " << v.size() << endl;
-        for (auto& k : v) cout << k << " ";
-        cout << endl;
-    }
-
 }
 
-int main() { assignment1::main(); }
+//int main() { assignment1::main(); }

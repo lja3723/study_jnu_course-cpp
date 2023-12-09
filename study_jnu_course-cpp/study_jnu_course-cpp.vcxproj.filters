@@ -123,6 +123,9 @@
     <ClCompile Include="cpp20_practice_inheritance_queue.cpp">
       <Filter>소스 파일\과제</Filter>
     </ClCompile>
+    <ClCompile Include="cpp21_practice_menusystem.cpp">
+      <Filter>소스 파일\과제</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MySimpleRegex.h">

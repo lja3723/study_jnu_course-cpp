@@ -79,7 +79,7 @@ public:
             break;
         }
 
-        //and 연산으로 끝났음
+        //and 연산으로 끝난 경우
         if (state == before_proc)
             syntax_valid = false;
 
@@ -238,6 +238,8 @@ private:
             if (!rev_ptr->is_ref_equal(rev_ptr->origin()))
                 rev->add_link(rev_ptr->copy(target));
         }
+
+
     }
     //노드 컨테이너를 초기화한다.
     void clear() {
@@ -275,7 +277,10 @@ private:
         }
 
         return m_node[m_node.size() - 2];
+
+
     }
+
 
     // * 연산자 여부 체크한다.
     bool check_asterisk(bool& syntax, state_and& state, size_t& idx) {
@@ -396,8 +401,8 @@ private:
         }
 
         //범위를 계산한다.
-        size_t istart = size_t(stoi(regex.substr(idx + 2, split - idx - 2)));
-        size_t iend = size_t(stoi(regex.substr(split + 1, range_end - split - 1)));
+        size_t istart = size_t(stoi(regex.substr(idx + 2, arg1_size)));
+        size_t iend = size_t(stoi(regex.substr(split + 1, arg2_size)));
         if (istart > iend) {
             syntax = false;
             return false;
@@ -415,7 +420,6 @@ private:
 
         //다음 노드 가리키는 링크 추가
         tail->add_link(new node_ptr_inner_counter(tail, matcher, m_node.back(), istart, iend));
-
 
         //자기 자신 가리키는 노드 추가        
         tail->add_link(new node_ptr_direct(tail, matcher->copy(), tail));
@@ -541,15 +545,21 @@ ranged_string compiled::match(const string& source, size_t index_start) {
 vector<ranged_string> compiled::match_all(const string& source) {
     vector<ranged_string> ret;
     size_t found_idx = 0;
+
     while (found_idx <= source.size()) {
         ranged_string ans = match(source, found_idx);
-        if (!ans.is_valid) break;
+        if (!ans.is_valid) {
+            found_idx++;
+            continue;
+        }
 
         found_idx = ans.end;
         if (ans.start == ans.end) found_idx++;
         ret.push_back(ans);
     }
     return ret;
+
+
 }
 
 

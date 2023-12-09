@@ -150,16 +150,22 @@ MyUnitTest& MyUnitTest::set_summary_more_details() {
 MyUnitTest& MyUnitTest::set_summary_less_details() {
     details_summary_mode = false;
     return *this;
+
+
 }
 
 MyUnitTest& MyUnitTest::more_details(int test) { return more_details({ test }); }
 MyUnitTest& MyUnitTest::more_details(initializer_list<int> tests_list) {
-    for (int test_num : tests_list) tests[test_num].details = true;
+    if (m_is_file_open && m_no_syntax_error) 
+        for (int test_num : tests_list) 
+            tests[test_num].details = true;
     return *this;
 }
 MyUnitTest& MyUnitTest::less_details(int test) { return less_details({ test }); }
 MyUnitTest& MyUnitTest::less_details(initializer_list<int> tests_list) {
-    for (int test_num : tests_list) tests[test_num].details = false;
+    if (m_is_file_open && m_no_syntax_error)
+        for (int test_num : tests_list) 
+            tests[test_num].details = false;
     return *this;
 
 
@@ -167,32 +173,39 @@ MyUnitTest& MyUnitTest::less_details(initializer_list<int> tests_list) {
 
 MyUnitTest& MyUnitTest::enable(int test) { return enable({ test }); }
 MyUnitTest& MyUnitTest::enable(initializer_list<int> tests_list) {
-    cout << "initializer_list" << endl;
-    for (int test_num : tests_list) tests[test_num].enabled = true;
+    if (m_is_file_open && m_no_syntax_error)
+        for (int test_num : tests_list) 
+            tests[test_num].enabled = true;
     return *this;
 }
 MyUnitTest& MyUnitTest::disable(int test) { return disable({ test }); }
 MyUnitTest& MyUnitTest::disable(initializer_list<int> tests_list) {
-    for (int test_num : tests_list) tests[test_num].enabled = false;
+    if (m_is_file_open && m_no_syntax_error)
+        for (int test_num : tests_list) 
+            tests[test_num].enabled = false;
     return *this;
 
 
 }
 
 MyUnitTest& MyUnitTest::more_details_all() {
-    for (Test& t : tests) t.details = true;
+    if (m_is_file_open && m_no_syntax_error)
+        for (Test& t : tests) t.details = true;
     return *this;
 }
 MyUnitTest& MyUnitTest::less_details_all() {
-    for (Test& t : tests) t.details = false;
+    if (m_is_file_open && m_no_syntax_error)
+        for (Test& t : tests) t.details = false;
     return *this;
 }
 MyUnitTest& MyUnitTest::enable_all() {
-    for (Test& t : tests) t.enabled = true;
+    if (m_is_file_open && m_no_syntax_error)
+        for (Test& t : tests) t.enabled = true;
     return *this;
 }
 MyUnitTest& MyUnitTest::disable_all() {
-    for (Test& t : tests) t.enabled = false;
+    if (m_is_file_open && m_no_syntax_error)
+        for (Test& t : tests) t.enabled = false;
     return *this;
 }
 

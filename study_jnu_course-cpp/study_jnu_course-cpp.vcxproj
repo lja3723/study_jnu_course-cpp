@@ -137,6 +137,7 @@
     <ClCompile Include="cpp18_practice_stl.cpp" />
     <ClCompile Include="cpp19_practice_vector_remove-duplicates.cpp" />
     <ClCompile Include="cpp20_practice_inheritance_queue.cpp" />
+    <ClCompile Include="cpp21_practice_menusystem.cpp" />
     <ClCompile Include="DataReader.h" />
     <ClCompile Include="MySimpleRegex.cpp" />
     <ClCompile Include="MySimpleRegex_node.cpp" />
