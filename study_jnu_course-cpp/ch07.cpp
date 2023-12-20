@@ -3,6 +3,17 @@
 using namespace std;
 #define FN static void
 
+
+
+class Add {
+public:
+	int x;
+	Add(int a) : x(a) { }
+	Add operator+(int k) {
+		return Add(x + k);
+	}
+};
+
 class CH07 {
 	struct Big {
 		int a;
@@ -101,6 +112,55 @@ public:
 		cout << (&i - &i) << endl << (&j - &i) << endl << (&k - &i) << endl;
 	}
 	/////// fill here ///////
+	FN stack_frame_ex() {
+		int i = 10;
+		int j = 20;
+		int k = 30;
+		int* ptr = &i;
+
+		int x = 40;
+		int y = 50;
+		int z = 60;
+		int* qtr = &i;
+
+		cout << &i << endl;
+		cout << &j << endl;
+		cout << &k << endl;
+		cout << &x << endl;
+		cout << &y << endl;
+		cout << &z << endl;
+	}
+	FN stack_frame_ex2() {
+		int a = 1;
+		int b = 2;
+		int c = 3;
+		cout << &a << endl;
+		cout << &b << endl;
+		cout << &c << endl;
+
+		cout << &a << endl;
+		cout << (&a + 1) << endl;
+	}
+	FN stack_frame_ex3() {
+		long long l = 0x8899aabbccddeeff;
+		char* ptr = (char*)&l;
+
+		cout << hex;
+		cout << (void*)ptr << endl;
+		cout << (void*)(ptr + 4) << endl;
+		cout << ((int*)(ptr + 3)) << endl;
+	}
+	FN stack_frame_ex4() {
+		long long l = 0x8899aabbccddeeff;
+		int* ptr = (int*)&l;
+
+		cout << hex;
+		cout << l << endl;
+		cout << ptr[0] << endl;
+		cout << ptr[1] << endl;
+		cout << *((short*)((char*)ptr + 5)) << endl;
+	}
+	
 	FN pointer_usage_array_deliver() {
 		int num[] = { 10, 20, 30, 40 };
 		int i = 50;
@@ -213,5 +273,14 @@ public:
 		int arr[4] = { 10, 20, 30, 40 };
 		no_array_decay_with_ref(arr);
 	}
+	
+	FN test() {
+		Add a(10);
+		a = a.operator+(20) + 30;
+		cout << a.x << endl;
+	}
 
 };
+
+
+//int main() { CH07::test(); }

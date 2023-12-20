@@ -13,7 +13,7 @@ namespace cpp21 {
 	//1. Build your own menu!
 
 	#define clrscr() system("cls");
-	#define getkey() getch();
+	#define getkey() _getch();
 
 
 	class AbstractMenu {
@@ -292,4 +292,4 @@ namespace cpp21 {
 	}
 }
 
-int main() { cpp21::main(); }
+//int main() { cpp21::main(); }

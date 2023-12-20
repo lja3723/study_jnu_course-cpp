@@ -150,6 +150,7 @@ namespace CH12 {
 namespace CH12_2 {
 #define FN static void
 
+
 	class Animal {
 	public:
 		virtual/*동적 바인딩이 가능하게 하는 키워드*/
@@ -198,8 +199,6 @@ namespace CH12_2 {
 		a->Sleep();
 	}
 
-
-
 	class PPP {
 		void* vptr; //8 (virtual 추가시 생성됨)
 
@@ -220,8 +219,6 @@ namespace CH12_2 {
 			cout << "ccc: " << a << endl;
 		}
 	};
-
-
 
 	void fooo(Animal* p) {
 		const type_info& t1 = typeid(*p);
@@ -255,12 +252,112 @@ namespace CH12_2 {
 			cout << "My color has been changed!" << endl;
 		}
 	}
+}
 
+//for: identifier_extends_ex
+namespace CH12_2 {
+	class PP {
+	private: int i;
+	protected: int j;
+	public: int k;
+		  PP(int a, int b, int c) : i(a), j(b), k(c) {}
+		  void print() {
+			  cout << i << endl;
+			  cout << j << endl;
+			  cout << k << endl;
+		  }
+	};
 
+	class PublicPP : public PP {
+	public:
+		PublicPP(int a, int b, int c) : PP(a, b, c) {}
+		void qrint() {
+			//cout << i << endl;
+			cout << j << endl;
+			cout << k << endl;
+		}
+	};
 
+	class ProtectedPP : protected PP {
+	public:
+		ProtectedPP(int a, int b, int c) : PP(a, b, c) {}
+		void qrint() {
+			//cout << i << endl;
+			cout << j << endl;
+			cout << k << endl;
+		}
+	};
 
+	class PrivatePP : private PP {
+	public:
+		PrivatePP(int a, int b, int c) : PP(a, b, c) {}
+		void qrint() {
+			//cout << i << endl;
+			cout << j << endl;
+			cout << k << endl;
+		}
+	};
+
+	class ChildProtectedPP : public ProtectedPP {
+	public:
+		ChildProtectedPP(int a, int b, int c) : ProtectedPP(a, b, c) {}
+		void rrint() {
+			//cout << i << endl;
+			cout << j << endl;
+			cout << k << endl;
+		}
+	};
+
+	class ChildPrivatePP : public PrivatePP {
+	public:
+		ChildPrivatePP(int a, int b, int c) : PrivatePP(a, b, c) {}
+		void rrint() {
+			//cout << i << endl;
+			//cout << j << endl;
+			//cout << k << endl;
+		}
+	};
+}
+
+namespace CH12_2 {
 	class RunExample {
 	public:
+		FN identifier_extends_ex() {
+			PublicPP public_obj(1, 2, 3);
+			//cout << public_obj.i << endl;
+			//cout << public_obj.j << endl;
+			cout << public_obj.k << endl;
+			public_obj.print();
+			public_obj.qrint();
+
+			ProtectedPP protected_obj(1, 2, 3);
+			//cout << protected_obj.i << endl;
+			//cout << protected_obj.j << endl;
+			//cout << protected_obj.k << endl;
+			//protected_obj.print();
+			protected_obj.qrint();
+
+			PrivatePP private_obj(1, 2, 3);
+			//cout << private_obj.i << endl;
+			//cout << private_obj.j << endl;
+			//cout << private_obj.k << endl;
+			//private_obj.print();
+			private_obj.qrint();
+
+			ChildProtectedPP child_protected_obj(1, 2, 3);
+			//cout << child_protected_obj.i << endl;
+			//cout << child_protected_obj.j << endl;
+			//cout << child_protected_obj.k << endl;
+			//child_protected_obj.print();
+			child_protected_obj.qrint();
+
+			ChildPrivatePP child_private_obj(1, 2, 3);
+			//cout << child_private_obj.i << endl;
+			//cout << child_private_obj.j << endl;
+			//cout << child_private_obj.k << endl;
+			//child_private_obj.print();
+			child_private_obj.qrint();
+		}
 		FN virtual_ex() {
 			list<Dog*> s1; //store Dog class only
 			list<Animal*> s2; //stor all of animals
@@ -286,11 +383,11 @@ namespace CH12_2 {
 			
 		}
 		FN virtual_ex_2() {
-			PPP* p = new CCC;
-			PPP* p1 = new PPP;
+			PPP* pp = new PPP;
+			PPP* pcc = new CCC;
 
-			p1->func();
-			p->func(); //실행 결과는?
+			pp->func();
+			pcc->func(); //실행 결과는?
 
 			//ccc: 10이 됨
 			//이유
@@ -362,4 +459,4 @@ namespace CH12_2 {
 	};
 }
 
-//int main() { CH12_2::RunExample::virtual_destructor_ex2(); }
+//int main() { CH12_2::RunExample::virtual_destructor_ex(); }

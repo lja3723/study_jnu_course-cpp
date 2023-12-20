@@ -1,23 +1,32 @@
 #include <iostream>
 using namespace std;
 
-
-
 ////#1: The first argument must be 'size_t'
 //void* operator new(size_t sz) {
-//	cout << "operator new" << endl;
+//	cout << "operator new: sz = " << sz << endl;
 //	return malloc(sz);
 //}
 //
 ////#2: overloading
 //void* operator new(size_t sz, const char* s, int n) {
-//	cout << "operator new2: " << s << " " << endl;
+//	cout << "operator new2: sz = " << sz << ", <s,n> = <" << s << ", " << n << ">\n";
 //	return malloc(sz);
 //}
+//
+////이 선언은 이미 placement new가 사용해서 안됨
+////void* operator new(size_t sz, void* t) {
+////	cout << "operator new(sz_t, void*)" << endl;
+////	return malloc(sz);
+////}
 //
 //void operator delete(void* p) {
 //	cout << "operator delete" << endl;
 //	free(p);
+//}
+//
+//void* operator new[](size_t sz) {
+//	cout << "operator new[]" << endl;
+//	return malloc(sz);
 //}
 
 
@@ -63,10 +72,10 @@ namespace CH10 {
 		}
 
 		//conversion constructor(형변환 생성자)
-		smartptr(long* p = 0) : ptr((int*)p) {}
+		smartptr(long* p = 0) : ptr((T*)p) {}
 
 		//conversion operator(형변환 연산자)
-		operator int* () {
+		operator T* () {
 			return ptr;
 		}
 
@@ -85,12 +94,12 @@ namespace CH10 {
 	private:
 		int id;
 	public:
-		member(int _id): id(_id) {}
+		member(int _id) : id(_id) {}
 		void print() {
 			cout << id << endl;
 		}
 	};
-	
+
 	struct node {
 		int data;
 		node* next;
@@ -106,10 +115,10 @@ namespace CH10 {
 
 	public:
 		linkedlist_inline() : head(nullptr), current(nullptr), index(0) {}
-		
+
 		//약간 역전된 리스트 느낌쓰
 		void push_front(int d) { head = new node(d, head); } //한 줄에 끝냈다!!!
-		
+
 		linkedlist_inline& next() {
 			if (!current) current = head;
 			else current = current->next;
@@ -126,39 +135,52 @@ namespace CH10 {
 		}
 	};
 
-	//TODO: 에러 나는 이유 찾기
+	//TODO: 에러 나는 이유 찾기 -> solve
+	//문자열 배열 동적할당할때 \0을 고려 안한게 원인이었음~~
 	class Point {
 	private:
 		int x, y;
 		char* name;
 	public:
 		Point(int _x, int _y, const char* name = nullptr) : x(_x), y(_y) {
-			this->name = new char[strlen(name)];
-			strcpy(this->name, name);
+			this->name = new char[strlen(name) + 1];
+			memcpy(this->name, name, sizeof(char) * (strlen(name) + 1));
 			cout << "Constructor " << name << ": " << x << " " << y << endl;
 		}
-		~Point() { 
-			cout << "Bye " << name << ": " << x << " " << y << endl; 
+		~Point() {
+			cout << "Bye " << name << ": " << x << " " << y << endl;
 			delete[] name;
 		}
 
 		Point(const Point& p) : x(p.x), y(p.y), name(p.name) /*얕은 복사!!*/ {
-			this->name = new char[strlen(p.name)];
-			strcpy(this->name, p.name);	//깊은 복사!
+			this->name = new char[strlen(p.name) + 1];
+			strcpy_s(this->name, sizeof(char) * (strlen(p.name) + 1), p.name);	//깊은 복사!
 			cout << "Copy Constructor " << name << ": " << x << " " << y << endl;
 		}
 	};
-
 
 	//member pointer ex
 	class MyClass {
 	public:
 		int mem;
-		void func() { cout << "mem func" << endl; }
+		int* pmem;
+		MyClass(int m = 0) : mem(m), pmem(nullptr) {}
+		void func(int k = 0) { cout << "mem func(k):" << k << endl; }
 	};
 
-	
-	//my nullpte example
+	class parent { 
+	public: 
+		int x; 
+		void pfun() { cout << "pfun()" << endl; }
+	};
+	class child : public parent { public: 
+		int y;
+		void pfun() { cout << "overrided pfun()" << endl; }
+		void cfun() { cout << "cfun()" << endl; }
+	};
+
+
+	//my nullptr example
 	const class {
 	public:
 		template <class T>
@@ -182,6 +204,10 @@ namespace CH10 {
 	void nptr_ex_func(char* p) {
 		cout << "void nptr_ex_func(char*) called" << endl;
 	}
+}
+
+namespace CH10 {
+	struct Klass { int a; };
 
 	class RunExample {
 	public:
@@ -242,8 +268,13 @@ namespace CH10 {
 
 		}
 		FN new_del_oper_overload() /*새 개념*/  {
-			int* p = new int(5);
-			int* p2 = new(sizeof(2), "new new new", 2) int;
+			int* p = new int;
+			//int* p2 = new("stringinput", 2) int;
+
+			new double[5];
+			new string;
+
+			new(p) int;
 
 			delete p;
 		}
@@ -282,6 +313,7 @@ namespace CH10 {
 			{
 				smartptr<int> ptr = new int;
 				//int* ptr = new int;
+				
 				*ptr = 10;
 				cout << "ptr is " << *ptr << endl;
 			} cout << "\n\n";
@@ -400,6 +432,23 @@ namespace CH10 {
 			*hack = -100;
 			cout << INT << endl; //1 출력
 		}
+		FN type_casting_ex3() {
+			parent* p = new parent;
+			child* c = new child;
+			c->x = 1;
+			c->y = 2;
+			parent *p2 = static_cast<parent*>(c);
+			p2 = new parent;
+			p2->x = 10;
+			child* c2 = static_cast<child*>(p2);
+
+			cout << p2->x << endl;
+			p2->pfun();
+			cout << c2->x << "," << c2->y << endl;
+			c2->pfun();
+			c2->cfun();
+
+		}
 		FN nullptr_ex() {
 			char str[] = { 'H', 'e', 'l', 'l', 'o', NULL };
 			int* ptr = NULL;
@@ -412,12 +461,33 @@ namespace CH10 {
 			//nullptr은 클래스에요! 포인터 형변환 호용하면서 다른것은 막은 상수 클래스
 			nptr_ex_func(my_nullptr);
 		}
-		FN mem_ptr_ex() {
-			MyClass c;
-			void (MyClass:: * mptr)();
+		FN mem_ptr_ex() /*좀더 알아봐야할거같아요*/ {
+			void (MyClass:: * mptr)(int);
 			mptr = my_nullptr; // 이렇게 멤버함수를 가리키는 포인터로 변환이 가능하다.
 			mptr = &MyClass::func;
-			(c.*mptr)();
+
+			MyClass c;
+			int MyClass::* pmem;
+			pmem = &MyClass::mem;
+
+			int* MyClass::* ppmem;
+			ppmem = &MyClass::pmem;
+
+			c.*pmem = 5;
+			(c.*mptr)(3);
+		}
+		FN mem_ptr_ex2() {
+			Klass k;
+			Klass* qtr = &k;
+
+			int Klass::* ptr;
+			ptr = &Klass::a;
+
+			k.*ptr = 123;
+			cout << k.a << endl;
+
+			qtr->*ptr = 234;
+			cout << k.a << endl;
 		}
 
 
@@ -426,4 +496,4 @@ namespace CH10 {
 
 }
 
-//int main() { CH10::RunExample::type_casting_ex2(); }
+//int main() { CH10::RunExample::mem_ptr_ex2(); }

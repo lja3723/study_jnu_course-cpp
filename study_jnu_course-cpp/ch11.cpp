@@ -515,4 +515,4 @@ namespace CH11 {
 
 }
 
-//int main() { CH11::RunExample::my_vector_ex2(); }
+//int main() { CH11::RunExample::string_functions(); }
