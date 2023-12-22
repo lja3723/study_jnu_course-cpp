@@ -1,4 +1,4 @@
-#include "MyUnitTest.h"
+ï»¿#include "MyUnitTest.h"
 
 namespace assignment1 {
     using namespace std;
@@ -7,13 +7,13 @@ namespace assignment1 {
         string test_data = "test_data.txt";
         MyUnitTest unit_test(test_data);
         if (!unit_test.is_open()) {
-            cout << "\"" << test_data << "\" ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù. ";
-            cout << "Å×½ºÆ®¸¦ ¼öÇàÇÒ ¼ö ¾ø½À´Ï´Ù." << endl;
+            cout << "\"" << test_data << "\" íŒŒì¼ì´ ì¡´ìž¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ";
+            cout << "í…ŒìŠ¤íŠ¸ë¥¼ ìˆ˜í–‰í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤." << endl;
             return -1;
         }
         
         unit_test
-        //¿øÇÏ´Â ¿É¼Ç¿¡ ÁÖ¼® ÇØÁ¦ ÈÄ »ç¿ë
+        //ì›í•˜ëŠ” ì˜µì…˜ì— ì£¼ì„ í•´ì œ í›„ ì‚¬ìš©
         //Print Settings (default setting)
             //.set_newline(80)
             //.set_underline_marker('^')

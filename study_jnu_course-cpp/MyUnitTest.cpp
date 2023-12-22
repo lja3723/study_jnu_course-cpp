@@ -1,11 +1,11 @@
-#include "MyUnitTest.h"
+ï»¿#include "MyUnitTest.h"
 
 namespace assignment1 {
 	
 
 /*************************************/
-/*      Å×½ºÆ® ½ÇÇà ¹× °ü·Ã À¯Æ¿ ÇÔ¼ö   */
-/*      ½ÇÇà ¼ø¼­´ë·Î ¹èÄ¡µÇ¾úÀ½        */
+/*      í…ŒìŠ¤íŠ¸ ì‹¤í–‰ ë° ê´€ë ¨ ìœ í‹¸ í•¨ìˆ˜   */
+/*      ì‹¤í–‰ ìˆœì„œëŒ€ë¡œ ë°°ì¹˜ë˜ì—ˆìŒ        */
 /*************************************/
 MyUnitTest::MyUnitTest(const char* test_filename) :
     m_newline(80),
@@ -24,7 +24,7 @@ MyUnitTest::MyUnitTest(const char* test_filename) :
 }
 void MyUnitTest::clear_tests() {
     tests.clear();
-    //dummy test (ÀÎµ¦½º¸¦ 1ºÎÅÍ »ç¿ëÇÒ °ÍÀÓ)
+    //dummy test (ì¸ë±ìŠ¤ë¥¼ 1ë¶€í„° ì‚¬ìš©í•  ê²ƒì„)
     tests.push_back({ 0, "", 0, vector<string>(), vector<ranges>() });
 
 
@@ -36,7 +36,7 @@ void MyUnitTest::file_open(const char* name) {
 
     m_no_syntax_error = reader.read(tests);
     if (m_no_syntax_error)
-        cout << "\"" << name << "\" ÆÄÀÏÀ» ¼º°øÀûÀ¸·Î ÀĞ¾ú½À´Ï´Ù." << endl;
+        cout << "\"" << name << "\" íŒŒì¼ì„ ì„±ê³µì ìœ¼ë¡œ ì½ì—ˆìŠµë‹ˆë‹¤." << endl;
 
 
 }
@@ -55,29 +55,29 @@ void MyUnitTest::run() {
 void MyUnitTest::run_tests() {
     print_run_title();
 
-    //ºñÈ°¼ºÈ­µÈ Å×½ºÆ® ¸®½ºÆ® ±¸ÇÏ±â
+    //ë¹„í™œì„±í™”ëœ í…ŒìŠ¤íŠ¸ ë¦¬ìŠ¤íŠ¸ êµ¬í•˜ê¸°
     set<int> disabled;
     for (int t = 1; t < tests.size(); t++)
         if (!tests[t].enabled) disabled.insert(tests[t].number);
 
-    //Å×½ºÆ® Åë°è Ãâ·Â À§ÇÑ °á°ú ¼öÁıº¯¼ö
+    //í…ŒìŠ¤íŠ¸ í†µê³„ ì¶œë ¥ ìœ„í•œ ê²°ê³¼ ìˆ˜ì§‘ë³€ìˆ˜
     vector<int> successed_list;
     vector<int> failed_list;
 
-    //°¢ Å×½ºÆ® °ÔÀÌ½º¿¡ ´ëÇØ Å×½ºÆ® ¼öÇà
+    //ê° í…ŒìŠ¤íŠ¸ ê²Œì´ìŠ¤ì— ëŒ€í•´ í…ŒìŠ¤íŠ¸ ìˆ˜í–‰
     for (int i = 1; i < tests.size(); i++) {
         Test& test = tests[i];
 
-        //disabledµÈ Å×½ºÆ® ½ºÅµ
+        //disabledëœ í…ŒìŠ¤íŠ¸ ìŠ¤í‚µ
         if (disabled.find(test.number) != disabled.end()) continue;
 
-        //Å×½ºÆ® ¼öÇà
-        //results.size() == 1ÀÎ °æ¿ì regex ¹®¹ıÀÌ À¯È¿ÇÏÁö ¾Ê´Ù´Â ÀÇ¹Ì
-            //results[0] == true : À¯È¿ÇÏÁö ¾Ê´Â Å×½ºÆ® Åë°ú
-            //results[1] == false : À¯È¿ÇØ¾ß ÇÏÁö¸¸ À¯È¿ÇÏÁö ¾ÊÀ½
+        //í…ŒìŠ¤íŠ¸ ìˆ˜í–‰
+        //results.size() == 1ì¸ ê²½ìš° regex ë¬¸ë²•ì´ ìœ íš¨í•˜ì§€ ì•Šë‹¤ëŠ” ì˜ë¯¸
+            //results[0] == true : ìœ íš¨í•˜ì§€ ì•ŠëŠ” í…ŒìŠ¤íŠ¸ í†µê³¼
+            //results[1] == false : ìœ íš¨í•´ì•¼ í•˜ì§€ë§Œ ìœ íš¨í•˜ì§€ ì•ŠìŒ
         vector<bool> results = run_test(test);
 
-        //Å×½ºÆ® ¼º°ø¿©ºÎ °è»ê
+        //í…ŒìŠ¤íŠ¸ ì„±ê³µì—¬ë¶€ ê³„ì‚°
         bool test_successed = true;
         for (bool result : results) test_successed &= result;
 
@@ -91,7 +91,7 @@ void MyUnitTest::run_tests() {
         }
     }
 
-    //Å×½ºÆ® Á¾ÇÕ °á°ú Ãâ·Â
+    //í…ŒìŠ¤íŠ¸ ì¢…í•© ê²°ê³¼ ì¶œë ¥
     print_tests_summary(disabled, successed_list, failed_list);
 
 
@@ -99,13 +99,13 @@ void MyUnitTest::run_tests() {
 vector<bool> MyUnitTest::run_test(const Test& t) {
     vector<bool> ret;
 
-    //Á¤±Ô½ÄÀ» ÄÄÆÄÀÏÇÑ´Ù.
+    //ì •ê·œì‹ì„ ì»´íŒŒì¼í•œë‹¤.
     MySimpleRegex::compiled cp = MySimpleRegex::compile(t.regex);
 
-    //Á¤±Ô½Ä ¹®¹ı À¯È¿¼º Å×½ºÆ®
+    //ì •ê·œì‹ ë¬¸ë²• ìœ íš¨ì„± í…ŒìŠ¤íŠ¸
     ret.push_back(t.syntax_valid == cp.is_valid());
 
-    //°¢ ÄÉÀÌ½º ¹®ÀÚ¿­¸¶´Ù ±â´ë°ª(expect)°ú ½ÇÇà°ª(result)ÀÌ °°ÀºÁö ºñ±³ÇÑ´Ù.
+    //ê° ì¼€ì´ìŠ¤ ë¬¸ìì—´ë§ˆë‹¤ ê¸°ëŒ€ê°’(expect)ê³¼ ì‹¤í–‰ê°’(result)ì´ ê°™ì€ì§€ ë¹„êµí•œë‹¤.
     for (int i = 0; cp.is_valid() && i < t.test.size(); i++) {
         ranges result = cp.match_all(t.test[i]);
         ret.push_back(assertEqual(t.expect[i], result));
@@ -130,7 +130,7 @@ bool MyUnitTest::assertEqual(const ranges& expect, const ranges& result) {
 
 
 
-/*******************   Å×½ºÆ® ¿É¼Ç   *******************/
+/*******************   í…ŒìŠ¤íŠ¸ ì˜µì…˜   *******************/
 MyUnitTest& MyUnitTest::set_newline(int newline) {
     m_newline = newline;
     return *this;
@@ -212,7 +212,7 @@ MyUnitTest& MyUnitTest::disable_all() {
 
 
 
-/*******************   Ãâ·Â ÇÔ¼ö   *******************/
+/*******************   ì¶œë ¥ í•¨ìˆ˜   *******************/
 void MyUnitTest::print_run_title() {
     string t_indent = m_indent + m_indent;
     cout << "\n\n";
@@ -234,7 +234,7 @@ void MyUnitTest::print_test_title(string label_left, const Test& t, string label
 void MyUnitTest::print_match_range(string title, const ranges& match_result, const Test& t, int elem) {
     cout << m_indent << title << endl;
     if (match_result.empty()) {
-        cout << m_indent << t.test[elem] << " -> ÀÏÄ¡±¸°£ ¾øÀ½" << "\n\n";
+        cout << m_indent << t.test[elem] << " -> ì¼ì¹˜êµ¬ê°„ ì—†ìŒ" << "\n\n";
         return;
     }
 
@@ -248,15 +248,15 @@ void MyUnitTest::print_match_range(string title, const ranges& match_result, con
 
 }
 void MyUnitTest::print_match_underline(const ranges& result) {
-    //¸ÅÄ¡µÈ ¿µ¿ª¿¡ ¹ØÁÙ Ç¥½Ã; ÀÔ·Â ¹®ÀÚ¿­ÀÌ ±æ¸é newline¸¶´Ù °³ÇàµÊ
+    //ë§¤ì¹˜ëœ ì˜ì—­ì— ë°‘ì¤„ í‘œì‹œ; ì…ë ¥ ë¬¸ìì—´ì´ ê¸¸ë©´ newlineë§ˆë‹¤ ê°œí–‰ë¨
     if (result.empty()) return;
 
     const string& ref = result[0].ref;
 
-    //¹®ÀÚ¿­°ú ¹ØÁÙÀ» ²÷¾î¼­ Ãâ·Â
+    //ë¬¸ìì—´ê³¼ ë°‘ì¤„ì„ ëŠì–´ì„œ ì¶œë ¥
     for (size_t i = 0, cur_match = 0; i < ref.size(); i += m_newline) {
         size_t len = i + m_newline <= ref.size() ? m_newline : ref.size() - i;
-        cout << m_indent << ref.substr(i, len) << endl; //ÂüÁ¶ ¹®ÀÚ¿­ Ãâ·Â  
+        cout << m_indent << ref.substr(i, len) << endl; //ì°¸ì¡° ë¬¸ìì—´ ì¶œë ¥  
         if (cur_match >= result.size() || i + len <= result[cur_match].start) {
             cout << endl;
             continue;
@@ -265,7 +265,7 @@ void MyUnitTest::print_match_underline(const ranges& result) {
         cout << m_indent;
         for (size_t j = i; j < i + len; j++) {
             const ranged_string& str = result[cur_match];
-            cout << (str.start <= j && j < str.end ? m_underline_marker : ' '); // ¹ØÁÙ Ãâ·Â
+            cout << (str.start <= j && j < str.end ? m_underline_marker : ' '); // ë°‘ì¤„ ì¶œë ¥
             if (j + 1 >= str.end) cur_match++;
             if (cur_match >= result.size()) break;
         }
@@ -276,69 +276,69 @@ void MyUnitTest::print_match_underline(const ranges& result) {
 }
 void MyUnitTest::print_successed_test(const Test& t) {
     if (!t.details) {
-        cout << "Å×½ºÆ® #" << t.number << " Åë°ú" << endl;
+        cout << "í…ŒìŠ¤íŠ¸ #" << t.number << " í†µê³¼" << endl;
         return;
     }
 
-    print_test_title("Å×½ºÆ® #", t, " Åë°ú (more detail mode enabled)");
+    print_test_title("í…ŒìŠ¤íŠ¸ #", t, " í†µê³¼ (more detail mode enabled)");
     MySimpleRegex::compiled cp = MySimpleRegex::compile(t.regex);
 
     if (cp.is_valid()) {
         for (int i = 0; i < t.test.size(); i++) {
             ranges result = cp.match_all(t.test[i]);
             cout << "case #" << (i + 1) << endl;
-            print_match_range("< ½ÇÇà°á°ú >", result, t, i);
+            print_match_range("< ì‹¤í–‰ê²°ê³¼ >", result, t, i);
         }
     }
     else {
-        cout << m_indent << "< ½ÇÇà°á°ú >" << endl;
-        cout << m_indent << m_indent << "-> Á¤±ÔÇ¥Çö½Ä ¹®¹ıÀÌ À¯È¿ÇÏÁö ¾ÊÀ½(±â´ë°á°ú¿Í ÀÏÄ¡)" << endl;
+        cout << m_indent << "< ì‹¤í–‰ê²°ê³¼ >" << endl;
+        cout << m_indent << m_indent << "-> ì •ê·œí‘œí˜„ì‹ ë¬¸ë²•ì´ ìœ íš¨í•˜ì§€ ì•ŠìŒ(ê¸°ëŒ€ê²°ê³¼ì™€ ì¼ì¹˜)" << endl;
     }
     cout << "\n\n";
 
 
 }
 void MyUnitTest::print_failed_test(const Test& t, vector<bool>& results) {
-    //½ÇÆĞÇÑ Å×½ºÆ® Á¦¸ñ
-    print_test_title("<!>>>>>>> Å×½ºÆ® #", t, string(" ½ÇÆĞ") 
+    //ì‹¤íŒ¨í•œ í…ŒìŠ¤íŠ¸ ì œëª©
+    print_test_title("<!>>>>>>> í…ŒìŠ¤íŠ¸ #", t, string(" ì‹¤íŒ¨") 
         + (t.details ? " (more detail mode enabled)" : ""));
 
-    //½ÇÆĞÇÑ Å×½ºÆ®¸¦ ÀçÇöÇÏ±â À§ÇØ Á¤±Ô½Ä ÀçÄÄÆÄÀÏ
+    //ì‹¤íŒ¨í•œ í…ŒìŠ¤íŠ¸ë¥¼ ì¬í˜„í•˜ê¸° ìœ„í•´ ì •ê·œì‹ ì¬ì»´íŒŒì¼
     MySimpleRegex::compiled cp = MySimpleRegex::compile(t.regex);
 
-    //Á¤±Ô½Ä ¹®¹ıÀÌ ¿Ã¹Ù¸¥ °æ¿ì - Å×½ºÆ®ÄÉÀÌ½º°¡ Æ²¸²
+    //ì •ê·œì‹ ë¬¸ë²•ì´ ì˜¬ë°”ë¥¸ ê²½ìš° - í…ŒìŠ¤íŠ¸ì¼€ì´ìŠ¤ê°€ í‹€ë¦¼
     if (results[0] == true) {
         for (int i = 0; i < results.size() - 1; i++) {
             if (!t.details && results[i + 1] == true) continue;
             ranges result = cp.match_all(t.test[i]);
 
-            //½ÇÆĞÇÑ ÄÉÀÌ½º Ãâ·Â
-            cout << "case #" << (i + 1) << (results[i + 1] ? " (Åë°ú)" : " (½ÇÆĞ)") << endl;
+            //ì‹¤íŒ¨í•œ ì¼€ì´ìŠ¤ ì¶œë ¥
+            cout << "case #" << (i + 1) << (results[i + 1] ? " (í†µê³¼)" : " (ì‹¤íŒ¨)") << endl;
             if (!results[i + 1])
-                print_match_range("< ±â´ë°á°ú >", t.expect[i], t, i);
-            print_match_range("< ½ÇÇà°á°ú >", result, t, i);
+                print_match_range("< ê¸°ëŒ€ê²°ê³¼ >", t.expect[i], t, i);
+            print_match_range("< ì‹¤í–‰ê²°ê³¼ >", result, t, i);
         }
     }
 
-    //Á¤±ÔÇ¥Çö½Ä ¹®¹ıÀÌ Æ²·ÈÁö¸¸ ¸Â¾Ò´Ù°í ³ª¿Â °æ¿ì
+    //ì •ê·œí‘œí˜„ì‹ ë¬¸ë²•ì´ í‹€ë ¸ì§€ë§Œ ë§ì•˜ë‹¤ê³  ë‚˜ì˜¨ ê²½ìš°
     else if (cp.is_valid()) {
-        cout << m_indent << "< ±â´ë°á°ú >" << endl;
-        cout << m_indent << m_indent << "-> Á¤±ÔÇ¥Çö½Ä ¹®¹ıÀÌ À¯È¿ÇÏÁö ¾ÊÀ½" << endl;
-        cout << m_indent << "< ½ÇÇà°á°ú >" << endl;
-        cout << m_indent << m_indent << "-> Á¤±ÔÇ¥Çö½Ä ¹®¹ıÀÌ À¯È¿ÇÔ" << endl;
+        cout << m_indent << "< ê¸°ëŒ€ê²°ê³¼ >" << endl;
+        cout << m_indent << m_indent << "-> ì •ê·œí‘œí˜„ì‹ ë¬¸ë²•ì´ ìœ íš¨í•˜ì§€ ì•ŠìŒ" << endl;
+        cout << m_indent << "< ì‹¤í–‰ê²°ê³¼ >" << endl;
+        cout << m_indent << m_indent << "-> ì •ê·œí‘œí˜„ì‹ ë¬¸ë²•ì´ ìœ íš¨í•¨" << endl;
     }
 
-    //Á¤±ÔÇ¥Çö½Ä ¹®¹ıÀÌ ¸ÂÁö¸¸ Æ²·È´Ù°í ³ª¿Â °æ¿ì
+    //ì •ê·œí‘œí˜„ì‹ ë¬¸ë²•ì´ ë§ì§€ë§Œ í‹€ë ¸ë‹¤ê³  ë‚˜ì˜¨ ê²½ìš°
     else {
-        cout << m_indent << "< ±â´ë°á°ú >" << endl;
-        cout << m_indent << m_indent << "-> Á¤±ÔÇ¥Çö½Ä ¹®¹ıÀÌ À¯È¿ÇÔ" << endl;
-        cout << m_indent << "< ½ÇÇà°á°ú >" << endl;
-        cout << m_indent << m_indent << "-> Á¤±ÔÇ¥Çö½Ä ¹®¹ıÀÌ À¯È¿ÇÏÁö ¾ÊÀ½" << endl << endl;
+        cout << m_indent << "< ê¸°ëŒ€ê²°ê³¼ >" << endl;
+        cout << m_indent << m_indent << "-> ì •ê·œí‘œí˜„ì‹ ë¬¸ë²•ì´ ìœ íš¨í•¨" << endl;
+        cout << m_indent << "< ì‹¤í–‰ê²°ê³¼ >" << endl;
+        cout << m_indent << m_indent << "-> ì •ê·œí‘œí˜„ì‹ ë¬¸ë²•ì´ ìœ íš¨í•˜ì§€ ì•ŠìŒ" << endl << endl;
 
-        cout << m_indent << "¾Æ·¡¿Í °°Àº ½ÇÇà°á°ú°¡ ±â´ëµÇ¾úÀ½" << endl << endl;
+        cout << m_indent << "ì•„ë˜ì™€ ê°™ì€ ì‹¤í–‰ê²°ê³¼ê°€ ê¸°ëŒ€ë˜ì—ˆìŒ" << endl << endl;
         for (int i = 0; i < t.test.size(); i++) {
             cout << "case #" << (i + 1) << endl;
-            print_match_range("< ±â´ë°á°ú >", t.expect[i], t, i);
+            print_match_range("< ê¸°ëŒ€ê²°ê³¼ >", t.expect[i], t, i);
         }
     }
     cout << "\n\n";
@@ -350,55 +350,55 @@ void MyUnitTest::print_tests_summary(set<int>& disabled, vector<int>& successed_
     if (details_summary_mode) {
         string lines = "=========================";
         size_t tests_size = tests.size() - 1;
-        cout << lines << "  [Å×½ºÆ® Á¾ÇÕ °á°ú]  " << lines << endl;
-        cout << "ÃÑ Å×½ºÆ®ÄÉÀÌ½º ¼ö:\t" << tests_size << " °³\n";
+        cout << lines << "  [í…ŒìŠ¤íŠ¸ ì¢…í•© ê²°ê³¼]  " << lines << endl;
+        cout << "ì´ í…ŒìŠ¤íŠ¸ì¼€ì´ìŠ¤ ìˆ˜:\t" << tests_size << " ê°œ\n";
         if (!disabled.empty())
-            cout << "ºñÈ°¼ºÈ­µÈ Å×½ºÆ® ¼ö:\t" << disabled.size() << " °³\n";
-        cout << "¼öÇàÇÑ Å×½ºÆ® ¼ö:\t" << (tests_size - disabled.size()) << " °³\n";
-        cout << "¼º°øÇÑ Å×½ºÆ®ÄÉÀÌ½º ¼ö:\t" << (successed_list.size()) << " °³\n";
+            cout << "ë¹„í™œì„±í™”ëœ í…ŒìŠ¤íŠ¸ ìˆ˜:\t" << disabled.size() << " ê°œ\n";
+        cout << "ìˆ˜í–‰í•œ í…ŒìŠ¤íŠ¸ ìˆ˜:\t" << (tests_size - disabled.size()) << " ê°œ\n";
+        cout << "ì„±ê³µí•œ í…ŒìŠ¤íŠ¸ì¼€ì´ìŠ¤ ìˆ˜:\t" << (successed_list.size()) << " ê°œ\n";
         if (!failed_list.empty())
-            cout << "½ÇÆĞÇÑ Å×½ºÆ®ÄÉÀÌ½º ¼ö:\t" << failed_list.size() << " °³\n";
+            cout << "ì‹¤íŒ¨í•œ í…ŒìŠ¤íŠ¸ì¼€ì´ìŠ¤ ìˆ˜:\t" << failed_list.size() << " ê°œ\n";
         cout << endl;
 
         if (!disabled.empty()) {
-            cout << "ºñÈ°¼ºÈ­µÈ Å×½ºÆ®ÄÉÀÌ½º ¸ñ·Ï:" << endl << m_indent << m_indent;
+            cout << "ë¹„í™œì„±í™”ëœ í…ŒìŠ¤íŠ¸ì¼€ì´ìŠ¤ ëª©ë¡:" << endl << m_indent << m_indent;
             for (int test : disabled) cout << test << ";  ";
             cout << endl;
         }
         if (!disabled.empty()) {
-            cout << "¼º°øÇÑ Å×½ºÆ®ÄÉÀÌ½º ¸ñ·Ï:" << endl << m_indent << m_indent;
+            cout << "ì„±ê³µí•œ í…ŒìŠ¤íŠ¸ì¼€ì´ìŠ¤ ëª©ë¡:" << endl << m_indent << m_indent;
             for (int test : successed_list) cout << test << ";  ";
             cout << endl;
         }
         if (!failed_list.empty()) {
-            cout << "½ÇÆĞÇÑ Å×½ºÆ®ÄÉÀÌ½º ¸ñ·Ï:" << endl << m_indent << m_indent;
+            cout << "ì‹¤íŒ¨í•œ í…ŒìŠ¤íŠ¸ì¼€ì´ìŠ¤ ëª©ë¡:" << endl << m_indent << m_indent;
             for (int test : failed_list) cout << test << ";  ";
             cout << endl;
         }
     }
     else {
         if (failed_list.empty()) {
-            cout << "Å×½ºÆ®¸¦ ¸ğµÎ Åë°úÇÏ¿´½À´Ï´Ù." << endl;
+            cout << "í…ŒìŠ¤íŠ¸ë¥¼ ëª¨ë‘ í†µê³¼í•˜ì˜€ìŠµë‹ˆë‹¤." << endl;
         }
         else {
-            cout << "½ÇÆĞÇÑ Å×½ºÆ®°¡ ÀÖ½À´Ï´Ù." << endl << m_indent << "¸®½ºÆ®:  ";
+            cout << "ì‹¤íŒ¨í•œ í…ŒìŠ¤íŠ¸ê°€ ìˆìŠµë‹ˆë‹¤." << endl << m_indent << "ë¦¬ìŠ¤íŠ¸:  ";
             for (int test : failed_list) cout << test << ";  ";
             cout << endl;
         }
         if (disabled.empty()) return;
-        cout << m_indent << "ºñÈ°¼ºÈ­µÈ Å×½ºÆ® ¸®½ºÆ®:  ";
+        cout << m_indent << "ë¹„í™œì„±í™”ëœ í…ŒìŠ¤íŠ¸ ë¦¬ìŠ¤íŠ¸:  ";
         for (int test : disabled) cout << test << ";  ";
         cout << endl;
     }
 
-    //less_details_allÀÌ È°¼ºÈ­ÀÎÁö È®ÀÎ
+    //less_details_allì´ í™œì„±í™”ì¸ì§€ í™•ì¸
     bool less_details_all = true;
     for (int i = 1; i < tests.size(); i++)
         less_details_all &= !tests[i].details;
     if (less_details_all) {
         cout << endl;
-        cout << "°£·«È­µÈ Å×½ºÆ® °á°ú º¸±â°¡ ÄÑÁ® ÀÖ½À´Ï´Ù." << endl;
-        cout << "´õ ÀÚ¼¼ÇÑ Å×½ºÆ® °á°ú¸¦ º¸½Ã·Á¸é run() ½ÇÇà ÀÌÀü¿¡ more_details_all()À» ½ÇÇàÇÏ¼¼¿ä." << endl;
+        cout << "ê°„ëµí™”ëœ í…ŒìŠ¤íŠ¸ ê²°ê³¼ ë³´ê¸°ê°€ ì¼œì ¸ ìˆìŠµë‹ˆë‹¤." << endl;
+        cout << "ë” ìì„¸í•œ í…ŒìŠ¤íŠ¸ ê²°ê³¼ë¥¼ ë³´ì‹œë ¤ë©´ run() ì‹¤í–‰ ì´ì „ì— more_details_all()ì„ ì‹¤í–‰í•˜ì„¸ìš”." << endl;
     }
     cout << "\n\n";
 }

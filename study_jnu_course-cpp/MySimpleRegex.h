@@ -1,4 +1,4 @@
-#ifndef __MY_SIMPLE_REGEX_H__
+ï»¿#ifndef __MY_SIMPLE_REGEX_H__
 #define __MY_SIMPLE_REGEX_H__
 #include <iostream>
 #include <vector>
@@ -8,49 +8,49 @@ namespace assignment1 {
 using namespace std;
 
 
-//Æ¯Á¤ÇÑ ±¸°£À» Ç¥ÇöÇÏ´Â ¹®ÀÚ¿­
+//íŠ¹ì •í•œ êµ¬ê°„ì„ í‘œí˜„í•˜ëŠ” ë¬¸ìì—´
 struct ranged_string {
-    const string ref;           //ÂüÁ¶ ¹®ÀÚ¿­
-    const bool is_valid;        //°´Ã¼ À¯È¿¼º
-    const size_t start, end;  //ÂüÁ¶ ¹®ÀÚ¿­¿¡¼­ÀÇ ¹üÀ§
+    const string ref;           //ì°¸ì¡° ë¬¸ìì—´
+    const bool is_valid;        //ê°ì²´ ìœ íš¨ì„±
+    const size_t start, end;  //ì°¸ì¡° ë¬¸ìì—´ì—ì„œì˜ ë²”ìœ„
 
     ranged_string(const string& ref, const size_t start, const size_t end, const bool is_valid) :
         ref(ref), start(start), end(end), is_valid(is_valid) {}
 
-    //¹üÀ§
+    //ë²”ìœ„
     pair<size_t, size_t> span() const { return pair<size_t, size_t>(start, end); }
 
-    //¹üÀ§¿¡ ¼ÓÇÏ´Â ¹®ÀÚ¿­ ¹İÈ¯
+    //ë²”ìœ„ì— ì†í•˜ëŠ” ë¬¸ìì—´ ë°˜í™˜
     string group() const { return ref.substr(start, size_t(end - start)); }
 
-    //À¯È¿ÇÏÁö ¾ÊÀº ranged_string °´Ã¼¸¦ ¹İÈ¯ÇÑ´Ù.
+    //ìœ íš¨í•˜ì§€ ì•Šì€ ranged_string ê°ì²´ë¥¼ ë°˜í™˜í•œë‹¤.
     static const ranged_string invalid() { return ranged_string(string(), 0, 0, false); }
 
-    //cout Ãâ·Â ¿¬»êÀÚ ¿À¹ö·Îµù
+    //cout ì¶œë ¥ ì—°ì‚°ì ì˜¤ë²„ë¡œë”©
     friend ostream& operator<<(ostream&, const ranged_string&);
 };
 
 
 
-//Regex¸¦ ÀÔ·ÂÀ¸·Î ¹Ş¾Æ ÆĞÅÏÀ» ÀÎ½ÄÇÏ´Â ·¡ÆÛ Å¬·¡½º
-//MySimpleRegex::compiled Å¬·¡½º°¡ º»Ã¼ÀÌ´Ù.
+//Regexë¥¼ ì…ë ¥ìœ¼ë¡œ ë°›ì•„ íŒ¨í„´ì„ ì¸ì‹í•˜ëŠ” ë˜í¼ í´ë˜ìŠ¤
+//MySimpleRegex::compiled í´ë˜ìŠ¤ê°€ ë³¸ì²´ì´ë‹¤.
 class MySimpleRegex {
 private: MySimpleRegex();
-    //ÀÌ Å¬·¡½º´Â static ¸Ş¼­µå¸¸ ÀÖÀ¸¹Ç·Î »ı¼ºÀÚ¸¦ private·Î µĞ´Ù.
+    //ì´ í´ë˜ìŠ¤ëŠ” static ë©”ì„œë“œë§Œ ìˆìœ¼ë¯€ë¡œ ìƒì„±ìë¥¼ privateë¡œ ë‘”ë‹¤.
 
 public:
-    class compiled; //ÁøÂ¥ ±â´ÉÀ» ÇÏ´Â Å¬·¡½º
+    class compiled; //ì§„ì§œ ê¸°ëŠ¥ì„ í•˜ëŠ” í´ë˜ìŠ¤
     
-    //Á¤±ÔÇ¥Çö½ÄÀ» ÄÄÆÄÀÏÇÑ °´Ã¼ compiled¸¦ ¹İÈ¯ÇÑ´Ù.
-    //Á¤±Ô½ÄÀÌ ¹Ù¸£Áö ¾ÊÀº °æ¿ì is_valid°¡ false°¡ µÈ´Ù.
+    //ì •ê·œí‘œí˜„ì‹ì„ ì»´íŒŒì¼í•œ ê°ì²´ compiledë¥¼ ë°˜í™˜í•œë‹¤.
+    //ì •ê·œì‹ì´ ë°”ë¥´ì§€ ì•Šì€ ê²½ìš° is_validê°€ falseê°€ ëœë‹¤.
     static compiled compile(const string& m_regex);
 
-    //source¿¡¼­ Á¤±ÔÇ¥Çö½Ä°ú °¡Àå ¸ÕÀú ÀÏÄ¡ÇÏ´Â ¹üÀ§¸¦ ±¸ÇÑ´Ù.
-    //±×·± ¹üÀ§°¡ ¾øÀ¸¸é invalidÇÑ °´Ã¼¸¦ ¹İÈ¯ÇÑ´Ù.
+    //sourceì—ì„œ ì •ê·œí‘œí˜„ì‹ê³¼ ê°€ì¥ ë¨¼ì € ì¼ì¹˜í•˜ëŠ” ë²”ìœ„ë¥¼ êµ¬í•œë‹¤.
+    //ê·¸ëŸ° ë²”ìœ„ê°€ ì—†ìœ¼ë©´ invalidí•œ ê°ì²´ë¥¼ ë°˜í™˜í•œë‹¤.
     static ranged_string match(const string& m_regex, const string& source, size_t index_start = 0);
 
-    //source¿¡¼­ Á¤±ÔÇ¥Çö½Ä°ú ÀÏÄ¡ÇÏ´Â ¸ğµç ¹üÀ§¸¦ ±¸ÇÑ´Ù
-    //ÀÏÄ¡Á¤º¸°¡ ¾øÀ» °æ¿ì empty()ÇÑ vector°¡ ¹İÈ¯µÈ´Ù.
+    //sourceì—ì„œ ì •ê·œí‘œí˜„ì‹ê³¼ ì¼ì¹˜í•˜ëŠ” ëª¨ë“  ë²”ìœ„ë¥¼ êµ¬í•œë‹¤
+    //ì¼ì¹˜ì •ë³´ê°€ ì—†ì„ ê²½ìš° empty()í•œ vectorê°€ ë°˜í™˜ëœë‹¤.
     static vector<ranged_string> match_all(const string m_regex, const string& source);
 };
 
@@ -58,32 +58,32 @@ public:
 
 /*
 class MySimpleRegex::compiled:
-Á¤±ÔÇ¥Çö½ÄÀ» ÄÄÆÄÀÏÇÑ °´Ã¼ÀÌ´Ù. »ı¼ºÀÚ È£Ãâ ½Ã Á¤±ÔÇ¥Çö½ÄÀ» ÀÔ·Â¹Ş´Â´Ù.
-ÀÔ·ÂÀ¸·Î µé¾î¿Â Á¤±ÔÇ¥Çö½ÄÀ» ÆÄ½Ì ÈÄ ±×¿¡ ¸Â´Â state-machineÀ» ³»ºÎÀûÀ¸·Î »ı¼ºÇÑ´Ù.
+ì •ê·œí‘œí˜„ì‹ì„ ì»´íŒŒì¼í•œ ê°ì²´ì´ë‹¤. ìƒì„±ì í˜¸ì¶œ ì‹œ ì •ê·œí‘œí˜„ì‹ì„ ì…ë ¥ë°›ëŠ”ë‹¤.
+ì…ë ¥ìœ¼ë¡œ ë“¤ì–´ì˜¨ ì •ê·œí‘œí˜„ì‹ì„ íŒŒì‹± í›„ ê·¸ì— ë§ëŠ” state-machineì„ ë‚´ë¶€ì ìœ¼ë¡œ ìƒì„±í•œë‹¤.
 
-¹üÀ§¸¦ ±¸ÇÒ input ¹®ÀÚ¿­ÀÌ µé¾î¿À¸é »óÅÂ±â°è¸¦ ÀÌ¿ëÇØ ¸ÅÄ¡µÇ´Â ¹üÀ§¸¦ ±¸ÇÑ´Ù.
-ÀÏÄ¡ÇÏ´Â ¹üÀ§°¡ ¾øÀ¸¸é invalidÇÑ ranged_stringÀÌ ¹İÈ¯µÈ´Ù.
+ë²”ìœ„ë¥¼ êµ¬í•  input ë¬¸ìì—´ì´ ë“¤ì–´ì˜¤ë©´ ìƒíƒœê¸°ê³„ë¥¼ ì´ìš©í•´ ë§¤ì¹˜ë˜ëŠ” ë²”ìœ„ë¥¼ êµ¬í•œë‹¤.
+ì¼ì¹˜í•˜ëŠ” ë²”ìœ„ê°€ ì—†ìœ¼ë©´ invalidí•œ ranged_stringì´ ë°˜í™˜ëœë‹¤.
 
-´Ù¾çÇÑ ¹®ÀÚ¿­À» ºñ±³ÇÏ±â À§ÇÑ ¸ÅÄ¡ Å¬·¡½º ¹× ÆÄ»ı Å¬·¡½º¿Í
-´Ù¾çÇÑ ³ëµå Æ÷ÀÎÅÍ¸¦ Æ÷ÇöÇÏ±â À§ÇÑ ³ëµå Æ÷ÀÎÅÍ Å¬·¡½º ¹× ÆÄ»ı Å¬·¡½º¸¦ Á¤ÀÇÇÑ´Ù.
+ë‹¤ì–‘í•œ ë¬¸ìì—´ì„ ë¹„êµí•˜ê¸° ìœ„í•œ ë§¤ì¹˜ í´ë˜ìŠ¤ ë° íŒŒìƒ í´ë˜ìŠ¤ì™€
+ë‹¤ì–‘í•œ ë…¸ë“œ í¬ì¸í„°ë¥¼ í¬í˜„í•˜ê¸° ìœ„í•œ ë…¸ë“œ í¬ì¸í„° í´ë˜ìŠ¤ ë° íŒŒìƒ í´ë˜ìŠ¤ë¥¼ ì •ì˜í•œë‹¤.
 
 */
 class MySimpleRegex::compiled {
 public:
-    //ÁÖ¾îÁø Á¤±ÔÇ¥Çö½ÄÀ» ÆÄ½ÌÇØ ³»ºÎÀûÀ¸·Î »óÅÂ±â°è¸¦ »ı¼ºÇÑ´Ù.
+    //ì£¼ì–´ì§„ ì •ê·œí‘œí˜„ì‹ì„ íŒŒì‹±í•´ ë‚´ë¶€ì ìœ¼ë¡œ ìƒíƒœê¸°ê³„ë¥¼ ìƒì„±í•œë‹¤.
     compiled(const string& m_regex);
 
-    //»ı¼ºµÈ »óÅÂ±â°è¸¦ »èÁ¦ÇÑ´Ù. ¸Ş¸ğ¸® ¹İÈ¯ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+    //ìƒì„±ëœ ìƒíƒœê¸°ê³„ë¥¼ ì‚­ì œí•œë‹¤. ë©”ëª¨ë¦¬ ë°˜í™˜ ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
     virtual ~compiled();
 
-    //ÀÔ·ÂµÈ Á¤±ÔÇ¥Çö½ÄÀÌ ¹®¹ıÀûÀ¸·Î ¹Ù¸¥Áö È®ÀÎÇÑ´Ù.
+    //ì…ë ¥ëœ ì •ê·œí‘œí˜„ì‹ì´ ë¬¸ë²•ì ìœ¼ë¡œ ë°”ë¥¸ì§€ í™•ì¸í•œë‹¤.
     bool is_valid();
 
-    //source¿¡¼­ start_idxºÎÅÍ Å½»öÀ» ½ÃÀÛÇØ °¡Àå Ã³À½À¸·Î ¹ß°ßµÈ ÀÏÄ¡ Á¤º¸¸¦ ¹İÈ¯ÇÑ´Ù.
+    //sourceì—ì„œ start_idxë¶€í„° íƒìƒ‰ì„ ì‹œì‘í•´ ê°€ì¥ ì²˜ìŒìœ¼ë¡œ ë°œê²¬ëœ ì¼ì¹˜ ì •ë³´ë¥¼ ë°˜í™˜í•œë‹¤.
     ranged_string match(const string& source, size_t index_start = 0);
 
-    //source¿¡¼­ ¹ß°ßµÇ´Â ¸ğµç ÀÏÄ¡ Á¤º¸¸¦ ¹İÈ¯ÇÑ´Ù.
-    //¾Æ¹« ±¸°£µµ ¸ÅÄ¡µÇÁö ¾ÊÀ¸¸é empty() ÇÑ vector°¡ ¹İÈ¯µÈ´Ù.
+    //sourceì—ì„œ ë°œê²¬ë˜ëŠ” ëª¨ë“  ì¼ì¹˜ ì •ë³´ë¥¼ ë°˜í™˜í•œë‹¤.
+    //ì•„ë¬´ êµ¬ê°„ë„ ë§¤ì¹˜ë˜ì§€ ì•Šìœ¼ë©´ empty() í•œ vectorê°€ ë°˜í™˜ëœë‹¤.
     vector<ranged_string> match_all(const string& source);
 
 
@@ -93,35 +93,35 @@ private:
     /*      Inner Classes       */
     /****************************/
 
-    //state machine »ı¼º±â Å¬·¡½º
-    //regex¸¦ ÀÔ·ÂÇÏ¸é ±×°Í°ú ÀÏÄ¡ÇÏ´Â »óÅÂ ¸Ó½ÅÀ» »ı¼ºÇÑ´Ù.
-    //Á¤ÀÇ: MySimpleRegex.h
+    //state machine ìƒì„±ê¸° í´ë˜ìŠ¤
+    //regexë¥¼ ì…ë ¥í•˜ë©´ ê·¸ê²ƒê³¼ ì¼ì¹˜í•˜ëŠ” ìƒíƒœ ë¨¸ì‹ ì„ ìƒì„±í•œë‹¤.
+    //ì •ì˜: MySimpleRegex.h
     class state_machine_creator;
 
 
-    //input charÀ» ÆÇº°ÇÏ±â À§ÇÑ ¸ÅÄ¡ Å¬·¡½º
-    //»ó¼ÓÀ¸·Î ´ÙÇü¼ºÀ» ±¸ÇöÇÑ´Ù.
-    //Á¤ÀÇ: MySimpleRegex.h
-    class Imatchable;       //¸ÅÄ¡ °´Ã¼ ÀÎÅÍÆäÀÌ½º    
-    class matcher_single;   //´ÜÀÏ ¹®ÀÚ ¸ÅÄ¡    
-    class matcher_dot;      //¸ğµç ¹®ÀÚ ¸ÅÄ¡(°³Çà ¹®ÀÚ Á¦¿Ü)
-    class matcher_true;     //¹«Á¶°Ç ¸ÅÄ¡
+    //input charì„ íŒë³„í•˜ê¸° ìœ„í•œ ë§¤ì¹˜ í´ë˜ìŠ¤
+    //ìƒì†ìœ¼ë¡œ ë‹¤í˜•ì„±ì„ êµ¬í˜„í•œë‹¤.
+    //ì •ì˜: MySimpleRegex.h
+    class Imatchable;       //ë§¤ì¹˜ ê°ì²´ ì¸í„°í˜ì´ìŠ¤    
+    class matcher_single;   //ë‹¨ì¼ ë¬¸ì ë§¤ì¹˜    
+    class matcher_dot;      //ëª¨ë“  ë¬¸ì ë§¤ì¹˜(ê°œí–‰ ë¬¸ì ì œì™¸)
+    class matcher_true;     //ë¬´ì¡°ê±´ ë§¤ì¹˜
 
 
-    //»óÅÂ¸Ó½ÅÀÇ ³ëµå¿Í ³ëµå Æ÷ÀÎÅÍ¸¦ Ç¥ÇöÇÏ´Â Å¬·¡½ºÀÌ´Ù    
-    //node¸¦ °¡¸®Å°´Â node_ptr Ãß»ó Å¬·¡½º¿Í ÆÄ»ı Å¬·¡½º·Î ±¸¼ºµÈ´Ù.
-    //È°¼ºÈ­ ½ÅÈ£¸¦ ¹Ù·Î Àü´ŞÇÏ´Â node_ptr_direct Æ÷ÀÎÅÍ,
-    //³»ºÎ¿¡ Ä«¿îÅÍ°¡ ÀÖ¾î Ä«¿îÆ®°¡ ÀÏÁ¤ ÀÌ»óÀÌ µÇ¸é È°¼ºÈ­ ½ÅÈ£¸¦ Àü´ŞÇÏ´Â
-    //node_ptr_cnt_inner Æ÷ÀÎÅÍ°¡ Á¸ÀçÇÑ´Ù.
-    //Á¤ÀÇ: MySimpleRegex_node.h
-    class node;         //»óÅÂ¸Ó½ÅÀÇ ³ëµå
+    //ìƒíƒœë¨¸ì‹ ì˜ ë…¸ë“œì™€ ë…¸ë“œ í¬ì¸í„°ë¥¼ í‘œí˜„í•˜ëŠ” í´ë˜ìŠ¤ì´ë‹¤    
+    //nodeë¥¼ ê°€ë¦¬í‚¤ëŠ” node_ptr ì¶”ìƒ í´ë˜ìŠ¤ì™€ íŒŒìƒ í´ë˜ìŠ¤ë¡œ êµ¬ì„±ëœë‹¤.
+    //í™œì„±í™” ì‹ í˜¸ë¥¼ ë°”ë¡œ ì „ë‹¬í•˜ëŠ” node_ptr_direct í¬ì¸í„°,
+    //ë‚´ë¶€ì— ì¹´ìš´í„°ê°€ ìˆì–´ ì¹´ìš´íŠ¸ê°€ ì¼ì • ì´ìƒì´ ë˜ë©´ í™œì„±í™” ì‹ í˜¸ë¥¼ ì „ë‹¬í•˜ëŠ”
+    //node_ptr_cnt_inner í¬ì¸í„°ê°€ ì¡´ì¬í•œë‹¤.
+    //ì •ì˜: MySimpleRegex_node.h
+    class node;         //ìƒíƒœë¨¸ì‹ ì˜ ë…¸ë“œ
     class node_ptr;         
     class node_ptr_direct;  
     class node_ptr_inner_counter;
 
 
-    //´ÙÀ½ È°¼ºÈ­ ³ëµå¿¡ ´ëÇÑ Á¤º¸·Î, ´ÙÀ½ È°¼ºÈ­ ³ëµå ´ë»óÀÎ target°ú, 
-    //È°¼ºÈ­ »óÅÂ¿Í °°ÀÌ ÀüÀÌµÇ´Â »óÅÂÀÎ start_index Á¤º¸¸¦ ´ã´Â´Ù.
+    //ë‹¤ìŒ í™œì„±í™” ë…¸ë“œì— ëŒ€í•œ ì •ë³´ë¡œ, ë‹¤ìŒ í™œì„±í™” ë…¸ë“œ ëŒ€ìƒì¸ targetê³¼, 
+    //í™œì„±í™” ìƒíƒœì™€ ê°™ì´ ì „ì´ë˜ëŠ” ìƒíƒœì¸ start_index ì •ë³´ë¥¼ ë‹´ëŠ”ë‹¤.
     struct active_request_info {
         node* target;
         size_t start_index;
@@ -131,35 +131,35 @@ private:
     /****************************/
     /*      Private fields      */
     /****************************/
-    vector<node*> m_node;   //»óÅÂ±â°è ³ëµå ÄÁÅ×ÀÌ³Ê (¿øº» Æ÷ÀÎÅÍ)
-    node* m_epsilon;        //¿¦½Ç·Ğ ½ÅÈ£¸¦ next¿¡ ÁÖ´Â ³ëµå
-    node* m_terminal;       //ÅÍ¹Ì³Î ³ëµå¸¦ °¡¸®Å°´Â Æ÷ÀÎÅÍ
-    const string m_regex;   //ÀúÀåµÈ Á¤±ÔÇ¥Çö½Ä
-    bool m_is_valid;        //Á¤±ÔÇ¥Çö½ÄÀÌ ¹Ù¸¥ Áö ¿©ºÎ
+    vector<node*> m_node;   //ìƒíƒœê¸°ê³„ ë…¸ë“œ ì»¨í…Œì´ë„ˆ (ì›ë³¸ í¬ì¸í„°)
+    node* m_epsilon;        //ì—¡ì‹¤ë¡  ì‹ í˜¸ë¥¼ nextì— ì£¼ëŠ” ë…¸ë“œ
+    node* m_terminal;       //í„°ë¯¸ë„ ë…¸ë“œë¥¼ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°
+    const string m_regex;   //ì €ì¥ëœ ì •ê·œí‘œí˜„ì‹
+    bool m_is_valid;        //ì •ê·œí‘œí˜„ì‹ì´ ë°”ë¥¸ ì§€ ì—¬ë¶€
 
 
 
     /****************************/
     /*    Private functions     */
     /****************************/ 
-    ranged_string state_machine_input(      //»óÅÂ±â°è¿¡ ¹®ÀÚ¿­À» ÀÔ·ÂÀ¸·Î ³Ö¾îÁÖ¸é
-        const string& src,                  //°¡Àå Ã³À½À¸·Î acceptµÈ ÀÏÄ¡ Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
-        size_t index_start = 0,           //¸ÅÄ¡µÈ ±¸°£ÀÌ ¾øÀ¸¸é invalidÇÑ °´Ã¼¸¦ ¹İÈ¯ÇÑ´Ù.
+    ranged_string state_machine_input(      //ìƒíƒœê¸°ê³„ì— ë¬¸ìì—´ì„ ì…ë ¥ìœ¼ë¡œ ë„£ì–´ì£¼ë©´
+        const string& src,                  //ê°€ì¥ ì²˜ìŒìœ¼ë¡œ acceptëœ ì¼ì¹˜ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+        size_t index_start = 0,           //ë§¤ì¹˜ëœ êµ¬ê°„ì´ ì—†ìœ¼ë©´ invalidí•œ ê°ì²´ë¥¼ ë°˜í™˜í•œë‹¤.
         bool check_at_front_only = false);
 
-    //¿¦½Ç·Ğ ½ÅÈ£¸¦ ³ëµå¿¡ ºÎ¿©ÇÑ´Ù.
+    //ì—¡ì‹¤ë¡  ì‹ í˜¸ë¥¼ ë…¸ë“œì— ë¶€ì—¬í•œë‹¤.
     void give_epsilon(
-        vector<active_request_info>& next_actives, //´ÙÀ½ È°¼ºÈ­µÉ ³ëµå ¸®½ºÆ®
-        map<string, node*>& actives,    //È°¼ºÈ­µÈ ³ëµå ¸®½ºÆ®
-        size_t state_istart,          //ÇØ´ç ³ëµåÀÇ Ã¹ È°¼ºÈ­ ½ÅÈ£ ½Ã ÀÎµ¦½º°ª
-        bool check_at_front_only);      //Ã¹ ºÎºĞºÎÅÍ Á¤È®È÷ ÀÏÄ¡ ¿©ºÎ È®ÀÎ
+        vector<active_request_info>& next_actives, //ë‹¤ìŒ í™œì„±í™”ë  ë…¸ë“œ ë¦¬ìŠ¤íŠ¸
+        map<string, node*>& actives,    //í™œì„±í™”ëœ ë…¸ë“œ ë¦¬ìŠ¤íŠ¸
+        size_t state_istart,          //í•´ë‹¹ ë…¸ë“œì˜ ì²« í™œì„±í™” ì‹ í˜¸ ì‹œ ì¸ë±ìŠ¤ê°’
+        bool check_at_front_only);      //ì²« ë¶€ë¶„ë¶€í„° ì •í™•íˆ ì¼ì¹˜ ì—¬ë¶€ í™•ì¸
 
-    //´ÙÀ½ È°¼ºÈ­µÉ ³ëµå ¸®½ºÆ®(next_actives)¸¦ Âü°íÇÏ¿© È°¼ºÈ­µÉ ³ëµåµéÀ» ½ÇÁ¦·Î È°¼ºÈ­ÇÑ´Ù.
+    //ë‹¤ìŒ í™œì„±í™”ë  ë…¸ë“œ ë¦¬ìŠ¤íŠ¸(next_actives)ë¥¼ ì°¸ê³ í•˜ì—¬ í™œì„±í™”ë  ë…¸ë“œë“¤ì„ ì‹¤ì œë¡œ í™œì„±í™”í•œë‹¤.
     void active_transition(
         vector<active_request_info>& next_actives,  
         map<string, node*>& actives);
     
-    //ÅÍ¹Ì³Î ³ëµå ¼øÈ¸ ÈÄ acceptedµÇ¾úÀ¸¸é found¿¡ matched¸¦ »ı¼ºÇÑ´Ù.
+    //í„°ë¯¸ë„ ë…¸ë“œ ìˆœíšŒ í›„ acceptedë˜ì—ˆìœ¼ë©´ foundì— matchedë¥¼ ìƒì„±í•œë‹¤.
     void check_terminal_active(
         map<size_t, ranged_string*>& found, 
         const string& src, 
@@ -168,13 +168,13 @@ private:
 
 
 
-/***********   ¹®ÀÚ matcher ¹× ÆÄ»ı Å¬·¡½º   ***********/
+/***********   ë¬¸ì matcher ë° íŒŒìƒ í´ë˜ìŠ¤   ***********/
 using compiled = MySimpleRegex::compiled;
 class compiled::Imatchable {
 public:
     virtual bool operator==(const Imatchable* rhs) = 0;
     virtual bool test(char ch) = 0;
-    virtual Imatchable* copy() = 0; //ÀÚ±â ÀÚ½Å µ¿Àû º¹»ç
+    virtual Imatchable* copy() = 0; //ìê¸° ìì‹  ë™ì  ë³µì‚¬
 
 };
 class compiled::matcher_single : public compiled::Imatchable {

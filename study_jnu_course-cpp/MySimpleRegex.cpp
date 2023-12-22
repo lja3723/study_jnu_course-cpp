@@ -1,4 +1,4 @@
-#include "MySimpleRegex.h"
+ï»¿#include "MySimpleRegex.h"
 #include "MySimpleRegex_node.h"
 #include <string>
 
@@ -11,7 +11,7 @@ namespace assignment1 {
 
 
 
-/*******************   MySimpleRegex static ÇÔ¼ö   *******************/
+/*******************   MySimpleRegex static í•¨ìˆ˜   *******************/
 compiled MySimpleRegex::compile(const string& m_regex) {
     return compiled(m_regex);
 
@@ -32,7 +32,7 @@ vector<ranged_string> MySimpleRegex::match_all(const string m_regex, const strin
 
 
 
-/******   cout Ãâ·Â ¿¬»êÀÚ ¿À¹ö·Îµù   ******/
+/******   cout ì¶œë ¥ ì—°ì‚°ì ì˜¤ë²„ë¡œë”©   ******/
 ostream& operator<<(ostream& os, const ranged_string& rs) {
     cout << "range [" << rs.start << "," << rs.end << ") " << "\"" << rs.group() << "\"";
     return os;
@@ -40,12 +40,12 @@ ostream& operator<<(ostream& os, const ranged_string& rs) {
 
 
 
-/******   state machine »ı¼º±â Å¬·¡½º   ******/
+/******   state machine ìƒì„±ê¸° í´ë˜ìŠ¤   ******/
 class compiled::state_machine_creator {
-    enum state_and {  //| ¿¬»êÀÚ Ã³¸® À§ÇÑ ¿­°ÅÇü
-        not_proc, //|¸¦ ¾È ¸¸³²
-        before_proc, //|¸¦ ¸¸³­ Á÷ÈÄ
-        after_proc //| ¿À¸¥ÂÊ ÇÇ¿¬»êÀÚ Ã³¸®µÈ Á÷ÈÄ
+    enum state_and {  //| ì—°ì‚°ì ì²˜ë¦¬ ìœ„í•œ ì—´ê±°í˜•
+        not_proc, //|ë¥¼ ì•ˆ ë§Œë‚¨
+        before_proc, //|ë¥¼ ë§Œë‚œ ì§í›„
+        after_proc //| ì˜¤ë¥¸ìª½ í”¼ì—°ì‚°ì ì²˜ë¦¬ëœ ì§í›„
     };
 
 public:
@@ -56,44 +56,44 @@ public:
         node_cnt(0) {}
 
 
-    //ÁÖ¾îÁø regex·Î »óÅÂ ¸Ó½ÅÀ» »ı¼ºÇÑ´Ù.
-    //return true: »óÅÂ ¸Ó½Å »ı¼º ¼º°ø
-    //return false: »óÅÂ ¸Ó½Å »ı¼º ½ÇÆĞ(regex ¹®¹ı Àß¸øµÊ)
+    //ì£¼ì–´ì§„ regexë¡œ ìƒíƒœ ë¨¸ì‹ ì„ ìƒì„±í•œë‹¤.
+    //return true: ìƒíƒœ ë¨¸ì‹  ìƒì„± ì„±ê³µ
+    //return false: ìƒíƒœ ë¨¸ì‹  ìƒì„± ì‹¤íŒ¨(regex ë¬¸ë²• ì˜ëª»ë¨)
     bool make(const string& regex) {
         this->regex = regex;
-        //»óÅÂ ¸Ó½ÅÀ» ÃÊ±âÈ­ÇÑ´Ù.
+        //ìƒíƒœ ë¨¸ì‹ ì„ ì´ˆê¸°í™”í•œë‹¤.
         clear();
 
-        //ÇÏµåÄÚµùµÈ Á¤±Ô½Ä°ú ÀÏÄ¡ÇÏ´Â °æ¿ì »ı¼º ¼º°ø
+        //í•˜ë“œì½”ë”©ëœ ì •ê·œì‹ê³¼ ì¼ì¹˜í•˜ëŠ” ê²½ìš° ìƒì„± ì„±ê³µ
         if (is_hard_coded(regex)) return true;
 
-        //»çÀü Ã³¸®
+        //ì‚¬ì „ ì²˜ë¦¬
         bool syntax_valid = true;
         state_and state = not_proc;
         add_node_back();
         add_to_epsilon(m_node.back());
 
-        //Á¤±ÔÇ¥Çö½ÄÀ» ÇÑ ¹®ÀÚ¾¿ ÀĞÀ¸¸é¼­ ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
+        //ì •ê·œí‘œí˜„ì‹ì„ í•œ ë¬¸ìì”© ì½ìœ¼ë©´ì„œ ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
         for (size_t i = 0; i < regex.size(); i++) {
 
-            //(K* Ã¼Å©) asterisk ¹®¹ı°ú ÀÏÄ¡ÇÏ¸é »óÅÂ ¸Ó½Å ¿¬°áÀÛ¾÷ ¼öÇà ÈÄ i¸¦ Áõ°¡½ÃÅ²´Ù.
+            //(K* ì²´í¬) asterisk ë¬¸ë²•ê³¼ ì¼ì¹˜í•˜ë©´ ìƒíƒœ ë¨¸ì‹  ì—°ê²°ì‘ì—… ìˆ˜í–‰ í›„ ië¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
             if (check_asterisk(syntax_valid, state, i)) continue;
-            //ÀÏÄ¡ÇÏÁö ¾ÊÀ¸¸é¼­ ¹®¹ıµµ Æ²¸®¸é Á¾·áÇÑ´Ù.
+            //ì¼ì¹˜í•˜ì§€ ì•Šìœ¼ë©´ì„œ ë¬¸ë²•ë„ í‹€ë¦¬ë©´ ì¢…ë£Œí•œë‹¤.
             if (!syntax_valid) break;
 
-            //K+ Ã¼Å©
+            //K+ ì²´í¬
             if (check_plus(syntax_valid, state, i)) continue;
             if (!syntax_valid) break;
 
-            //K{m,n} Ã¼Å©
+            //K{m,n} ì²´í¬
             if (check_range(syntax_valid, state, i)) continue;
             if (!syntax_valid) break;
 
-            //K Ã¼Å©
+            //K ì²´í¬
             if (check_char(syntax_valid, state, i)) continue;
             if (!syntax_valid) break;
 
-            //| Ã¼Å©
+            //| ì²´í¬
             if (check_and(syntax_valid, state, i)) continue;
             if (!syntax_valid) break;
 
@@ -101,13 +101,13 @@ public:
             break;
         }
 
-        //and ¿¬»êÀ¸·Î ³¡³­ °æ¿ì
+        //and ì—°ì‚°ìœ¼ë¡œ ëë‚œ ê²½ìš°
         if (state == before_proc)
             syntax_valid = false;
 
-        if (!syntax_valid) clear(); //Àß¸ø »ı¼ºµÈ »óÅÂ¸Ó½ÅÀ» ÃÊ±âÈ­ÇÑ´Ù.       
+        if (!syntax_valid) clear(); //ì˜ëª» ìƒì„±ëœ ìƒíƒœë¨¸ì‹ ì„ ì´ˆê¸°í™”í•œë‹¤.       
         else {
-            //»óÅÂ¸Ó½ÅÀ» ¸¶¹«¸®Áş´Â´Ù.
+            //ìƒíƒœë¨¸ì‹ ì„ ë§ˆë¬´ë¦¬ì§“ëŠ”ë‹¤.
             m_node.back()->set_terminal(true);
             add_to_terminal(m_node.back());
         }
@@ -118,24 +118,24 @@ public:
 
 
 private:
-    //¿ÜºÎ ÂüÁ¶ º¯¼ö
-    //ÀÌ º¯¼öµéÀ» Á¶ÀÛÇØ »óÅÂ ¸Ó½ÅÀ» »ı¼ºÇÑ´Ù.
+    //ì™¸ë¶€ ì°¸ì¡° ë³€ìˆ˜
+    //ì´ ë³€ìˆ˜ë“¤ì„ ì¡°ì‘í•´ ìƒíƒœ ë¨¸ì‹ ì„ ìƒì„±í•œë‹¤.
     vector<node*>& m_node;
     node*& m_epsilon;
     node*& m_terminal;
 
 
-    //³»ºÎ º¯¼ö
-    int node_cnt; //»ı¼ºµÈ ³ëµå °³¼ö
+    //ë‚´ë¶€ ë³€ìˆ˜
+    int node_cnt; //ìƒì„±ëœ ë…¸ë“œ ê°œìˆ˜
     string regex;
 
 
-    //ÇÏµåÄÚµùµÈ »óÅÂ¸Ó½ÅÀÌ Á¸ÀçÇÏ´Â °æ¿ì ÇØ´ç »óÅÂ¸Ó½ÅÀ¸·Î ÃÊ±âÈ­
+    //í•˜ë“œì½”ë”©ëœ ìƒíƒœë¨¸ì‹ ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° í•´ë‹¹ ìƒíƒœë¨¸ì‹ ìœ¼ë¡œ ì´ˆê¸°í™”
     bool is_hard_coded(const string& m_regex) {
         //mock implementation
         //test state-machine of regex
         if (m_regex == "abc|ade") {
-            m_node.resize(6/*Á¤±ÔÇ¥Çö½Ä ÇØ¼® ÈÄ ³ëµå °³¼ö°¡ µÇ¾î¾ß ÇÔ*/);
+            m_node.resize(6/*ì •ê·œí‘œí˜„ì‹ í•´ì„ í›„ ë…¸ë“œ ê°œìˆ˜ê°€ ë˜ì–´ì•¼ í•¨*/);
 
             m_node[0] = new node("s0");
             m_node[1] = new node("s1");
@@ -152,10 +152,10 @@ private:
             m_node[4]->add_link(new node_ptr_direct(m_node[4], new matcher_single('d'), m_node[5]));
             m_node[5]->add_link(new node_ptr_direct(m_node[5], new matcher_single('e'), m_node[3]));
 
-            // ¿¦½Ç·Ğ ½ÅÈ£ ¹Ş´Â ³ëµå ¼³Á¤
+            // ì—¡ì‹¤ë¡  ì‹ í˜¸ ë°›ëŠ” ë…¸ë“œ ì„¤ì •
             add_to_epsilon(m_node[0]);
 
-            // ÅÍ¹Ì³Î ³ëµå ¼³Á¤
+            // í„°ë¯¸ë„ ë…¸ë“œ ì„¤ì •
             add_to_terminal(m_node[3]);
             return true;
         }
@@ -217,12 +217,12 @@ private:
             return true;
         }
 
-        //¸ÅÄ¡µÇ´Â regex ¾øÀ½
+        //ë§¤ì¹˜ë˜ëŠ” regex ì—†ìŒ
         return false;
 
 
     }
-    //Á¤±Ô½Ä¿¡¼­ Áö¿øÇÏ´Â '´ÜÀÏ ¾ËÆÄºª' ¶Ç´Â . ÀÎÁö È®ÀÎÇÑ´Ù.
+    //ì •ê·œì‹ì—ì„œ ì§€ì›í•˜ëŠ” 'ë‹¨ì¼ ì•ŒíŒŒë²³' ë˜ëŠ” . ì¸ì§€ í™•ì¸í•œë‹¤.
     bool is_char(char ch) {
         return ('A' <= ch && ch <= 'Z') || ('a' <= ch && ch <= 'z') || ch == '.';
 
@@ -230,7 +230,7 @@ private:
     }
 
 
-    //¿¦½Ç·ĞÀ» ¹ŞÀ» ³ëµå¸¦ µî·ÏÇÑ´Ù.
+    //ì—¡ì‹¤ë¡ ì„ ë°›ì„ ë…¸ë“œë¥¼ ë“±ë¡í•œë‹¤.
     void add_to_epsilon(node* target) {
         if (m_epsilon != nullptr)
             m_epsilon->add_link(
@@ -238,7 +238,7 @@ private:
 
 
     }
-    //ÅÍ¹Ì³Î ³ëµå¸¦ µî·ÏÇÑ´Ù.
+    //í„°ë¯¸ë„ ë…¸ë“œë¥¼ ë“±ë¡í•œë‹¤.
     void add_to_terminal(node* target) {
         if (m_terminal != nullptr)
             m_terminal->add_link(
@@ -246,24 +246,24 @@ private:
 
 
     }
-    //»õ ³ëµå¸¦ µÚ¿¡ Ãß°¡ÇÑ´Ù.
+    //ìƒˆ ë…¸ë“œë¥¼ ë’¤ì— ì¶”ê°€í•œë‹¤.
     void add_node_back() {
         m_node.push_back(new node("s" + to_string(node_cnt++)));
 
 
     }
-    //to_pass ³ëµå¸¦ °¡¸®Ä×´ø ¸ğµç ³ëµå°¡ targetµµ °¡¸®Å°°Ô ¸µÅ©¸¦ Ãß°¡ÇÑ´Ù.
+    //to_pass ë…¸ë“œë¥¼ ê°€ë¦¬ì¼°ë˜ ëª¨ë“  ë…¸ë“œê°€ targetë„ ê°€ë¦¬í‚¤ê²Œ ë§í¬ë¥¼ ì¶”ê°€í•œë‹¤.
     void add_passing_link(node* to_pass, node* target) {
         for (node_ptr* rev_ptr : to_pass->reverse_ref()) {
             node* rev = const_cast<node*>(rev_ptr->origin());
-            //ÀÚ±âÀÚ½Å ÂüÁ¶°¡ ¾Æ´Ñ °æ¿ì¿¡¸¸ ¿¬°áÇÏ±â
+            //ìê¸°ìì‹  ì°¸ì¡°ê°€ ì•„ë‹Œ ê²½ìš°ì—ë§Œ ì—°ê²°í•˜ê¸°
             if (!rev_ptr->is_ref_equal(rev_ptr->origin()))
                 rev->add_link(rev_ptr->copy(target));
         }
 
 
     }
-    //³ëµå ÄÁÅ×ÀÌ³Ê¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    //ë…¸ë“œ ì»¨í…Œì´ë„ˆë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     void clear() {
         for (int i = 0; i < m_node.size(); i++)
             if (m_node[i] != nullptr) delete m_node[i];
@@ -276,7 +276,7 @@ private:
 
 
     }
-    //¹®ÀÚ¿Í ¸Â´Â matcher¸¦ ¹İÈ¯ÇÑ´Ù.
+    //ë¬¸ìì™€ ë§ëŠ” matcherë¥¼ ë°˜í™˜í•œë‹¤.
     Imatchable* get_matcher(char ch) {
         if (ch == '.')
             return new matcher_dot();
@@ -286,9 +286,9 @@ private:
 
 
     }
-    //»óÈ²¿¡ ¸Â´Â tailÀ» ¹İÈ¯ÇÑ´Ù.
+    //ìƒí™©ì— ë§ëŠ” tailì„ ë°˜í™˜í•œë‹¤.
     node* get_tail(state_and& state) {
-        //tail ÂüÁ¶ ¾ò°í µŞºÎºĞ ³ëµå Ãß°¡
+        //tail ì°¸ì¡° ì–»ê³  ë’·ë¶€ë¶„ ë…¸ë“œ ì¶”ê°€
         if (state == not_proc)
             add_node_back();
         else if (state == before_proc)
@@ -304,35 +304,35 @@ private:
     }
 
 
-    // * ¿¬»êÀÚ ¿©ºÎ Ã¼Å©ÇÑ´Ù.
+    // * ì—°ì‚°ì ì—¬ë¶€ ì²´í¬í•œë‹¤.
     bool check_asterisk(bool& syntax, state_and& state, size_t& idx) {
-        //¹üÀ§ & ¿¬»ê ´ë»óÀÎÁö È®ÀÎ
+        //ë²”ìœ„ & ì—°ì‚° ëŒ€ìƒì¸ì§€ í™•ì¸
         if (!(idx + 1 < regex.size()) || regex[idx + 1] != '*')
             return false;
 
-        //¿¬»ê °¡´É ¿©ºÎ È®ÀÎ
+        //ì—°ì‚° ê°€ëŠ¥ ì—¬ë¶€ í™•ì¸
         if (!is_char(regex[idx])) {
             syntax = false;
             return false;
         }
 
-        //matcher ¾ò±â
+        //matcher ì–»ê¸°
         Imatchable* matcher = get_matcher(regex[idx]);
         if (matcher == nullptr) {
             syntax = false;
             return false;
         }
 
-        //tail ¾ò±â
+        //tail ì–»ê¸°
         node* tail = get_tail(state);
 
-        //´ÙÀ½ ³ëµå °¡¸®Å°´Â ¸µÅ© Ãß°¡
+        //ë‹¤ìŒ ë…¸ë“œ ê°€ë¦¬í‚¤ëŠ” ë§í¬ ì¶”ê°€
         tail->add_link(new node_ptr_direct(tail, matcher, m_node.back()));
 
-        //ÀÚ±â ÀÚ½Å °¡¸®Å°´Â ³ëµå Ãß°¡        
+        //ìê¸° ìì‹  ê°€ë¦¬í‚¤ëŠ” ë…¸ë“œ ì¶”ê°€        
         tail->add_link(new node_ptr_direct(tail, matcher->copy(), tail));
 
-        //ÀÌÀü ³ëµå¿¡¼­ ´ÙÀ½ ³ëµå·Î ¹Ù·Î °¡´Â ¸µÅ© Ãß°¡
+        //ì´ì „ ë…¸ë“œì—ì„œ ë‹¤ìŒ ë…¸ë“œë¡œ ë°”ë¡œ ê°€ëŠ” ë§í¬ ì¶”ê°€
         add_passing_link(tail, m_node.back());
 
         idx++;
@@ -340,32 +340,32 @@ private:
 
 
     }
-    // + ¿¬»êÀÚ ¿©ºÎ Ã¼Å©ÇÑ´Ù.
+    // + ì—°ì‚°ì ì—¬ë¶€ ì²´í¬í•œë‹¤.
     bool check_plus(bool& syntax, state_and& state, size_t& idx) {
-        //¹üÀ§ & ¿¬»ê ´ë»óÀÎÁö È®ÀÎ
+        //ë²”ìœ„ & ì—°ì‚° ëŒ€ìƒì¸ì§€ í™•ì¸
         if (!(idx + 1 < regex.size()) || regex[idx + 1] != '+')
             return false;
 
-        //¿¬»ê °¡´É ¿©ºÎ È®ÀÎ
+        //ì—°ì‚° ê°€ëŠ¥ ì—¬ë¶€ í™•ì¸
         if (!is_char(regex[idx])) {
             syntax = false;
             return false;
         }
 
-        //matcher ¾ò±â
+        //matcher ì–»ê¸°
         Imatchable* matcher = get_matcher(regex[idx]);
         if (matcher == nullptr) {
             syntax = false;
             return false;
         }
 
-        //tail ¾ò±â
+        //tail ì–»ê¸°
         node* tail = get_tail(state);
 
-        //´ÙÀ½ ³ëµå °¡¸®Å°´Â ¸µÅ© Ãß°¡
+        //ë‹¤ìŒ ë…¸ë“œ ê°€ë¦¬í‚¤ëŠ” ë§í¬ ì¶”ê°€
         tail->add_link(new node_ptr_direct(tail, matcher, m_node.back()));
 
-        //ÀÚ±â ÀÚ½Å °¡¸®Å°´Â ³ëµå Ãß°¡        
+        //ìê¸° ìì‹  ê°€ë¦¬í‚¤ëŠ” ë…¸ë“œ ì¶”ê°€        
         tail->add_link(new node_ptr_direct(tail, matcher->copy(), tail));
 
         idx++;
@@ -373,19 +373,19 @@ private:
 
 
     }
-    // {} ¿¬»êÀÚ ¿©ºÎ Ã¼Å©ÇÑ´Ù.
+    // {} ì—°ì‚°ì ì—¬ë¶€ ì²´í¬í•œë‹¤.
     bool check_range(bool& syntax, state_and& state, size_t& idx) {
-        //¹üÀ§ Ç¥Çö½ÄÀÎÁö Ã¼Å©
+        //ë²”ìœ„ í‘œí˜„ì‹ì¸ì§€ ì²´í¬
         if (!(idx + 1 < regex.size()) || regex[idx + 1] != '{')
             return false;
 
-        //¿¬»ê Àû¿ë °¡´ÉÇÑÁö Ã¼Å©
+        //ì—°ì‚° ì ìš© ê°€ëŠ¥í•œì§€ ì²´í¬
         if (!is_char(regex[idx])) {
             syntax = false;
             return false;
         }
 
-        //¹üÀ§½Ä ÆÄ½ÌÇÏ±â
+        //ë²”ìœ„ì‹ íŒŒì‹±í•˜ê¸°
         size_t range_end = -1;
         size_t split = -1;
         for (size_t i = idx + 2; i < regex.size(); i++) {
@@ -406,11 +406,11 @@ private:
             }
         }
 
-        //Ã¹¹øÂ° ¹üÀ§¿Í µÎ¹øÂ° ¹üÀ§ÀÇ ¹®ÀÚ¿­ ±æÀÌ °è»ê
+        //ì²«ë²ˆì§¸ ë²”ìœ„ì™€ ë‘ë²ˆì§¸ ë²”ìœ„ì˜ ë¬¸ìì—´ ê¸¸ì´ ê³„ì‚°
         size_t arg1_size = split - idx - 2;
         size_t arg2_size = range_end - split - 1;
 
-        //4°¡Áö Á¶°Ç Áß ÇÏ³ª¶óµµ ÂüÀÌ¸é ¹®¹ı ¿¡·¯ÀÓ
+        //4ê°€ì§€ ì¡°ê±´ ì¤‘ í•˜ë‚˜ë¼ë„ ì°¸ì´ë©´ ë¬¸ë²• ì—ëŸ¬ì„
         bool pred = false;
         pred |= range_end == -1;
         pred |= split == -1;
@@ -422,7 +422,7 @@ private:
             return false;
         }
 
-        //¹üÀ§¸¦ °è»êÇÑ´Ù.
+        //ë²”ìœ„ë¥¼ ê³„ì‚°í•œë‹¤.
         size_t istart = size_t(stoi(regex.substr(idx + 2, arg1_size)));
         size_t iend = size_t(stoi(regex.substr(split + 1, arg2_size)));
         if (istart > iend) {
@@ -430,24 +430,24 @@ private:
             return false;
         }
 
-        //matcher ¾ò±â
+        //matcher ì–»ê¸°
         Imatchable* matcher = get_matcher(regex[idx]);
         if (matcher == nullptr) {
             syntax = false;
             return false;
         }
 
-        //tail ¾ò±â
+        //tail ì–»ê¸°
         node* tail = get_tail(state);
 
-        //´ÙÀ½ ³ëµå °¡¸®Å°´Â ¸µÅ© Ãß°¡
+        //ë‹¤ìŒ ë…¸ë“œ ê°€ë¦¬í‚¤ëŠ” ë§í¬ ì¶”ê°€
         tail->add_link(new node_ptr_inner_counter(tail, matcher, m_node.back(), istart, iend));
 
-        //ÀÚ±â ÀÚ½Å °¡¸®Å°´Â ³ëµå Ãß°¡        
+        //ìê¸° ìì‹  ê°€ë¦¬í‚¤ëŠ” ë…¸ë“œ ì¶”ê°€        
         tail->add_link(new node_ptr_direct(tail, matcher->copy(), tail));
 
-        //k{0,3} °°Àº ÄÉÀÌ½º¸¦ °í·ÁÇÑ´Ù.
-        //ÀÌÀü ³ëµå¿¡¼­ ´ÙÀ½ ³ëµå·Î ¹Ù·Î °¡´Â ¸µÅ© Ãß°¡
+        //k{0,3} ê°™ì€ ì¼€ì´ìŠ¤ë¥¼ ê³ ë ¤í•œë‹¤.
+        //ì´ì „ ë…¸ë“œì—ì„œ ë‹¤ìŒ ë…¸ë“œë¡œ ë°”ë¡œ ê°€ëŠ” ë§í¬ ì¶”ê°€
         if (istart == 0) add_passing_link(tail, m_node.back());
 
         idx = range_end;
@@ -455,7 +455,7 @@ private:
 
 
     }
-    //ÀÏ¹İ ¹®ÀÚ·Î ÀÌ·ç¾îÁ³´ÂÁö Ã¼Å©ÇÑ´Ù.
+    //ì¼ë°˜ ë¬¸ìë¡œ ì´ë£¨ì–´ì¡ŒëŠ”ì§€ ì²´í¬í•œë‹¤.
     bool check_char(bool& syntax, state_and& state, size_t& idx) {
         if (!is_char(regex[idx]))
             return false;
@@ -473,31 +473,31 @@ private:
 
 
     }
-    // | ¿¬»êÀÚ ¿©ºÎ Ã¼Å©ÇÑ´Ù.
+    // | ì—°ì‚°ì ì—¬ë¶€ ì²´í¬í•œë‹¤.
     bool check_and(bool& syntax, state_and& state, size_t& idx) {
-        //¹üÀ§ & ¿¬»ê ´ë»óÀÎÁö È®ÀÎ
+        //ë²”ìœ„ & ì—°ì‚° ëŒ€ìƒì¸ì§€ í™•ì¸
         if (regex[idx] != '|')
             return false;
 
-        // a||b ³ª a|b|c °°Àº °æ¿ì °Å¸£±â
+        // a||b ë‚˜ a|b|c ê°™ì€ ê²½ìš° ê±°ë¥´ê¸°
         if (state != not_proc) {
             syntax = false;
             return false;
         }
 
-        // |b °°Àº °æ¿ì °Å¸£±â
+        // |b ê°™ì€ ê²½ìš° ê±°ë¥´ê¸°
         if (m_node.size() < 2) {
             syntax = false;
             return false;
         }
 
-        //»õ ³ëµå¸¦ ¸Ç µŞ ¿ø¼Ò ¹Ù·Î ¾Õ¿¡ Ãß°¡ÇÑ´Ù.
+        //ìƒˆ ë…¸ë“œë¥¼ ë§¨ ë’· ì›ì†Œ ë°”ë¡œ ì•ì— ì¶”ê°€í•œë‹¤.
         add_node_back();
         node* tmp = m_node[m_node.size() - 2];
         m_node[m_node.size() - 2] = m_node[m_node.size() - 1];
         m_node[m_node.size() - 1] = tmp;
 
-        //±âÁ¸ ¸Ç µÚÀÇ ¹Ù·Î ¾Õ ¿ø¼Ò¸¦ °¡¸®Å°´ø ¿¬°áÀ» »õ·Î Ãß°¡µÈ ³ëµå¿¡µµ ¿¬°áÇØÁØ´Ù.
+        //ê¸°ì¡´ ë§¨ ë’¤ì˜ ë°”ë¡œ ì• ì›ì†Œë¥¼ ê°€ë¦¬í‚¤ë˜ ì—°ê²°ì„ ìƒˆë¡œ ì¶”ê°€ëœ ë…¸ë“œì—ë„ ì—°ê²°í•´ì¤€ë‹¤.
         add_passing_link(m_node[m_node.size() - 3], m_node[m_node.size() - 2]);
 
         state = before_proc;
@@ -512,19 +512,19 @@ private:
 
 
 
-/*******************   compiled ¸â¹ö ÇÔ¼ö   *******************/
+/*******************   compiled ë©¤ë²„ í•¨ìˆ˜   *******************/
 //public:
 compiled::compiled(const string& m_regex)
     : m_epsilon(nullptr), m_terminal(nullptr), m_regex(m_regex) {
     state_machine_creator creator(m_node, m_epsilon, m_terminal);
 
-    //Á¤±Ô½Ä ¹®¹ıÀÌ Àß¸øµÈ °æ¿ì ºó »óÅÂ ±â°è°¡ »ı¼ºµÇ°í, is_valid°¡ false°¡ µÈ´Ù.
+    //ì •ê·œì‹ ë¬¸ë²•ì´ ì˜ëª»ëœ ê²½ìš° ë¹ˆ ìƒíƒœ ê¸°ê³„ê°€ ìƒì„±ë˜ê³ , is_validê°€ falseê°€ ëœë‹¤.
     m_is_valid = creator.make(m_regex);
 
 
 }
 compiled::~compiled() {
-    //µ¿Àû ÇÒ´çµÈ ³ëµå¸¦ »èÁ¦ÇÑ´Ù.
+    //ë™ì  í• ë‹¹ëœ ë…¸ë“œë¥¼ ì‚­ì œí•œë‹¤.
     for (int i = 0; i < m_node.size(); i++)
         if (m_node[i] != nullptr)
             delete m_node[i];
@@ -568,15 +568,15 @@ vector<ranged_string> compiled::match_all(const string& source) {
 ranged_string compiled::state_machine_input(
     const string& src, size_t index_start, bool check_at_front_only) 
 {
-    map<size_t, ranged_string*> found; //Ã£Àº ranged_string ¸®½ºÆ®
-    map<string, node*> actives;     //ÇöÀç È°¼ºÈ­µÈ ³ëµå ¸®½ºÆ®
-    vector<active_request_info> next_actives; //´ÙÀ½¹ø¿¡ È°¼ºÈ­µÉ ³ëµå ¸®½ºÆ®
+    map<size_t, ranged_string*> found; //ì°¾ì€ ranged_string ë¦¬ìŠ¤íŠ¸
+    map<string, node*> actives;     //í˜„ì¬ í™œì„±í™”ëœ ë…¸ë“œ ë¦¬ìŠ¤íŠ¸
+    vector<active_request_info> next_actives; //ë‹¤ìŒë²ˆì— í™œì„±í™”ë  ë…¸ë“œ ë¦¬ìŠ¤íŠ¸
 
     for (size_t i = index_start; i < src.length(); i++) {
         give_epsilon(next_actives, actives, i, check_at_front_only);
         check_terminal_active(found, src, i);
 
-        // active »óÅÂÀÇ ³ëµå¿¡¼­ ³ª¿À´Â ¸ğµç Æ÷ÀÎÅÍ¿¡ ¹®ÀÚ¸¦ ÀÔ·ÂÇÑ´Ù.
+        // active ìƒíƒœì˜ ë…¸ë“œì—ì„œ ë‚˜ì˜¤ëŠ” ëª¨ë“  í¬ì¸í„°ì— ë¬¸ìë¥¼ ì…ë ¥í•œë‹¤.
         for (auto it = actives.begin(); it != actives.end(); it++)
             it->second->input(next_actives, src[i]);
         actives.clear();
@@ -584,14 +584,14 @@ ranged_string compiled::state_machine_input(
         active_transition(next_actives, actives);
     }
 
-    //¿¦½Ç·Ğ ½ÅÈ£¸¦ ¸¶Áö¸·À¸·Î ºÎ¿©ÇØ º¸°í, ÅÍ¹Ì³ÎÀÌ È°¼ºÈ­µÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
+    //ì—¡ì‹¤ë¡  ì‹ í˜¸ë¥¼ ë§ˆì§€ë§‰ìœ¼ë¡œ ë¶€ì—¬í•´ ë³´ê³ , í„°ë¯¸ë„ì´ í™œì„±í™”ë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
     give_epsilon(next_actives, actives, src.length(), check_at_front_only);
     check_terminal_active(found, src, src.length());
 
-    //¸ğµç ÀÛ¾÷ÀÌ ¸¶¹«¸® µÈ ÈÄ, ¸ğµç ³ëµåÀÇ ÇÃ·¡±×¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+    //ëª¨ë“  ì‘ì—…ì´ ë§ˆë¬´ë¦¬ ëœ í›„, ëª¨ë“  ë…¸ë“œì˜ í”Œë˜ê·¸ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
     for (node* target : m_node) target->clear_flags();
 
-    if (found.empty()) //ÀÏÄ¡ÇÏ´Â ÆĞÅÏ ¾øÀ½
+    if (found.empty()) //ì¼ì¹˜í•˜ëŠ” íŒ¨í„´ ì—†ìŒ
         return ranged_string::invalid();
     else {
         ranged_string ret = *found.begin()->second;
@@ -605,14 +605,14 @@ ranged_string compiled::state_machine_input(
 void compiled::give_epsilon(
     vector<active_request_info>& next_actives, map<string, node*>& actives, size_t state_istart, bool check_at_front_only) 
 {
-    //check_at_front_only == falseÀÌ¸é ¿¦½Ç·Ğ ½ÅÈ£¸¦ ¸Å ÁÖ±â¸¶´Ù ºÎ¿©ÇÑ´Ù.
-    //check_at_front_only == trueÀÌ¸é ¹®ÀÚ¿­ ½ÃÀÛ ºÎºĞÀÌ ÆĞÅÏ°ú ÀÏÄ¡ÇÏ´Â °æ¿ì¸¸ È®ÀÎÇÑ´Ù.
-    // -> Áï ÃÖÃÊ 1È¸¸¸ ¿¦½Ç·Ğ ½ÅÈ£¸¦ ºÎ¿©ÇÑ´Ù.
+    //check_at_front_only == falseì´ë©´ ì—¡ì‹¤ë¡  ì‹ í˜¸ë¥¼ ë§¤ ì£¼ê¸°ë§ˆë‹¤ ë¶€ì—¬í•œë‹¤.
+    //check_at_front_only == trueì´ë©´ ë¬¸ìì—´ ì‹œì‘ ë¶€ë¶„ì´ íŒ¨í„´ê³¼ ì¼ì¹˜í•˜ëŠ” ê²½ìš°ë§Œ í™•ì¸í•œë‹¤.
+    // -> ì¦‰ ìµœì´ˆ 1íšŒë§Œ ì—¡ì‹¤ë¡  ì‹ í˜¸ë¥¼ ë¶€ì—¬í•œë‹¤.
     if (!(check_at_front_only && state_istart > 0)) {
         for (node_ptr* nxt : m_epsilon->next())
             nxt->request_active_nexttime(next_actives, state_istart, '\0');
 
-        //next_actives¸¦ Âü°íÇÏ¿© È°¼ºÈ­µÉ ³ëµåµéÀ» ½ÇÁ¦·Î È°¼ºÈ­ÇÑ´Ù.
+        //next_activesë¥¼ ì°¸ê³ í•˜ì—¬ í™œì„±í™”ë  ë…¸ë“œë“¤ì„ ì‹¤ì œë¡œ í™œì„±í™”í•œë‹¤.
         active_transition(next_actives, actives);
     }
 
@@ -621,15 +621,15 @@ void compiled::give_epsilon(
 void compiled::active_transition(
     vector<active_request_info>& next_actives, map<string, node*>& actives) 
 {
-    //next_actives¿¡¼­ ³ëµå¸¦ ÇÏ³ª¾¿ °¡Á®¿Í
-    //Á¶°ÇÀ» ¸¸Á·ÇÏ´Â ³ëµåµé¸¸ activeÇÑ µÚ, actives ¸®½ºÆ®¿¡ Ãß°¡ÇÑ´Ù.
+    //next_activesì—ì„œ ë…¸ë“œë¥¼ í•˜ë‚˜ì”© ê°€ì ¸ì™€
+    //ì¡°ê±´ì„ ë§Œì¡±í•˜ëŠ” ë…¸ë“œë“¤ë§Œ activeí•œ ë’¤, actives ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•œë‹¤.
     while (!next_actives.empty()) {
         node* to_active = next_actives.back().target;
         size_t state_istart = next_actives.back().start_index;
         const string& name = to_active->name();
 
-        // ¾ÆÁ÷ active¸¦ ÇÏÁö ¾Ê¾Ò°Å³ª,
-        // state_istart°¡ ´õ ÀÛ¾ÆÁöµµ·Ï active ÇÒ °æ¿ì¿¡¸¸ active¸¦ ¼öÇàÇÑ´Ù.
+        // ì•„ì§ activeë¥¼ í•˜ì§€ ì•Šì•˜ê±°ë‚˜,
+        // state_istartê°€ ë” ì‘ì•„ì§€ë„ë¡ active í•  ê²½ìš°ì—ë§Œ activeë¥¼ ìˆ˜í–‰í•œë‹¤.
         if (actives.find(name) == actives.end() ||
             state_istart <=actives[name]->index_start()) 
         {
@@ -645,7 +645,7 @@ void compiled::active_transition(
 void compiled::check_terminal_active(
     map<size_t, ranged_string*>& found, const string& src, size_t idx) 
 {
-    //accepted µÈ ÅÍ¹Ì³Î ³ëµå¸¦ ¹ß°ßÇÏ¸é found¿¡ Ãß°¡ÇÑ´Ù.
+    //accepted ëœ í„°ë¯¸ë„ ë…¸ë“œë¥¼ ë°œê²¬í•˜ë©´ foundì— ì¶”ê°€í•œë‹¤.
     for (node_ptr* terminal : m_terminal->next()) {
         if (terminal->is_accepted()) {
             size_t istart = terminal->index_start();

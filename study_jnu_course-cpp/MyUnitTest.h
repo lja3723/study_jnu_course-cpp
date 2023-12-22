@@ -1,4 +1,4 @@
-#ifndef __MY_UNIT_TEST_H__
+ï»¿#ifndef __MY_UNIT_TEST_H__
 #define __MY_UNIT_TEST_H__
 #include <iostream>
 #include <vector>
@@ -14,33 +14,33 @@ using namespace std;
 
 /*
 class MyUnitTest:
-MySimpleRegexÀÇ µ¿ÀÛÀÌ ¿Ã¹Ù¸¥Áö ÀÚµ¿À¸·Î Å×½ºÆ®ÇÑ´Ù.
+MySimpleRegexì˜ ë™ì‘ì´ ì˜¬ë°”ë¥¸ì§€ ìë™ìœ¼ë¡œ í…ŒìŠ¤íŠ¸í•œë‹¤.
 
-Å×½ºÆ® µ¥ÀÌÅÍ txt ÆÄÀÏ¿¡¼­ Å×½ºÆ®ÇÒ ÄÉÀÌ½º¸¦ ºÒ·¯¿Â´Ù.
-    »ı¼ºÀÚ MyUnitTest(ÆÄÀÏÀÌ¸§) È£Ãâ·Î ÆÄÀÏÀ» ¿ÀÇÂÇÑ´Ù.
-    is_open() : ÆÄÀÏÀÌ Á¤»óÀûÀ¸·Î ¿­·È´ÂÁö È®ÀÎÇÑ´Ù.
-    run() : ÀĞ¾î¿Â µ¥ÀÌÅÍ¿¡ ´ëÇØ Å×½ºÆ®¸¦ ¼öÇàÇÑ´Ù.
+í…ŒìŠ¤íŠ¸ ë°ì´í„° txt íŒŒì¼ì—ì„œ í…ŒìŠ¤íŠ¸í•  ì¼€ì´ìŠ¤ë¥¼ ë¶ˆëŸ¬ì˜¨ë‹¤.
+    ìƒì„±ì MyUnitTest(íŒŒì¼ì´ë¦„) í˜¸ì¶œë¡œ íŒŒì¼ì„ ì˜¤í”ˆí•œë‹¤.
+    is_open() : íŒŒì¼ì´ ì •ìƒì ìœ¼ë¡œ ì—´ë ¸ëŠ”ì§€ í™•ì¸í•œë‹¤.
+    run() : ì½ì–´ì˜¨ ë°ì´í„°ì— ëŒ€í•´ í…ŒìŠ¤íŠ¸ë¥¼ ìˆ˜í–‰í•œë‹¤.
      
-Å×½ºÆ®°¡ Á¾·áµÇ¸é ¿ä¾à °á°ú¸¦ Ãâ·ÂÇÑ´Ù.
-    set_summary_more_details() : ¿ä¾à °á°ú¸¦ »ó¼¼È÷ Ãâ·ÂÇÑ´Ù.
+í…ŒìŠ¤íŠ¸ê°€ ì¢…ë£Œë˜ë©´ ìš”ì•½ ê²°ê³¼ë¥¼ ì¶œë ¥í•œë‹¤.
+    set_summary_more_details() : ìš”ì•½ ê²°ê³¼ë¥¼ ìƒì„¸íˆ ì¶œë ¥í•œë‹¤.
  
-¿É¼ÇÀ» ´Ù¸£°Ô ÁÖ¾î ÀÚ¼¼ÇÑ Å×½ºÆ® °á°ú Ãâ·ÂÇÒ ¼ö ÀÖ´Ù. 
-    more_details_all() : ¸ğµç Å×½ºÆ® °á°ú¸¦ ÀÚ¼¼È÷ Ãâ·ÂÇÑ´Ù.
-    less_details_all() : ¸ğµç Å×½ºÆ® °á°ú¸¦ °£·«È÷ Ãâ·ÂÇÑ´Ù.
+ì˜µì…˜ì„ ë‹¤ë¥´ê²Œ ì£¼ì–´ ìì„¸í•œ í…ŒìŠ¤íŠ¸ ê²°ê³¼ ì¶œë ¥í•  ìˆ˜ ìˆë‹¤. 
+    more_details_all() : ëª¨ë“  í…ŒìŠ¤íŠ¸ ê²°ê³¼ë¥¼ ìì„¸íˆ ì¶œë ¥í•œë‹¤.
+    less_details_all() : ëª¨ë“  í…ŒìŠ¤íŠ¸ ê²°ê³¼ë¥¼ ê°„ëµíˆ ì¶œë ¥í•œë‹¤.
 
-¿É¼ÇÀ» ´Ù¸£°Ô ÁÖ¾î ´ÜÀ§ Å×½ºÆ® ¼öÇàÀ» °¢°¢ È°¼ºÈ­ÇÏ°Å³ª ºñÈ°¼ºÈ­ ÇÒ ¼ö ÀÖ´Ù.
-    enable_all() : ¸ğµç Å×½ºÆ®¸¦ ¼öÇà(È°¼ºÈ­)ÇÑ´Ù.
-    disable_all() : ¸ğµç Å×½ºÆ®¸¦ ºñÈ°¼ºÈ­ÇÑ´Ù. ¼öÇàÇÏÁö ¾Ê´Â´Ù.
+ì˜µì…˜ì„ ë‹¤ë¥´ê²Œ ì£¼ì–´ ë‹¨ìœ„ í…ŒìŠ¤íŠ¸ ìˆ˜í–‰ì„ ê°ê° í™œì„±í™”í•˜ê±°ë‚˜ ë¹„í™œì„±í™” í•  ìˆ˜ ìˆë‹¤.
+    enable_all() : ëª¨ë“  í…ŒìŠ¤íŠ¸ë¥¼ ìˆ˜í–‰(í™œì„±í™”)í•œë‹¤.
+    disable_all() : ëª¨ë“  í…ŒìŠ¤íŠ¸ë¥¼ ë¹„í™œì„±í™”í•œë‹¤. ìˆ˜í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
  */
 class MyUnitTest {
-    friend class TestDataFileReader; //Å×½ºÆ® µ¥ÀÌÅÍ ÆÄÀÏ ¸®´õ±â
+    friend class TestDataFileReader; //í…ŒìŠ¤íŠ¸ ë°ì´í„° íŒŒì¼ ë¦¬ë”ê¸°
     using ranges = vector<ranged_string>;
 
-    struct Test {               //´ÜÀ§ Å×½ºÆ®
+    struct Test {               //ë‹¨ìœ„ í…ŒìŠ¤íŠ¸
         int number;             //test case number
         string regex;           //regex of test
         bool syntax_valid;      //0: regex syntax invalid, 1: valid
-                                //0ÀÎ °æ¿ì test, expect size() == 0
+                                //0ì¸ ê²½ìš° test, expect size() == 0
         vector<string> test;    //input strings for regex
         vector<ranges> expect; //expect results
         bool details = false;   //0: less detail, 1: more detail
@@ -49,33 +49,33 @@ class MyUnitTest {
 
 
 /*************************************/
-/*      Å×½ºÆ® ½ÇÇà ¹× °ü·Ã À¯Æ¿ ÇÔ¼ö   */
-/*      ½ÇÇà ¼ø¼­´ë·Î ¹èÄ¡µÇ¾úÀ½        */
+/*      í…ŒìŠ¤íŠ¸ ì‹¤í–‰ ë° ê´€ë ¨ ìœ í‹¸ í•¨ìˆ˜   */
+/*      ì‹¤í–‰ ìˆœì„œëŒ€ë¡œ ë°°ì¹˜ë˜ì—ˆìŒ        */
 /*************************************/
 public:
-    //»ı¼ºÀÚ È£Ãâ µ¿½Ã¿¡ ÆÄÀÏÀÌ¸§ Á¦°ø ÇÊ¿ä
-    MyUnitTest(const char* test_filename); //»ı¼º ½Ã Å×½ºÆ®ÆÄÀÏ ÀÌ¸§ ÇÊ¿ä
+    //ìƒì„±ì í˜¸ì¶œ ë™ì‹œì— íŒŒì¼ì´ë¦„ ì œê³µ í•„ìš”
+    MyUnitTest(const char* test_filename); //ìƒì„± ì‹œ í…ŒìŠ¤íŠ¸íŒŒì¼ ì´ë¦„ í•„ìš”
     MyUnitTest(string& filename) : MyUnitTest(filename.c_str()) {}
 
-    //Å×½ºÆ® ½ÇÇà ¸í·É
+    //í…ŒìŠ¤íŠ¸ ì‹¤í–‰ ëª…ë ¹
     bool is_open();
     void run();
 
 private:
-    //´ÜÀ§ Å×½ºÆ® À§ÇÑ ÃÊ±âÈ­ °úÁ¤ ¹× ÆÄÀÏ ¿­±â
+    //ë‹¨ìœ„ í…ŒìŠ¤íŠ¸ ìœ„í•œ ì´ˆê¸°í™” ê³¼ì • ë° íŒŒì¼ ì—´ê¸°
     void clear_tests();
-    void file_open(const char* name); //ÆÄÀÏÀ» ¿­¾î¾ßÇÔ
+    void file_open(const char* name); //íŒŒì¼ì„ ì—´ì–´ì•¼í•¨
 
-    // Å×½ºÆ® ½ÇÁ¦ ¼öÇà ÇÔ¼ö
-    void run_tests(); //¸ğµç Å×½ºÆ® ÄÉÀÌ½º ¼öÇà
-    vector<bool> run_test(const Test& t); //°¢°¢ÀÇ ´ÜÀ§ Å×½ºÆ® ¼öÇà
+    // í…ŒìŠ¤íŠ¸ ì‹¤ì œ ìˆ˜í–‰ í•¨ìˆ˜
+    void run_tests(); //ëª¨ë“  í…ŒìŠ¤íŠ¸ ì¼€ì´ìŠ¤ ìˆ˜í–‰
+    vector<bool> run_test(const Test& t); //ê°ê°ì˜ ë‹¨ìœ„ í…ŒìŠ¤íŠ¸ ìˆ˜í–‰
     bool assertEqual(const ranges& expect, const ranges& result);
 /****************************************************/
 
 
 
 public:
-    /**********     Å×½ºÆ® ¿É¼Ç     **********/
+    /**********     í…ŒìŠ¤íŠ¸ ì˜µì…˜     **********/
     MyUnitTest& set_newline(int newline);
     MyUnitTest& set_underline_marker(char marker);
     MyUnitTest& set_indent_level(int indent_level);
@@ -100,7 +100,7 @@ public:
 
 
 private:
-    /***************  Ãâ·Â ÇÔ¼ö  ***************/
+    /***************  ì¶œë ¥ í•¨ìˆ˜  ***************/
     void print_run_title();
     void print_test_title(string label_left, const Test& t, string label_right);
     void print_match_range(string title, const ranges& match_result, const Test& t, int elem);
@@ -111,30 +111,30 @@ private:
 
 
     /**********   private fields   **********/
-    class TestDataFileReader;   //Å×½ºÆ®µ¥ÀÌÅÍ ÆÄÀÏ ¸®´õ
+    class TestDataFileReader;   //í…ŒìŠ¤íŠ¸ë°ì´í„° íŒŒì¼ ë¦¬ë”
 
-    vector<Test> tests;         //Å×½ºÆ® ¸ñ·Ï
-    int m_newline;              //°³ÇàÀÌ ÇÊ¿äÇÒ ¶§ ±âÁØ ¹®ÀÚ ¼ö
-    char m_underline_marker;    //¹ØÁÙ Ç¥½ÃÇÒ ±ÛÀÚ
-    string m_indent;            //µé¿©¾²±â ¹®ÀÚ
-    int details_summary_mode;   //Å×½ºÆ® ¿ä¾à Ç¥½Ã¿©ºÎ
-    bool m_is_file_open;        //ÆÄÀÏ ¿­¸² ¿©ºÎ
-    bool m_no_syntax_error;     //ÆÄÀÏ ¹®¹ı ¿Ã¹Ù¸§ ¿©ºÎ
+    vector<Test> tests;         //í…ŒìŠ¤íŠ¸ ëª©ë¡
+    int m_newline;              //ê°œí–‰ì´ í•„ìš”í•  ë•Œ ê¸°ì¤€ ë¬¸ì ìˆ˜
+    char m_underline_marker;    //ë°‘ì¤„ í‘œì‹œí•  ê¸€ì
+    string m_indent;            //ë“¤ì—¬ì“°ê¸° ë¬¸ì
+    int details_summary_mode;   //í…ŒìŠ¤íŠ¸ ìš”ì•½ í‘œì‹œì—¬ë¶€
+    bool m_is_file_open;        //íŒŒì¼ ì—´ë¦¼ ì—¬ë¶€
+    bool m_no_syntax_error;     //íŒŒì¼ ë¬¸ë²• ì˜¬ë°”ë¦„ ì—¬ë¶€
 
 
 };
 
 
 
-//Å×½ºÆ® µ¥ÀÌÅÍ txt ÆÄÀÏÀ» ÀĞ¾î ´ÜÀ§ Å×½ºÆ® °´Ã¼ ¹è¿­À» »ı¼ºÇÑ´Ù.
+//í…ŒìŠ¤íŠ¸ ë°ì´í„° txt íŒŒì¼ì„ ì½ì–´ ë‹¨ìœ„ í…ŒìŠ¤íŠ¸ ê°ì²´ ë°°ì—´ì„ ìƒì„±í•œë‹¤.
 class MyUnitTest::TestDataFileReader 
     : public MyFileReader<vector<MyUnitTest::Test>> {
 private:
     using Test = MyUnitTest::Test;
     using Data = vector<Test>;
     using Tokens = vector<string>;
-    enum _state {   //ÃÑ 8°¡Áö »óÅÂ
-        init,       //ÆÄÀÏ ÃÖÃÊ ¿ÀÇÂ
+    enum _state {   //ì´ 8ê°€ì§€ ìƒíƒœ
+        init,       //íŒŒì¼ ìµœì´ˆ ì˜¤í”ˆ
         regex,      //regex:
         get_cases,  //test_cases:
         get_case,   //case:
@@ -172,11 +172,11 @@ private:
 
 
 
-    /****************  »óÅÂ ÇÔ¼ö  ****************/
+    /****************  ìƒíƒœ í•¨ìˆ˜  ****************/
     bool prev_state_init(Data& container) {
         if (is_file_end) {
             if (!m_unexcepted_file_end)
-                cout << "ÆÄÀÏ¿¡¼­ ÀĞ¾î¿Â ³»¿ëÀÌ ¾ø½À´Ï´Ù. Å×½ºÆ®°¡ Á¤»óÀûÀ¸·Î ¼öÇàµÇÁö ¾ÊÀ» ¼ö ÀÖ½À´Ï´Ù." << endl;
+                cout << "íŒŒì¼ì—ì„œ ì½ì–´ì˜¨ ë‚´ìš©ì´ ì—†ìŠµë‹ˆë‹¤. í…ŒìŠ¤íŠ¸ê°€ ì •ìƒì ìœ¼ë¡œ ìˆ˜í–‰ë˜ì§€ ì•Šì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤." << endl;
             return true;
         }
 
@@ -296,7 +296,7 @@ private:
         if (is_file_end)
             return error_unexpected_file_end();
 
-        //NULL rangeÀÎ °æ¿ì
+        //NULL rangeì¸ ê²½ìš°
         if (line_means == other && lowercase(m_token) == "null") {
             is_range_null = true;
 
@@ -403,8 +403,8 @@ private:
         if (start < 0 || end < 0 || test_str.size() <= start || test_str.size() < end) {
             if (!(test_str.size() == start && start == end)) {
                 showline();
-                cout << "Àß¸øµÈ ¼ıÀÚ ¹üÀ§ÀÔ´Ï´Ù." << endl;
-                cout << "¹üÀ§´Â 0 ÀÌ»ó " << test_str.size() << " ÀÌÇÏ¿©¾ß ÇÕ´Ï´Ù." << endl;
+                cout << "ì˜ëª»ëœ ìˆ«ì ë²”ìœ„ì…ë‹ˆë‹¤." << endl;
+                cout << "ë²”ìœ„ëŠ” 0 ì´ìƒ " << test_str.size() << " ì´í•˜ì—¬ì•¼ í•©ë‹ˆë‹¤." << endl;
                 return false;
             }
         }
@@ -417,7 +417,7 @@ private:
 
     }
 
-    /****************  À¯Æ¿ ÇÔ¼ö  ****************/
+    /****************  ìœ í‹¸ í•¨ìˆ˜  ****************/
     _state interpret() {
         if (lowercase(m_token) == syntax_regex) return regex;
         if (lowercase(m_token) == syntax_get_cases) return get_cases;
@@ -449,7 +449,7 @@ private:
         if (expects.empty()) return;
 
         string indent = "    ";
-        cout << "±â´ëµÈ ±¸¹®Àº ´ÙÀ½°ú °°¾Ò½À´Ï´Ù." << endl;
+        cout << "ê¸°ëŒ€ëœ êµ¬ë¬¸ì€ ë‹¤ìŒê³¼ ê°™ì•˜ìŠµë‹ˆë‹¤." << endl;
         cout << indent << indent << expects.front() << endl;
 
         for (int i = 1; i < expects.size(); i++)
@@ -469,11 +469,11 @@ private:
 
     }
 
-    /****************  ¿À·ù ÇÔ¼ö  ****************/
+    /****************  ì˜¤ë¥˜ í•¨ìˆ˜  ****************/
     bool error_unexpected_file_end() {
         if (!m_unexcepted_file_end) {
             showline();
-            cout << "¿¹±âÄ¡ ¸øÇÏ°Ô ÆÄÀÏÀÌ Á¾·áµÇ¾ú½À´Ï´Ù." << endl;
+            cout << "ì˜ˆê¸°ì¹˜ ëª»í•˜ê²Œ íŒŒì¼ì´ ì¢…ë£Œë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
         }
         return false;
 
@@ -481,7 +481,7 @@ private:
     }
     bool error_argument_missing(const vector<string>& expects) {
         showline();
-        cout << "ÁÖ¾îÁø ÀÎÀÚ°¡ ±â´ë°ªº¸´Ù Àû½À´Ï´Ù." << endl;
+        cout << "ì£¼ì–´ì§„ ì¸ìê°€ ê¸°ëŒ€ê°’ë³´ë‹¤ ì ìŠµë‹ˆë‹¤." << endl;
         show_expected_syntax(expects);
         return false;
 
@@ -489,7 +489,7 @@ private:
     }
     bool error_syntax(const vector<string>& expects) {
         showline();
-        cout << "Àß¸øµÈ ±¸¹®ÀÔ´Ï´Ù." << endl;
+        cout << "ì˜ëª»ëœ êµ¬ë¬¸ì…ë‹ˆë‹¤." << endl;
         show_expected_syntax(expects);
         return false;
 

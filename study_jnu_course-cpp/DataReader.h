@@ -1,4 +1,4 @@
-#ifndef __DATA_READER_H__
+ï»¿#ifndef __DATA_READER_H__
 #define __DATA_READER_H__
 #include <iostream>
 #include <string>
@@ -16,9 +16,9 @@ public:
         m_token(), m_cur_line(0), 
         m_is_file_open(false), m_unexcepted_file_end(false) {}
 
-    //ÆÄÀÏ ¿ÀÇÂ ¼º°ø ½Ã true, ½ÇÆĞ ½Ã false
+    //íŒŒì¼ ì˜¤í”ˆ ì„±ê³µ ì‹œ true, ì‹¤íŒ¨ ì‹œ false
     virtual bool open(const char* filename) final {
-        //ÆÄÀÏ ¿­±â
+        //íŒŒì¼ ì—´ê¸°
         m_filename = filename;
         if (opened_file.is_open()) opened_file.close();
 
@@ -29,10 +29,10 @@ public:
         return (m_is_file_open = true);
     }
     
-    //ÆÄÀÏ ÆÄ½Ì ¼º°ø ½Ã true, ½ÇÆĞ ½Ã false ¹İÈ¯
+    //íŒŒì¼ íŒŒì‹± ì„±ê³µ ì‹œ true, ì‹¤íŒ¨ ì‹œ false ë°˜í™˜
     virtual bool read(Data& container) final {
         if (!m_is_file_open) {
-            cout << "[error] ÆÄÀÏÀÌ ¿­¸®Áö ¾Ê¾Ò½À´Ï´Ù." << endl;
+            cout << "[error] íŒŒì¼ì´ ì—´ë¦¬ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤." << endl;
             return false;
         }
 
@@ -45,41 +45,41 @@ private:
     ifstream opened_file;
     bool m_is_file_open;
 
-    //¿ÀÇÂÇÑ ÆÄÀÏ ÆÄ½ÌÇÏ¸é¼­ ÆÄ½ÌµÈ Á¤º¸¸¦ container¿¡ ÀúÀå
+    //ì˜¤í”ˆí•œ íŒŒì¼ íŒŒì‹±í•˜ë©´ì„œ íŒŒì‹±ëœ ì •ë³´ë¥¼ containerì— ì €ì¥
     bool read_file(Data& container) {
         m_cur_line = 0;
         bool read_successed = true;
         bool multiline = false;
         string line;
 
-        //ÇÑ ÁÙ¾¿ ÀĞ±â
+        //í•œ ì¤„ì”© ì½ê¸°
         while (getline(opened_file, line)) {
             int cur_line_bak = ++m_cur_line;
 
             stringstream sstream(line);
-            //¸ÖÆ¼¶óÀÎ ¸ğµå°¡ ¾Æ´Ñ °æ¿ì
+            //ë©€í‹°ë¼ì¸ ëª¨ë“œê°€ ì•„ë‹Œ ê²½ìš°
             if (!multiline) {
                 while (sstream >> m_token) {
                     if (is_comment(m_token)) break;
 
-                    // ""·Î °¨½ÎÁø ¹®ÀÚ¿­ÀÎ °æ¿ì ÆÄ½Ì
+                    // ""ë¡œ ê°ì‹¸ì§„ ë¬¸ìì—´ì¸ ê²½ìš° íŒŒì‹±
                     m_token = check_quote(line, sstream);
                     if (m_token.empty()) {
                         showline();
-                        cout << "Å«µû¿ÈÇ¥ ¸ÅÄ¡°¡ Àß¸øµÇ¾ú½À´Ï´Ù." << endl;
+                        cout << "í°ë”°ì˜´í‘œ ë§¤ì¹˜ê°€ ì˜ëª»ë˜ì—ˆìŠµë‹ˆë‹¤." << endl;
                         opened_file.close();
                         return false;
                     }
 
-                    // ¸ÖÆ¼¶óÀÎÀÎ °æ¿ì ÆÄ½Ì
+                    // ë©€í‹°ë¼ì¸ì¸ ê²½ìš° íŒŒì‹±
                     if (m_token == "'''") {
                         m_token = "";
                         multiline = true;
                         break;
                     }
 
-                    //!¸ÖÆ¼¶óÀÎ¸ğµå && !""¸ğµåÀÎ °æ¿ì
-                    //ÅäÅ«À» ÆÄ½ÌÇØ¼­ ÅäÅ« Çàµ¿ ½ÇÇà
+                    //!ë©€í‹°ë¼ì¸ëª¨ë“œ && !""ëª¨ë“œì¸ ê²½ìš°
+                    //í† í°ì„ íŒŒì‹±í•´ì„œ í† í° í–‰ë™ ì‹¤í–‰
                     read_successed = token_action(container);
                     if (!read_successed) {
                         m_unexcepted_file_end = true;
@@ -88,7 +88,7 @@ private:
                 }
             }
 
-            //¸ÖÆ¼¶óÀÎ ¸ğµå¿¡¼­ ''' ¸¦ ¸¸³­ °æ¿ì(¸ÖÆ¼¶óÀÎ Á¾·á)
+            //ë©€í‹°ë¼ì¸ ëª¨ë“œì—ì„œ ''' ë¥¼ ë§Œë‚œ ê²½ìš°(ë©€í‹°ë¼ì¸ ì¢…ë£Œ)
             else if (trim(line) == "'''") {
                 m_token.pop_back();
                 read_successed = token_action(container);
@@ -98,7 +98,7 @@ private:
                 multiline = false;
             }
 
-            //¸ÖÆ¼¶óÀÎ ¸ğµåÀÎ °æ¿ì (¸ÖÆ¼¶óÀÎ ÁøÇàÁß)
+            //ë©€í‹°ë¼ì¸ ëª¨ë“œì¸ ê²½ìš° (ë©€í‹°ë¼ì¸ ì§„í–‰ì¤‘)
             else {
                 m_token += line + string(" ");
             }
@@ -108,14 +108,14 @@ private:
             m_cur_line = cur_line_bak;
         }
 
-        //ÆÄÀÏ ³¡¿¡¼­ ÇÊ¿äÇÑ ÀÛ¾÷ ¼öÇà
+        //íŒŒì¼ ëì—ì„œ í•„ìš”í•œ ì‘ì—… ìˆ˜í–‰
         m_token.clear();
         read_successed &= end_file_action(container);
         opened_file.close();
         return read_successed;
     }
 
-    //ÁÖ¼® Ã¼Å©
+    //ì£¼ì„ ì²´í¬
     bool is_comment(const string& str) {
         if (str.size() >= 1 && str[0] == '#')
             return true;
@@ -124,37 +124,37 @@ private:
         else return false;
     }
 
-    //Å«µû¿ÈÇ¥ Ã³¸®µÈ ÅäÅ« ¿©ºÎ Ã¼Å©; Å«µû¿ÈÇ¥ Â¦ÀÌ ¸ÂÁö ¾Ê´Â °æ¿ì empty ¸®ÅÏ
+    //í°ë”°ì˜´í‘œ ì²˜ë¦¬ëœ í† í° ì—¬ë¶€ ì²´í¬; í°ë”°ì˜´í‘œ ì§ì´ ë§ì§€ ì•ŠëŠ” ê²½ìš° empty ë¦¬í„´
     string check_quote(string& line, stringstream& ss) {
-        //Å«µû¿ÈÇ¥ ÅäÅ« ¾Æ´Ñ°æ¿ì ±×´ë·Î ¹İÈ¯
+        //í°ë”°ì˜´í‘œ í† í° ì•„ë‹Œê²½ìš° ê·¸ëŒ€ë¡œ ë°˜í™˜
         if (m_token.empty()) return "";
         if (m_token[0] != '\"') return m_token; 
 
-        //ÇöÀç ¶óÀÎ¿¡¼­ Ã¹ ¹ø¤Š " Ã£±â
+        //í˜„ì¬ ë¼ì¸ì—ì„œ ì²« ë²ˆì¨° " ì°¾ê¸°
         size_t pos = line.find('\"'); 
 
-        //ÇöÀç ¶óÀÎ¿¡¼­ µÎ ¹øÂ° " Ã£±â
+        //í˜„ì¬ ë¼ì¸ì—ì„œ ë‘ ë²ˆì§¸ " ì°¾ê¸°
         string ret = "";
         for (pos++; pos < line.size(); pos++) {
 
-            //  \"(escapedµÈ ") ÀÎ °æ¿ì °Ç³Ê¶Ü
+            //  \"(escapedëœ ") ì¸ ê²½ìš° ê±´ë„ˆëœ€
             if (line[pos] == '\"' && line[pos - 1] == '\\') {
                 ret.back() = '\"';
                 continue;
             }
 
-            //µÎ¹øÂ° " Ã£À½
+            //ë‘ë²ˆì§¸ " ì°¾ìŒ
             if (line[pos] == '\"') {
 
-                //ÇöÀç ÅäÅ«ÀÌ un-escapedµÈ "À» °¡Áø °æ¿ì
+                //í˜„ì¬ í† í°ì´ un-escapedëœ "ì„ ê°€ì§„ ê²½ìš°
                 size_t pos = m_token.find("\\\"", 1);
                 if (pos == string::npos) {
                     pos = m_token.find('\"', 1);
                     if (pos != string::npos)
-                        return ret; //Å«µû¿ÈÇ¥ Ã³¸®µÈ ÅäÅ« ¹İÈ¯
+                        return ret; //í°ë”°ì˜´í‘œ ì²˜ë¦¬ëœ í† í° ë°˜í™˜
                 }
                 
-                //µÎ¹øÂ° "¸¦ °¡Áø ÅäÅ«À» Ã£À½
+                //ë‘ë²ˆì§¸ "ë¥¼ ê°€ì§„ í† í°ì„ ì°¾ìŒ
                 while (ss >> m_token) {
                     size_t pos = 0;
                     while (true) {
@@ -163,7 +163,7 @@ private:
                             pos++;
                         }
                         else if (pos != string::npos)
-                            return ret; //Å«µû¿ÈÇ¥ Ã³¸®µÈ ÅäÅ« ¹İÈ¯
+                            return ret; //í°ë”°ì˜´í‘œ ì²˜ë¦¬ëœ í† í° ë°˜í™˜
                         else
                             break;
                     }
@@ -176,7 +176,7 @@ private:
         return "";
     }
 
-    //¾çÂÊ trim ¼öÇà
+    //ì–‘ìª½ trim ìˆ˜í–‰
     string& trim(string& str) {
         str.erase(0, str.find_first_not_of(" \t\n\r\f\v"));
         str.erase(str.find_last_not_of(" \t\n\r\f\v") + 1);
@@ -194,8 +194,8 @@ protected:
         cout << "[error] line " << m_cur_line << " of \"" << m_filename << "\": ";
     }
 
-    //ÆÄ»ı Å¬·¡½º¸¶´Ù Æ¯¼öÈ­µÈ ÀÛ¾÷ ½ÇÇà
-    //false: ÀÛ¾÷ ½ÇÆĞ  true: ÀÛ¾÷ ¼º°ø
+    //íŒŒìƒ í´ë˜ìŠ¤ë§ˆë‹¤ íŠ¹ìˆ˜í™”ëœ ì‘ì—… ì‹¤í–‰
+    //false: ì‘ì—… ì‹¤íŒ¨  true: ì‘ì—… ì„±ê³µ
     virtual bool token_action(Data& container) = 0;
     virtual bool end_file_action(Data& container) = 0;
 };

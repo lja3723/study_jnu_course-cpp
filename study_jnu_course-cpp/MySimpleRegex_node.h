@@ -1,4 +1,4 @@
-#ifndef __MY_SIMPLE_REGEX_NODE_H__
+ï»¿#ifndef __MY_SIMPLE_REGEX_NODE_H__
 #define __MY_SIMPLE_REGEX_NODE_H__
 #include "MySimpleRegex.h"
 
@@ -10,57 +10,57 @@
 namespace assignment1 {
 
 
-//»óÅÂ ¸Ó½ÅÀÇ ³ëµå¸¦ Ç¥ÇöÇÏ´Â Å¬·¡½º
+//ìƒíƒœ ë¨¸ì‹ ì˜ ë…¸ë“œë¥¼ í‘œí˜„í•˜ëŠ” í´ë˜ìŠ¤
 class compiled::node {
     friend class node_ptr;
 private:
     string m_name;              // state node name
-    size_t m_state_istart;    // state°¡ Ã¹ activeµÇ¾úÀ» ¶§ ÀÔ·ÂµÇ¾ú´ø ¹®ÀÚÀÇ ÀÎµ¦½º
+    size_t m_state_istart;    // stateê°€ ì²« activeë˜ì—ˆì„ ë•Œ ì…ë ¥ë˜ì—ˆë˜ ë¬¸ìì˜ ì¸ë±ìŠ¤
     bool m_state_active;        // 0: deactive, 1: active
     bool m_is_terminal;         // 0: terminal, 1: non-terminal
 
     vector<node_ptr*> m_next;     // next link
-    vector<node_ptr*> m_reverse_ref;  //ÀÌ ³ëµå¸¦ °¡¸®Å°´Â ³ëµå Æ÷ÀÎÅÍ ¸®½ºÆ®(¾èÀº º¹»çµÊ)
+    vector<node_ptr*> m_reverse_ref;  //ì´ ë…¸ë“œë¥¼ ê°€ë¦¬í‚¤ëŠ” ë…¸ë“œ í¬ì¸í„° ë¦¬ìŠ¤íŠ¸(ì–•ì€ ë³µì‚¬ë¨)
 
 public:
     node(string name, bool isTerminal = false);
     virtual ~node();
 
-    /*********  Á¶È¸ ÇÔ¼ö  *********/
+    /*********  ì¡°íšŒ í•¨ìˆ˜  *********/
     const string& name() const;
-    size_t index_start() const;   //is_acceptedÀÏ ¶§ ÀÎ½ÄµÈ ¹®ÀÚ¿­ÀÇ Ã¹ À§Ä¡¸¦ ÀÇ¹ÌÇÑ´Ù.  
-    bool is_accepted() const;       //º» ³ëµå¿¡¼­ accept µÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
-    const vector<node_ptr*>& next() const;      //next ¸ñ·ÏÀ» ¹İÈ¯ÇÑ´Ù.
-    const vector<node_ptr*>& reverse_ref() const;   //¸®¹ö½º ÂüÁ¶¸ñ·ÏÀ» ¹İÈ¯ÇÑ´Ù.
+    size_t index_start() const;   //is_acceptedì¼ ë•Œ ì¸ì‹ëœ ë¬¸ìì—´ì˜ ì²« ìœ„ì¹˜ë¥¼ ì˜ë¯¸í•œë‹¤.  
+    bool is_accepted() const;       //ë³¸ ë…¸ë“œì—ì„œ accept ë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+    const vector<node_ptr*>& next() const;      //next ëª©ë¡ì„ ë°˜í™˜í•œë‹¤.
+    const vector<node_ptr*>& reverse_ref() const;   //ë¦¬ë²„ìŠ¤ ì°¸ì¡°ëª©ë¡ì„ ë°˜í™˜í•œë‹¤.
 
-    /*********  º¯°æ ÇÔ¼ö  *********/
-    void add_link(node_ptr* _next); //º» ³ëµå°¡ °¡¸®Å°´Â ³ëµå¸¦ Ãß°¡ÇÑ´Ù.
-    void delete_link(node* _target, char _ch = '\0'); //Å¸°ÙÀ» °¡¸®Å°´Â ¸µÅ©¸¦ »èÁ¦ÇÑ´Ù.
-    void active(size_t state_istart); //³ëµå¸¦ È°¼ºÈ­ »óÅÂ·Î ¸¸µç´Ù.
-    void clear_flags(); //³ëµå »óÅÂ¿Í °ü·ÃµÈ °ª°ú ÇÃ·¡±×µéÀ» ¸ğµÎ Å¬¸®¾îÇÑ´Ù.
+    /*********  ë³€ê²½ í•¨ìˆ˜  *********/
+    void add_link(node_ptr* _next); //ë³¸ ë…¸ë“œê°€ ê°€ë¦¬í‚¤ëŠ” ë…¸ë“œë¥¼ ì¶”ê°€í•œë‹¤.
+    void delete_link(node* _target, char _ch = '\0'); //íƒ€ê²Ÿì„ ê°€ë¦¬í‚¤ëŠ” ë§í¬ë¥¼ ì‚­ì œí•œë‹¤.
+    void active(size_t state_istart); //ë…¸ë“œë¥¼ í™œì„±í™” ìƒíƒœë¡œ ë§Œë“ ë‹¤.
+    void clear_flags(); //ë…¸ë“œ ìƒíƒœì™€ ê´€ë ¨ëœ ê°’ê³¼ í”Œë˜ê·¸ë“¤ì„ ëª¨ë‘ í´ë¦¬ì–´í•œë‹¤.
     void set_terminal(bool is_terminal);
 
 
-    //³ëµå¿¡ ÇÑ ¹®ÀÚ¸¦ ÀÔ·ÂÇÑ´Ù. 
-    //³ëµå°¡ È°¼ºÈ­µÆÀ» ¶§ ¹®ÀÚ°¡ ¸ÅÄ¡µÇ¸é next ³ëµåµé¿¡°Ô È°¼ºÈ­¸¦ ¿äÃ»ÇÑ´Ù.
-    //³ëµå È°¼ºÈ­ && ÅÍ¹Ì³Î ³ëµåÀÎ °æ¿ì is_accepted°¡ true°¡ µÈ´Ù.
+    //ë…¸ë“œì— í•œ ë¬¸ìë¥¼ ì…ë ¥í•œë‹¤. 
+    //ë…¸ë“œê°€ í™œì„±í™”ëì„ ë•Œ ë¬¸ìê°€ ë§¤ì¹˜ë˜ë©´ next ë…¸ë“œë“¤ì—ê²Œ í™œì„±í™”ë¥¼ ìš”ì²­í•œë‹¤.
+    //ë…¸ë“œ í™œì„±í™” && í„°ë¯¸ë„ ë…¸ë“œì¸ ê²½ìš° is_acceptedê°€ trueê°€ ëœë‹¤.
     void input(vector<active_request_info>& next_active, const char ch);
 };
 
 
-//node¸¦ °¡¸®Å°´Â Æ¯º°ÇÑ Æ÷ÀÎÅÍ Ãß»ó Å¬·¡½º
+//nodeë¥¼ ê°€ë¦¬í‚¤ëŠ” íŠ¹ë³„í•œ í¬ì¸í„° ì¶”ìƒ í´ë˜ìŠ¤
 class compiled::node_ptr {
     friend class node;
 protected:
-    node* m_origin; //Å¸°ÙÀ» ÇÏ´Â ÁÖÃ¼ ³ëµå
-    node* m_target; //Å¸°Ù ´çÇÏ´Â ÇÇ ³ëµå
+    node* m_origin; //íƒ€ê²Ÿì„ í•˜ëŠ” ì£¼ì²´ ë…¸ë“œ
+    node* m_target; //íƒ€ê²Ÿ ë‹¹í•˜ëŠ” í”¼ ë…¸ë“œ
     Imatchable* matcher;
 
-    //°¢ Æ÷ÀÎÅÍ°¡ ¼öÇàÇÒ ÀüÀÌ µ¿ÀÛÀ» ¼öÇàÇÑ´Ù. ¿À¹ö¶óÀÌµù ÇÊ¿ä
+    //ê° í¬ì¸í„°ê°€ ìˆ˜í–‰í•  ì „ì´ ë™ì‘ì„ ìˆ˜í–‰í•œë‹¤. ì˜¤ë²„ë¼ì´ë”© í•„ìš”
     virtual void transition_action(
         vector<active_request_info>& next_active, size_t state_istart) = 0;
 
-    //Æ÷ÀÎÅÍ¿Í °ü·ÃµÈ ÇÃ·¡±×¸¦ Å¬¸®¾îÇÑ´Ù. ÇÊ¿äÇÑ °æ¿ì¸¸ ¿À¹ö¶óÀÌµåÇÑ´Ù.
+    //í¬ì¸í„°ì™€ ê´€ë ¨ëœ í”Œë˜ê·¸ë¥¼ í´ë¦¬ì–´í•œë‹¤. í•„ìš”í•œ ê²½ìš°ë§Œ ì˜¤ë²„ë¼ì´ë“œí•œë‹¤.
     virtual void clear_flag() {}
 
 
@@ -71,28 +71,28 @@ public:
         : m_origin(pOrigin), m_target(pNode), matcher(ranged_string) {}
     virtual ~node_ptr() {
         if (matcher != nullptr)
-            delete matcher; //µ¿Àû ÇÒ´çµÈ matcher¸¦ ¹İÈ¯ÇÑ´Ù.
+            delete matcher; //ë™ì  í• ë‹¹ëœ matcherë¥¼ ë°˜í™˜í•œë‹¤.
     }
 
-    //node*·ÎÀÇ ¸í½ÃÀû Çüº¯È¯
+    //node*ë¡œì˜ ëª…ì‹œì  í˜•ë³€í™˜
     explicit operator node*() { return m_target; }
 
-    //ÇöÀç Æ÷ÀÎÅÍ¸¦ »õ·Î¿î ¿¬°áÀ» °¡Áø Æ÷ÀÎÅÍ·Î º¹»çÇÑ´Ù.
+    //í˜„ì¬ í¬ì¸í„°ë¥¼ ìƒˆë¡œìš´ ì—°ê²°ì„ ê°€ì§„ í¬ì¸í„°ë¡œ ë³µì‚¬í•œë‹¤.
     virtual node_ptr* copy(node* new_pNode) = 0;
 
-    //¿¬°áµÈ ³ëµå°¡ ´ÙÀ½ »çÀÌÅ¬¿¡ active µÇµµ·Ï ¿äÃ»ÇÑ´Ù.
-    //ÇÑ¹ø¿¡ µÉ ¼öµµ ÀÖ°í, ±×·¸Áö ¾ÊÀ» ¼öµµ ÀÖÀ½
+    //ì—°ê²°ëœ ë…¸ë“œê°€ ë‹¤ìŒ ì‚¬ì´í´ì— active ë˜ë„ë¡ ìš”ì²­í•œë‹¤.
+    //í•œë²ˆì— ë  ìˆ˜ë„ ìˆê³ , ê·¸ë ‡ì§€ ì•Šì„ ìˆ˜ë„ ìˆìŒ
     virtual void request_active_nexttime(
         vector<active_request_info>& next_active, 
         size_t state_istart, char ch ) final 
     { 
-        if (matcher->test(ch)) //¿ä±¸µÇ´Â ¹®ÀÚ¿Í ÀÏÄ¡µÇ´Â °æ¿ì¿¡¸¸ ÀüÀÌ Çàµ¿À» ÃëÇÑ´Ù.
+        if (matcher->test(ch)) //ìš”êµ¬ë˜ëŠ” ë¬¸ìì™€ ì¼ì¹˜ë˜ëŠ” ê²½ìš°ì—ë§Œ ì „ì´ í–‰ë™ì„ ì·¨í•œë‹¤.
             transition_action(next_active, state_istart);
     }
 
 
 
-    /*********  Á¶È¸ ÇÔ¼ö  *********/
+    /*********  ì¡°íšŒ í•¨ìˆ˜  *********/
 public:
     bool equals(const node_ptr* rhs) {
         if (this == rhs) return true;
@@ -104,34 +104,34 @@ public:
         return pred;
     }
 
-    //matcher¿¡ ¹®ÀÚ¸¦ ³ÖÀº °á°ú¸¦ ¹İÈ¯ÇÑ´Ù.
+    //matcherì— ë¬¸ìë¥¼ ë„£ì€ ê²°ê³¼ë¥¼ ë°˜í™˜í•œë‹¤.
     bool test(char _ch) const {
         return matcher->test(_ch);
     }
 
-    //Å¸°ÙÀ» ÇÏ´Â ÁÖÃ¼ ³ëµå¸¦ °¡Á®¿Â´Ù.
+    //íƒ€ê²Ÿì„ í•˜ëŠ” ì£¼ì²´ ë…¸ë“œë¥¼ ê°€ì ¸ì˜¨ë‹¤.
     const node* origin() const {
         return m_origin;
     }
 
-    //is_acceptedÀÏ ¶§ ÀÎ½ÄµÈ ¹®ÀÚ¿­ÀÇ Ã¹ À§Ä¡¸¦ ÀÇ¹ÌÇÑ´Ù.
+    //is_acceptedì¼ ë•Œ ì¸ì‹ëœ ë¬¸ìì—´ì˜ ì²« ìœ„ì¹˜ë¥¼ ì˜ë¯¸í•œë‹¤.
     size_t index_start() const {
         return m_target->index_start();
     }
 
-    //º» ³ëµå¿¡¼­ accept µÇ¾ú´ÂÁö È®ÀÎÇÑ´Ù.
+    //ë³¸ ë…¸ë“œì—ì„œ accept ë˜ì—ˆëŠ”ì§€ í™•ì¸í•œë‹¤.
     bool is_accepted() const {
         return m_target->is_accepted();
     }
 
-    //³ëµå Æ÷ÀÎÅÍ°¡ °¡¸®Å°´Â ³ëµå¿Í ÆÄ¶ó¹ÌÅÍ ³ëµå°¡ °°ÀºÁö È®ÀÎÇÑ´Ù.
+    //ë…¸ë“œ í¬ì¸í„°ê°€ ê°€ë¦¬í‚¤ëŠ” ë…¸ë“œì™€ íŒŒë¼ë¯¸í„° ë…¸ë“œê°€ ê°™ì€ì§€ í™•ì¸í•œë‹¤.
     bool is_ref_equal(const node* pNode) const {
         return m_target == pNode;
     }
 };
 
 
-//È°¼ºÈ­ ½ÅÈ£¸¦ ¹Ù·Î Àü´ŞÇÏ´Â ³ëµå Æ÷ÀÎÅÍ
+//í™œì„±í™” ì‹ í˜¸ë¥¼ ë°”ë¡œ ì „ë‹¬í•˜ëŠ” ë…¸ë“œ í¬ì¸í„°
 class compiled::node_ptr_direct : public node_ptr {
 protected:
     virtual void transition_action(vector<active_request_info>& next_active, size_t state_istart) override {
@@ -148,8 +148,8 @@ public:
 };
 
 
-//È°¼ºÈ­ ½ÅÈ£°¡ ÀÏÁ¤ ÀÌ»ó ~ ÀÏÁ¤ ÀÌÇÏ¸¦ ¹Ş¾ÒÀ» ¶§¸¸ 
-//È°¼ºÈ­ ½ÅÈ£¸¦ Àü´ŞÇÏ´Â ³ëµåÆ÷ÀÎÅÍ (³»ºÎ Ä«¿îÅÍ Á¸Àç)
+//í™œì„±í™” ì‹ í˜¸ê°€ ì¼ì • ì´ìƒ ~ ì¼ì • ì´í•˜ë¥¼ ë°›ì•˜ì„ ë•Œë§Œ 
+//í™œì„±í™” ì‹ í˜¸ë¥¼ ì „ë‹¬í•˜ëŠ” ë…¸ë“œí¬ì¸í„° (ë‚´ë¶€ ì¹´ìš´í„° ì¡´ì¬)
 class compiled::node_ptr_inner_counter : public node_ptr {
 private:
     size_t lower_bound;
@@ -167,7 +167,7 @@ protected:
         }
         counter++;
 
-        //¹üÀ§¿¡ µé¾úÀ» °æ¿ì¸¸ state¸¦ Àü´ŞÇÑ´Ù
+        //ë²”ìœ„ì— ë“¤ì—ˆì„ ê²½ìš°ë§Œ stateë¥¼ ì „ë‹¬í•œë‹¤
         if (lower_bound <= counter && counter <= upper_bound)
             next_active.push_back({ m_target, state_istart });
     }

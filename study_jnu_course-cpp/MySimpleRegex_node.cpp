@@ -1,4 +1,4 @@
-#include "MySimpleRegex_node.h"
+ï»¿#include "MySimpleRegex_node.h"
 #include <string>
 #include <algorithm>
 
@@ -15,14 +15,14 @@ compiled::node::node(string name, bool isTerminal) :
 compiled::node::~node() {
     for (int i = 0; i < m_next.size(); i++)
         if (m_next[i] != nullptr)
-            //new·Î ÇÒ´ç¹ÞÀº ¸Þ¸ð¸®¸¦ ¹ÝÈ¯ÇÑ´Ù.
+            //newë¡œ í• ë‹¹ë°›ì€ ë©”ëª¨ë¦¬ë¥¼ ë°˜í™˜í•œë‹¤.
             delete m_next[i]; 
 
 
 }
 
 
-/**************  Á¶È¸ ÇÔ¼ö  **************/
+/**************  ì¡°íšŒ í•¨ìˆ˜  **************/
 const string& compiled::node::name() const {
     return m_name; 
 
@@ -51,11 +51,11 @@ const vector<compiled::node_ptr*>& compiled::node::reverse_ref() const {
 
 
 
-/**************  º¯°æ ÇÔ¼ö  **************/
+/**************  ë³€ê²½ í•¨ìˆ˜  **************/
 void compiled::node::add_link(node_ptr* _next) {
     if (_next == nullptr) return;
 
-    //_next°¡ ÀÌ¹Ì µî·ÏµÇ¾î ÀÖÀ¸¸é µî·Ï X
+    //_nextê°€ ì´ë¯¸ ë“±ë¡ë˜ì–´ ìžˆìœ¼ë©´ ë“±ë¡ X
     if (m_next.end() != find_if(m_next.begin(), m_next.end(),
         [_next](node_ptr* elem) { return elem->equals(_next); } )) {
         delete _next;
