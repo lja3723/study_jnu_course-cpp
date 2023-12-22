@@ -10,6 +10,28 @@
 namespace assignment1 {
 
 
+
+/*******************   MySimpleRegex static 함수   *******************/
+compiled MySimpleRegex::compile(const string& m_regex) {
+    return compiled(m_regex);
+
+
+}
+ranged_string MySimpleRegex::match(const string& m_regex, const string& source, size_t index_start) {
+    compiled cp = compile(m_regex);
+    return cp.match(source, index_start);
+
+
+}
+vector<ranged_string> MySimpleRegex::match_all(const string m_regex, const string& source) {
+    compiled cp = compile(m_regex);
+    return cp.match_all(source);
+
+
+}
+
+
+
 /******   cout 출력 연산자 오버로딩   ******/
 ostream& operator<<(ostream& os, const ranged_string& rs) {
     cout << "range [" << rs.start << "," << rs.end << ") " << "\"" << rs.group() << "\"";
@@ -28,9 +50,9 @@ class compiled::state_machine_creator {
 
 public:
     state_machine_creator(vector<node*>& _node, node*& _epsilon, node*& _terminal) :
-        m_node(_node), 
-        m_epsilon(_epsilon), 
-        m_terminal(_terminal), 
+        m_node(_node),
+        m_epsilon(_epsilon),
+        m_terminal(_terminal),
         node_cnt(0) {}
 
 
@@ -105,7 +127,7 @@ private:
 
     //내부 변수
     int node_cnt; //생성된 노드 개수
-    string regex; 
+    string regex;
 
 
     //하드코딩된 상태머신이 존재하는 경우 해당 상태머신으로 초기화
@@ -484,30 +506,9 @@ private:
 
     }
 
-    
+
 
 }; // end of class: state_machine_creator
-
-
-
-/*******************   MySimpleRegex static 함수   *******************/
-compiled MySimpleRegex::compile(const string& m_regex) {
-    return compiled(m_regex);
-
-
-}
-ranged_string MySimpleRegex::match(const string& m_regex, const string& source, size_t index_start) {
-    compiled cp = compile(m_regex);
-    return cp.match(source, index_start);
-
-
-}
-vector<ranged_string> MySimpleRegex::match_all(const string m_regex, const string& source) {
-    compiled cp = compile(m_regex);
-    return cp.match_all(source);
-
-
-}
 
 
 

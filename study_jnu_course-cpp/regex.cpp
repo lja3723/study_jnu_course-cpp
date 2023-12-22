@@ -1,4 +1,3 @@
-//깃 컨벤션 참고 https://github.com/JNU-econovation/Let-s-git-it-started/blob/main/Glossary_of_Terms/Commit%20Convention.md
 #include "MyUnitTest.h"
 
 namespace assignment1 {
@@ -26,15 +25,12 @@ namespace assignment1 {
             //.more_details_all()
             
         //Additional Settings
-            //.less_details({ 1, 2 }) //set less details
-            //.disable({ 20 })      //desable some testcases
+            //.less_details({ 1, 2 })   //set less details
+            //.disable({ 20 })          //desable some testcases
             //.disable_all()
             //.enable({66, 67})
-            .less_details_all()
+            //.less_details_all()
             .run(); //run unit test
-
-        cout << "최종 컴파일 시간: " << __TIMESTAMP__ << endl;
-
 
         return 0;
     }

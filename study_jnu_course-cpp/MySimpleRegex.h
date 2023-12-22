@@ -133,7 +133,7 @@ private:
     /****************************/
     vector<node*> m_node;   //상태기계 노드 컨테이너 (원본 포인터)
     node* m_epsilon;        //엡실론 신호를 next에 주는 노드
-    node* m_terminal;       //터미널 노드 리스트 (얕은 복사됨)
+    node* m_terminal;       //터미널 노드를 가리키는 포인터
     const string m_regex;   //저장된 정규표현식
     bool m_is_valid;        //정규표현식이 바른 지 여부
 

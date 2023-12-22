@@ -17,7 +17,8 @@ MyUnitTest::MyUnitTest(const char* test_filename) :
     file_open(test_filename);
 
     set_summary_more_details();
-    enable_all().more_details_all(); //default settings
+    enable_all();
+    more_details_all(); //default settings
 
 
 }
